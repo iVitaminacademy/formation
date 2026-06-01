@@ -47,11 +47,11 @@ export default function KidProgress() {
       <h1 className="text-2xl font-extrabold text-gray-900 mb-6">📊 My Progress</h1>
 
       {/* Stat cards */}
-      <div className="flex gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         {statCards.map(s => <StatCard key={s.label} {...s} />)}
       </div>
 
-      <div className="flex gap-5">
+      <div className="flex flex-col lg:flex-row gap-5">
 
         {/* Topic breakdown */}
         <div className="flex-1 bg-white rounded-2xl border-2 p-6 shadow-sm" style={{ borderColor: '#86EFAC' }}>
@@ -84,7 +84,7 @@ export default function KidProgress() {
         </div>
 
         {/* Recent quizzes */}
-        <div className="w-80 bg-white rounded-2xl border-2 p-6 shadow-sm" style={{ borderColor: '#86EFAC' }}>
+        <div className="w-full lg:w-80 bg-white rounded-2xl border-2 p-6 shadow-sm" style={{ borderColor: '#86EFAC' }}>
           <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-4">Recent Quizzes</h2>
           <div className="flex flex-col gap-2">
             {quizHistory.map(quiz => {

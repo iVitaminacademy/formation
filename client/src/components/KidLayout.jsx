@@ -19,22 +19,22 @@ export default function KidLayout({ children }) {
 
       {/* ── Top Navbar ── */}
       <nav
-        className="flex items-center justify-between px-8 py-3 sticky top-0 z-20 shrink-0"
+        className="flex items-center justify-between px-4 sm:px-8 py-3 sticky top-0 z-20 shrink-0"
         style={{ backgroundColor: '#16A34A', boxShadow: '0 2px 12px rgba(22,163,74,0.30)' }}
       >
-        <span className="text-xl font-extrabold text-white tracking-tight">
+        <span className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
           Frazzl<span style={{ color: '#BBF7D0' }}>.kid</span>
-          <span className="text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full ml-2 align-middle">
+          <span className="hidden sm:inline-block text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full ml-2 align-middle">
             Kid Mode
           </span>
         </span>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-extrabold"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-extrabold"
             style={{ backgroundColor: 'rgba(255,255,255,0.18)', color: '#FDE68A' }}
           >
-            🔥 {streak}-day streak
+            🔥 {streak}<span className="hidden sm:inline">-day streak</span>
           </div>
           <div
             className="w-9 h-9 rounded-full flex items-center justify-center text-lg cursor-pointer"
@@ -49,9 +49,9 @@ export default function KidLayout({ children }) {
       {/* ── Body ── */}
       <div className="flex flex-1 overflow-hidden">
 
-        {/* Sidebar */}
+        {/* Sidebar (desktop) */}
         <aside
-          className="w-48 shrink-0 flex flex-col py-5 px-3 border-r overflow-y-auto"
+          className="hidden md:flex w-48 shrink-0 flex-col py-5 px-3 border-r overflow-y-auto"
           style={{ borderColor: '#86EFAC', backgroundColor: '#DCFCE7' }}
         >
           {navLinks.map(link => {
@@ -77,10 +77,31 @@ export default function KidLayout({ children }) {
         </aside>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto px-8 py-7">
+        <main className="flex-1 overflow-y-auto px-4 sm:px-8 py-5 sm:py-7 pb-24 md:pb-7">
           {children}
         </main>
       </div>
+
+      {/* ── Bottom Nav (mobile) ── */}
+      <nav
+        className="md:hidden fixed bottom-0 inset-x-0 z-30 flex items-stretch justify-around border-t"
+        style={{ backgroundColor: '#DCFCE7', borderColor: '#86EFAC' }}
+      >
+        {navLinks.map(link => {
+          const active = pathname.startsWith(link.activePath)
+          return (
+            <button
+              key={link.label}
+              onClick={() => navigate(link.path)}
+              className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-bold transition-colors"
+              style={active ? { color: '#EC4899' } : { color: '#15803D' }}
+            >
+              <span className="text-lg leading-none">{link.icon}</span>
+              <span>{link.label}</span>
+            </button>
+          )
+        })}
+      </nav>
     </div>
   )
 }

@@ -71,7 +71,7 @@ export default function KidDashboard() {
 
       {/* Topic grid */}
       <p className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">Pick a topic to practice</p>
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         {topics.map(topic => (
           <button
             key={topic.id}
@@ -100,7 +100,7 @@ export default function KidDashboard() {
       {/* Badges */}
       <div className="bg-white rounded-2xl border-2 p-5 shadow-sm" style={{ borderColor: '#86EFAC' }}>
         <p className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">My Badges</p>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           {badges.map(b => (
             <div
               key={b.name}

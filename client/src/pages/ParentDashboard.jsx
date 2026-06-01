@@ -77,7 +77,7 @@ export default function ParentDashboard() {
       </h1>
 
       {/* Stat Cards */}
-      <div className="flex gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <StatCard value={`${child.overallProgress}%`} label="Overall progress" color="#2D7A4F" />
         <StatCard value={child.lessonsCompleted}       label="Lessons done"     color="#1a1a2e" />
         <StatCard value={child.streak}                 label="Day streak"       color="#E07B00" icon="🔥" />
@@ -85,7 +85,7 @@ export default function ParentDashboard() {
       </div>
 
       {/* Two-column grid */}
-      <div className="flex gap-5">
+      <div className="flex flex-col lg:flex-row gap-5">
 
         {/* Topic Breakdown */}
         <div className="flex-1 bg-white rounded-2xl border p-6 shadow-sm" style={{ borderColor: '#C8E6D4' }}>
@@ -102,7 +102,7 @@ export default function ParentDashboard() {
         </div>
 
         {/* Right panel */}
-        <div className="w-72 flex flex-col gap-4">
+        <div className="w-full lg:w-72 flex flex-col gap-4">
 
           {/* Child card */}
           <div className="bg-white rounded-2xl border p-5 shadow-sm flex items-center gap-4" style={{ borderColor: '#C8E6D4' }}>

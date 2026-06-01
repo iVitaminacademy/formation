@@ -128,7 +128,7 @@ export default function KidLessons() {
           <p className="text-sm mt-1">Complete Grade 4 to unlock.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {topics.map(topic => (
             <TopicPanel
               key={topic.id}

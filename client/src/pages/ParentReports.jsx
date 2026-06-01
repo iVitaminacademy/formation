@@ -84,7 +84,7 @@ export default function ParentReports() {
       </div>
 
       {/* ── Summary Stats ── */}
-      <div className="flex gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         <StatCard value={`${stats.overall}%`}          label="Overall progress"  color="#2D7A4F" highlight />
         <StatCard
           value={`${stats.lessonsCompleted}/${stats.totalLessons}`}
@@ -109,7 +109,7 @@ export default function ParentReports() {
       )}
 
       {/* ── Two column ── */}
-      <div className="flex gap-5">
+      <div className="flex flex-col lg:flex-row gap-5">
 
         {/* Left — Topic Breakdown */}
         <div className="flex-1 bg-white rounded-2xl border p-6 shadow-sm" style={{ borderColor: '#C8E6D4' }}>
@@ -146,7 +146,7 @@ export default function ParentReports() {
         </div>
 
         {/* Right — Quiz History */}
-        <div className="w-80 bg-white rounded-2xl border p-6 shadow-sm" style={{ borderColor: '#C8E6D4' }}>
+        <div className="w-full lg:w-80 bg-white rounded-2xl border p-6 shadow-sm" style={{ borderColor: '#C8E6D4' }}>
           <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-4">Recent Quizzes</h2>
           <div className="flex flex-col gap-3">
             {quizHistory.map(quiz => {

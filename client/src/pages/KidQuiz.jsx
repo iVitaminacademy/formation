@@ -137,12 +137,12 @@ export default function KidQuiz() {
         })}
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* Main question area */}
         <div className="flex-1 flex flex-col gap-5">
           {/* Question card */}
           <div
-            className="rounded-3xl p-8 text-center border-2"
+            className="rounded-3xl p-5 sm:p-8 text-center border-2"
             style={{ backgroundColor: '#F0FDF4', borderColor: '#86EFAC' }}
           >
             <p className="text-xs font-extrabold uppercase tracking-widest mb-3" style={{ color: quizData.topicColor }}>
@@ -222,9 +222,9 @@ export default function KidQuiz() {
           )}
         </div>
 
-        {/* Right panel — question tracker */}
+        {/* Right panel — hidden on mobile */}
         <div
-          className="w-56 shrink-0 bg-white rounded-2xl border-2 p-4 self-start"
+          className="hidden lg:block w-56 shrink-0 bg-white rounded-2xl border-2 p-4 self-start"
           style={{ borderColor: '#86EFAC' }}
         >
           <p className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">Quiz Progress</p>

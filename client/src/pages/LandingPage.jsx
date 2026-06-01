@@ -101,7 +101,7 @@ export default function LandingPage() {
           </section>
 
           {/* Mode cards */}
-          <section className="mt-10 grid w-full max-w-2xl grid-cols-2 gap-5">
+          <section className="mt-10 grid w-full max-w-2xl grid-cols-1 sm:grid-cols-2 gap-5">
             <ModeCard
               illustrationBg="linear-gradient(135deg, #FED7AA 0%, #FB923C 100%)"
               emoji="🧒"

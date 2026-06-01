@@ -33,10 +33,10 @@ export default function KidProfile() {
     <KidLayout>
       <h1 className="text-2xl font-extrabold text-gray-900 mb-6">👤 Profile</h1>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col lg:flex-row gap-6">
 
         {/* ── Left column ── */}
-        <div className="w-72 shrink-0 flex flex-col gap-4">
+        <div className="w-full lg:w-72 shrink-0 flex flex-col gap-4">
 
           {/* Avatar card */}
           <div className="bg-white rounded-2xl border-2 p-6 flex flex-col items-center text-center shadow-sm" style={{ borderColor: '#86EFAC' }}>
