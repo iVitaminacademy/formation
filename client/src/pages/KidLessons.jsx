@@ -5,7 +5,7 @@ import KidLayout from '../components/KidLayout'
 const curriculum = {
   4: [
     {
-      id: 1, name: 'Multiplication', icon: '✖️', color: '#6B3FA0', bg: '#EDE4FF',
+      id: 1, name: 'Multiplication', icon: '✖️', color: '#F97316', bg: '#FFF7ED', border: '#FED7AA',
       lessons: [
         { id: 1, title: 'Times tables 1–5',     questions: 8,  time: 5, status: 'done'   },
         { id: 2, title: 'Times tables 6–10',    questions: 10, time: 6, status: 'done'   },
@@ -14,7 +14,7 @@ const curriculum = {
       ],
     },
     {
-      id: 2, name: 'Division', icon: '➗', color: '#0369A1', bg: '#E0F2FE',
+      id: 2, name: 'Division', icon: '➗', color: '#3B82F6', bg: '#EFF6FF', border: '#BFDBFE',
       lessons: [
         { id: 5, title: 'Basic division facts',  questions: 10, time: 5, status: 'done'   },
         { id: 6, title: 'Long division intro',   questions: 8,  time: 7, status: 'start'  },
@@ -22,14 +22,14 @@ const curriculum = {
       ],
     },
     {
-      id: 3, name: 'Fractions', icon: '½', color: '#B45309', bg: '#FEF3C7',
+      id: 3, name: 'Fractions', icon: '½', color: '#EC4899', bg: '#FDF2F8', border: '#FBCFE8',
       lessons: [
         { id: 8, title: 'What is a fraction?', questions: 8,  time: 5, status: 'start'  },
         { id: 9, title: 'Adding fractions',    questions: 10, time: 6, status: 'locked' },
       ],
     },
     {
-      id: 4, name: 'Geometry', icon: '📐', color: '#047857', bg: '#D1FAE5',
+      id: 4, name: 'Geometry', icon: '📐', color: '#A855F7', bg: '#FAF5FF', border: '#E9D5FF',
       lessons: [
         { id: 10, title: 'Shapes & properties', questions: 9,  time: 6, status: 'done'  },
         { id: 11, title: 'Perimeter',           questions: 8,  time: 6, status: 'done'  },
@@ -41,8 +41,8 @@ const curriculum = {
 }
 
 function StatusBadge({ status }) {
-  if (status === 'done')   return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#DCFCE7', color: '#16A34A' }}>✓ Done</span>
-  if (status === 'start')  return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#EDE4FF', color: '#6B3FA0' }}>▶ Start</span>
+  if (status === 'done')  return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#DCFCE7', color: '#16A34A' }}>✓ Done</span>
+  if (status === 'start') return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#FFF7ED', color: '#F97316' }}>▶ Start</span>
   return <span className="text-lg">🔒</span>
 }
 
@@ -51,30 +51,31 @@ function TopicPanel({ topic, onStart }) {
   const total = topic.lessons.length
 
   return (
-    <div className="bg-white rounded-2xl border overflow-hidden shadow-sm" style={{ borderColor: '#D4B8F0' }}>
-      {/* Header */}
+    <div className="bg-white rounded-2xl border-2 overflow-hidden shadow-sm" style={{ borderColor: topic.border }}>
       <div className="flex items-center justify-between px-5 py-3.5" style={{ backgroundColor: topic.bg }}>
-        <div className="flex items-center gap-2 font-extrabold text-gray-800">
+        <div className="flex items-center gap-2 font-extrabold" style={{ color: topic.color }}>
           <span>{topic.icon}</span>
           <span>{topic.name}</span>
         </div>
         <span className="text-xs font-bold text-gray-500">{done}/{total} done</span>
       </div>
 
-      {/* Lessons */}
       <div className="px-3 py-2">
         {topic.lessons.map(lesson => (
           <div
             key={lesson.id}
-            className={`flex items-center justify-between px-3 py-3 rounded-xl mb-1 transition-colors ${lesson.status === 'locked' ? 'opacity-50' : 'hover:bg-purple-50 cursor-pointer'}`}
+            className={`flex items-center justify-between px-3 py-3 rounded-xl mb-1 transition-colors ${lesson.status === 'locked' ? 'opacity-50' : 'cursor-pointer'}`}
+            style={{ ':hover': { backgroundColor: topic.bg } }}
             onClick={() => lesson.status !== 'locked' && onStart(lesson)}
+            onMouseEnter={e => { if (lesson.status !== 'locked') e.currentTarget.style.backgroundColor = topic.bg }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
             title={lesson.status === 'locked' ? 'Complete the previous lesson first' : ''}
           >
             <div className="flex items-center gap-3">
               <div
                 className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-extrabold shrink-0"
                 style={{
-                  backgroundColor: lesson.status === 'done' ? '#16A34A' : lesson.status === 'start' ? '#6B3FA0' : '#D1D5DB',
+                  backgroundColor: lesson.status === 'done' ? '#16A34A' : lesson.status === 'start' ? topic.color : '#D1D5DB',
                   color: '#fff',
                 }}
               >
@@ -94,7 +95,7 @@ function TopicPanel({ topic, onStart }) {
 }
 
 export default function KidLessons() {
-  const navigate  = useNavigate()
+  const navigate = useNavigate()
   const [grade, setGrade] = useState(4)
   const topics = curriculum[grade]
 
@@ -110,8 +111,8 @@ export default function KidLessons() {
               className="px-5 py-2 rounded-xl text-sm font-extrabold border-2 transition-all duration-150"
               style={
                 grade === g
-                  ? { backgroundColor: '#6B3FA0', color: '#fff', borderColor: '#6B3FA0' }
-                  : { backgroundColor: '#fff', color: '#6B3FA0', borderColor: '#D4B8F0' }
+                  ? { backgroundColor: '#16A34A', color: '#fff', borderColor: '#16A34A' }
+                  : { backgroundColor: '#fff', color: '#16A34A', borderColor: '#86EFAC' }
               }
             >
               Grade {g}

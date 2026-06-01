@@ -1,6 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 import LandingPage     from './pages/LandingPage'
+import FAQ             from './pages/FAQ'
+import SignInPage      from './pages/SignInPage'
+import SignUpPage      from './pages/SignUpPage'
 
 import ParentDashboard from './pages/ParentDashboard'
 import ParentLessons   from './pages/ParentLessons'
@@ -18,7 +21,10 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         {/* Public */}
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/"       element={<LandingPage />} />
+        <Route path="/faq"    element={<FAQ />} />
+        <Route path="/login"  element={<SignInPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
 
         {/* Parent */}
         <Route path="/parent/dashboard" element={<ParentDashboard />} />

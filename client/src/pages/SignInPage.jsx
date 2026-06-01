@@ -1,0 +1,254 @@
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+
+const EnvelopeIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="4" width="20" height="16" rx="2" />
+    <path d="m22 7-10 7L2 7" />
+  </svg>
+)
+
+const LockIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="11" width="18" height="11" rx="2" />
+    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+  </svg>
+)
+
+const EyeOpenIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+)
+
+const EyeClosedIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+    <line x1="1" y1="1" x2="23" y2="23" />
+  </svg>
+)
+
+const GoogleIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24">
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+  </svg>
+)
+
+const ACCENT = '#16A34A'
+const ACCENT_HOVER = '#15803D'
+
+const inputBase = {
+  borderColor: '#E2E8F0',
+  backgroundColor: '#F8FAFC',
+  boxShadow: 'none',
+  transition: 'border-color 0.15s, background-color 0.15s, box-shadow 0.15s',
+}
+const inputFocus = {
+  borderColor: ACCENT,
+  backgroundColor: '#fff',
+  boxShadow: `0 0 0 3px ${ACCENT}22`,
+}
+
+export default function SignInPage() {
+  const navigate = useNavigate()
+  const [showPass, setShowPass] = useState(false)
+  const [focused, setFocused] = useState('')
+  const [form, setForm] = useState({ email: '', password: '', remember: false })
+
+  const handleChange = e => {
+    const { name, value, type, checked } = e.target
+    setForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }))
+  }
+
+  const fieldStyle = name => ({ ...inputBase, ...(focused === name ? inputFocus : {}) })
+
+  return (
+    <div
+      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-4 py-12"
+      style={{ backgroundColor: '#F0FDF4' }}
+    >
+      {/* Background decorative blobs */}
+      <div className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full opacity-25 blur-3xl" style={{ backgroundColor: '#86EFAC' }} />
+      <div className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full opacity-20 blur-3xl" style={{ backgroundColor: '#FB923C' }} />
+      <div className="pointer-events-none absolute right-16 top-1/3 h-56 w-56 rounded-full opacity-15 blur-3xl" style={{ backgroundColor: '#A855F7' }} />
+
+      {/* Card */}
+      <div
+        className="relative w-full max-w-md rounded-3xl bg-white px-8 py-10"
+        style={{ boxShadow: '0 20px 60px rgba(22,163,74,0.12)' }}
+      >
+        {/* Logo */}
+        <div className="mb-8 text-center">
+          <div className="text-3xl font-extrabold tracking-tight">
+            <span style={{ color: '#111827' }}>Frazzl</span>
+            <span style={{ color: '#16A34A' }}>.kid</span>
+          </div>
+          <h1 className="mt-5 text-2xl font-extrabold" style={{ color: '#1A1A2E' }}>
+            Welcome back! 👋
+          </h1>
+          <p className="mt-1.5 text-sm" style={{ color: '#94A3B8' }}>
+            Sign in to continue your learning journey
+          </p>
+        </div>
+
+        {/* Form */}
+        <form
+          onSubmit={e => { e.preventDefault(); navigate('/kid/dashboard') }}
+          className="flex flex-col gap-4"
+        >
+          {/* Email */}
+          <div>
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide" style={{ color: '#64748B' }}>
+              Email
+            </label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }}>
+                <EnvelopeIcon />
+              </span>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                onFocus={() => setFocused('email')}
+                onBlur={() => setFocused('')}
+                placeholder="you@example.com"
+                style={{
+                  ...fieldStyle('email'),
+                  width: '100%',
+                  borderWidth: 1.5,
+                  borderStyle: 'solid',
+                  borderRadius: 12,
+                  padding: '11px 16px 11px 40px',
+                  fontSize: 14,
+                  color: '#1E293B',
+                  outline: 'none',
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Password */}
+          <div>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label className="text-xs font-bold uppercase tracking-wide" style={{ color: '#64748B' }}>
+                Password
+              </label>
+              <a href="#" className="text-xs font-semibold transition hover:underline" style={{ color: ACCENT }}>
+                Forgot password?
+              </a>
+            </div>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }}>
+                <LockIcon />
+              </span>
+              <input
+                type={showPass ? 'text' : 'password'}
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                onFocus={() => setFocused('password')}
+                onBlur={() => setFocused('')}
+                placeholder="••••••••"
+                style={{
+                  ...fieldStyle('password'),
+                  width: '100%',
+                  borderWidth: 1.5,
+                  borderStyle: 'solid',
+                  borderRadius: 12,
+                  padding: '11px 44px 11px 40px',
+                  fontSize: 14,
+                  color: '#1E293B',
+                  outline: 'none',
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPass(p => !p)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 transition"
+                style={{ color: '#94A3B8', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#64748B')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#94A3B8')}
+              >
+                {showPass ? <EyeOpenIcon /> : <EyeClosedIcon />}
+              </button>
+            </div>
+          </div>
+
+          {/* Remember me */}
+          <label className="flex cursor-pointer items-center gap-2.5 text-sm" style={{ color: '#64748B' }}>
+            <input
+              type="checkbox"
+              name="remember"
+              checked={form.remember}
+              onChange={handleChange}
+              style={{ accentColor: ACCENT, width: 16, height: 16, borderRadius: 4, cursor: 'pointer' }}
+            />
+            Remember me for 30 days
+          </label>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            className="mt-1 w-full rounded-xl py-3.5 text-sm font-extrabold text-white transition-all active:scale-[0.98]"
+            style={{ backgroundColor: ACCENT, boxShadow: '0 4px 16px rgba(107,63,160,0.35)' }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = ACCENT_HOVER)}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = ACCENT)}
+          >
+            Sign In →
+          </button>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1" style={{ backgroundColor: '#E2E8F0' }} />
+            <span className="text-xs font-medium" style={{ color: '#94A3B8' }}>or continue with</span>
+            <div className="h-px flex-1" style={{ backgroundColor: '#E2E8F0' }} />
+          </div>
+
+          {/* Google */}
+          <button
+            type="button"
+            className="flex w-full items-center justify-center gap-3 rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.98]"
+            style={{ border: '1.5px solid #E2E8F0', backgroundColor: '#fff', color: '#374151', cursor: 'pointer' }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F8FAFC')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#fff')}
+          >
+            <GoogleIcon />
+            Continue with Google
+          </button>
+        </form>
+
+        {/* Footer */}
+        <p className="mt-8 text-center text-sm" style={{ color: '#94A3B8' }}>
+          Don&apos;t have an account?{' '}
+          <Link
+            to="/signup"
+            className="font-bold transition hover:underline"
+            style={{ color: ACCENT }}
+          >
+            Create one →
+          </Link>
+        </p>
+
+        {/* Mode hint */}
+        <div
+          className="mt-5 flex items-center justify-center gap-4 rounded-2xl px-4 py-3"
+          style={{ backgroundColor: '#F0FDF4' }}
+        >
+          <span className="text-xs font-medium" style={{ color: '#6B7280' }}>Sign in as:</span>
+          <span className="flex items-center gap-1.5 text-xs font-bold" style={{ color: '#F97316' }}>
+            <span>🧒</span> Kid
+          </span>
+          <span style={{ color: '#D1D5DB', fontSize: 10 }}>•</span>
+          <span className="flex items-center gap-1.5 text-xs font-bold" style={{ color: '#16A34A' }}>
+            <span>👨‍👧</span> Parent
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}

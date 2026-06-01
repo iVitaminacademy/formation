@@ -1,4 +1,4 @@
-# MathMates — Project Tracker
+# Frazzl.kid — Project Tracker
 **Kid & Parent Math Learning Platform | Grades 4 & 5**
 Prepared by: Lahbabta Yousef | Started: May 2026
 
@@ -75,6 +75,7 @@ MathProject/
 | Path | Component | Status |
 |---|---|---|
 | `/` | LandingPage | ✅ Done |
+| `/faq` | FAQ | ✅ Done |
 | `/parent/dashboard` | ParentDashboard | ✅ Done |
 | `/parent/lessons` | ParentLessons | ✅ Done |
 | `/parent/reports` | ParentReports | ✅ Done |
