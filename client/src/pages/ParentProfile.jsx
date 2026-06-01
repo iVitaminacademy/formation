@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ParentLayout from '../components/ParentLayout'
+import { useAuth } from '../context/AuthContext'
 
-const user = {
-  name: 'Sarah Johnson',
-  email: 'sarah.johnson@email.com',
-  role: 'Parent',
-  avatar: '👩',
+const fallbackChild = {
   childName: 'Emma Johnson',
   childGrade: 4,
 }
@@ -29,11 +26,30 @@ const settingsItems = [
 
 export default function ParentProfile() {
   const navigate = useNavigate()
+  const { profile, signOut } = useAuth()
   const [kidMode, setKidMode] = useState(false)
+
+  const user = {
+    name: profile?.name || 'Parent',
+    email: profile?.email || '',
+    role: 'Parent',
+    avatar: profile?.avatar || '👩',
+    childName: fallbackChild.childName,
+    childGrade: fallbackChild.childGrade,
+  }
 
   const handleModeToggle = () => {
     setKidMode(v => !v)
     if (!kidMode) navigate('/kid/dashboard')
+  }
+
+  const handleLogout = async () => {
+    try {
+      await signOut()
+    } catch {
+      // ignore — navigate home regardless
+    }
+    navigate('/')
   }
 
   return (
@@ -118,7 +134,7 @@ export default function ParentProfile() {
 
           {/* Log out */}
           <button
-            onClick={() => navigate('/')}
+            onClick={handleLogout}
             className="w-full py-3 rounded-2xl text-sm font-extrabold border-2 transition-colors"
             style={{ borderColor: '#FCA5A5', color: '#DC2626', backgroundColor: '#FFF5F5' }}
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#FEE2E2')}

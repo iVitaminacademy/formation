@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 const navLinks = [
   { label: 'Dashboard',        icon: '🏠', path: '/parent/dashboard' },
@@ -10,6 +11,16 @@ const navLinks = [
 export default function ParentLayout({ children }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const { signOut } = useAuth()
+
+  const handleLogout = async () => {
+    try {
+      await signOut()
+    } catch {
+      // ignore — navigate home regardless
+    }
+    navigate('/')
+  }
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F0FAF4' }}>
@@ -43,6 +54,15 @@ export default function ParentLayout({ children }) {
           >
             🧒
           </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white border-2 transition-all duration-200"
+            style={{ borderColor: 'rgba(255,255,255,0.35)' }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.12)')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+          >
+            ⎋ Log Out
+          </button>
         </div>
       </nav>
 

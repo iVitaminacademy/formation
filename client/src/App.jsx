@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
+import ProtectedRoute  from './components/ProtectedRoute'
+
 import LandingPage     from './pages/LandingPage'
 import FAQ             from './pages/FAQ'
 import SignInPage      from './pages/SignInPage'
@@ -27,17 +29,17 @@ export default function App() {
         <Route path="/signup" element={<SignUpPage />} />
 
         {/* Parent */}
-        <Route path="/parent/dashboard" element={<ParentDashboard />} />
-        <Route path="/parent/lessons"   element={<ParentLessons />} />
-        <Route path="/parent/reports"   element={<ParentReports />} />
-        <Route path="/parent/profile"   element={<ParentProfile />} />
+        <Route path="/parent/dashboard" element={<ProtectedRoute role="parent"><ParentDashboard /></ProtectedRoute>} />
+        <Route path="/parent/lessons"   element={<ProtectedRoute role="parent"><ParentLessons /></ProtectedRoute>} />
+        <Route path="/parent/reports"   element={<ProtectedRoute role="parent"><ParentReports /></ProtectedRoute>} />
+        <Route path="/parent/profile"   element={<ProtectedRoute role="parent"><ParentProfile /></ProtectedRoute>} />
 
         {/* Kid */}
-        <Route path="/kid/dashboard"    element={<KidDashboard />} />
-        <Route path="/kid/lessons"      element={<KidLessons />} />
-        <Route path="/kid/quiz/:id"     element={<KidQuiz />} />
-        <Route path="/kid/progress"     element={<KidProgress />} />
-        <Route path="/kid/profile"      element={<KidProfile />} />
+        <Route path="/kid/dashboard"    element={<ProtectedRoute role="kid"><KidDashboard /></ProtectedRoute>} />
+        <Route path="/kid/lessons"      element={<ProtectedRoute role="kid"><KidLessons /></ProtectedRoute>} />
+        <Route path="/kid/quiz/:id"     element={<ProtectedRoute role="kid"><KidQuiz /></ProtectedRoute>} />
+        <Route path="/kid/progress"     element={<ProtectedRoute role="kid"><KidProgress /></ProtectedRoute>} />
+        <Route path="/kid/profile"      element={<ProtectedRoute role="kid"><KidProfile /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   )

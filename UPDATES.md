@@ -4,6 +4,41 @@ All frontend changes are recorded here in chronological order.
 
 ---
 
+## [2026-06-01] — Supabase Integration (Database + Auth)
+
+**Decision:** Connect React directly to Supabase (no Express layer), protected by Row Level Security (RLS). Uses Supabase Auth instead of manual JWT.
+
+### Added — database (`supabase/`)
+- `supabase/schema.sql` — full PostgreSQL schema for all 8 entities (`profiles`, `parent_child`, `topics`, `lessons`, `questions`, `progress`, `badges`, `user_badges`). Built to scale: UUID keys, indexes on every FK + hot query path, enums, `updated_at` trigger, auto profile creation on signup (`handle_new_user`), and **RLS policies on every table**.
+- `supabase/seed.sql` — starter badges, Grade 4 topics, sample lesson + question.
+
+### Added — client
+- Installed `@supabase/supabase-js`.
+- `client/.env.example` — env var template (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`).
+- `src/services/supabaseClient.js` — singleton Supabase client.
+- `src/services/auth.js` — signUp / signIn / Google OAuth / signOut / profile read+update.
+- `src/services/lessons.js` — topics, lessons, questions queries.
+- `src/services/progress.js` — upsert + read progress (one row per user/lesson).
+- `src/services/badges.js` — catalog, earned, status, award.
+- `src/services/family.js` — parent ↔ child linking + children list.
+- `src/services/admin.js` — JSON bulk content import (`/admin/import` equivalent).
+- `src/context/AuthContext.jsx` — session + profile provider, role exposed.
+- `src/components/ProtectedRoute.jsx` — auth + role-based route guard.
+
+### Changed
+- `src/main.jsx` — wrapped app in `<AuthProvider>`.
+- `src/App.jsx` — kid/parent routes wrapped in `<ProtectedRoute role=...>`.
+- `src/pages/SignInPage.jsx` — real login, role-based redirect, error states, Google button wired.
+- `src/pages/SignUpPage.jsx` — real signup with role + grade metadata, grade picker for kids, error/info states.
+- `client/.gitignore` — ignore `.env*` except `.env.example`.
+
+### Setup required (manual)
+1. Create a Supabase project → run `supabase/schema.sql` then `supabase/seed.sql` in the SQL Editor.
+2. Create `client/.env.local` with your `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+3. (Optional) Enable Google provider in Supabase Auth for the Google buttons.
+
+---
+
 ## [2026-06-01] — FAQ Page Created
 
 **File:** `client/src/pages/FAQ.jsx`

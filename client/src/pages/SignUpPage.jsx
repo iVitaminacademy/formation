@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 const UserIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -84,10 +85,14 @@ function getStrength(password) {
 
 export default function SignUpPage() {
   const navigate = useNavigate()
+  const { signUp } = useAuth()
   const [role, setRole] = useState('kid')
   const [showPass, setShowPass] = useState(false)
   const [focused, setFocused] = useState('')
-  const [form, setForm] = useState({ name: '', email: '', password: '', terms: false })
+  const [form, setForm] = useState({ name: '', email: '', password: '', grade: 4, terms: false })
+  const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   const selectedRole = ROLES.find(r => r.id === role)
   const { accent, accentHover, shadow } = selectedRole
@@ -97,9 +102,34 @@ export default function SignUpPage() {
     setForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }))
   }
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault()
-    navigate(role === 'kid' ? '/kid/dashboard' : '/parent/dashboard')
+    setError('')
+    setInfo('')
+    if (!form.terms) {
+      setError('Please accept the Terms of Service and Privacy Policy.')
+      return
+    }
+    setSubmitting(true)
+    try {
+      const { session } = await signUp({
+        email: form.email,
+        password: form.password,
+        name: form.name,
+        role,
+        grade: role === 'kid' ? Number(form.grade) : null,
+      })
+      // If email confirmation is required, there is no session yet.
+      if (!session) {
+        setInfo('Account created! Please check your email to confirm, then sign in.')
+        return
+      }
+      navigate(role === 'kid' ? '/kid/dashboard' : '/parent/dashboard')
+    } catch (err) {
+      setError(err.message || 'Sign up failed. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const strength = getStrength(form.password)
@@ -194,6 +224,47 @@ export default function SignUpPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+
+          {error && (
+            <div className="rounded-xl px-4 py-3 text-sm font-semibold" style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
+              {error}
+            </div>
+          )}
+          {info && (
+            <div className="rounded-xl px-4 py-3 text-sm font-semibold" style={{ backgroundColor: '#F0FDF4', color: '#15803D', border: '1px solid #BBF7D0' }}>
+              {info}
+            </div>
+          )}
+
+          {/* Grade (kids only) */}
+          {role === 'kid' && (
+            <div>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide" style={{ color: '#64748B' }}>
+                Grade
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                {[4, 5].map(g => {
+                  const isSel = Number(form.grade) === g
+                  return (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, grade: g }))}
+                      className="rounded-xl py-3 text-sm font-extrabold transition-all"
+                      style={{
+                        border: `2px solid ${isSel ? accent : '#E2E8F0'}`,
+                        backgroundColor: isSel ? accent + '15' : '#FAFAFA',
+                        color: isSel ? accent : '#64748B',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Grade {g}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Full name */}
           <div>
@@ -349,7 +420,8 @@ export default function SignUpPage() {
           {/* Submit */}
           <button
             type="submit"
-            className="mt-1 w-full rounded-xl py-3.5 text-sm font-extrabold text-white transition-all active:scale-[0.98]"
+            disabled={submitting}
+            className="mt-1 w-full rounded-xl py-3.5 text-sm font-extrabold text-white transition-all active:scale-[0.98] disabled:opacity-60"
             style={{
               backgroundColor: accent,
               boxShadow: `0 4px 16px ${shadow}`,
@@ -357,7 +429,7 @@ export default function SignUpPage() {
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = accentHover)}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = accent)}
           >
-            {role === 'kid' ? '🧒 Start Learning →' : '👨‍👧 Join as Parent →'}
+            {submitting ? 'Creating account…' : role === 'kid' ? '🧒 Start Learning →' : '👨‍👧 Join as Parent →'}
           </button>
 
           {/* Divider */}

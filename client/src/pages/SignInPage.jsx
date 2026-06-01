@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { getProfile } from '../services/auth'
 
 const EnvelopeIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -55,13 +57,40 @@ const inputFocus = {
 
 export default function SignInPage() {
   const navigate = useNavigate()
+  const { signIn, signInWithGoogle } = useAuth()
   const [showPass, setShowPass] = useState(false)
   const [focused, setFocused] = useState('')
   const [form, setForm] = useState({ email: '', password: '', remember: false })
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   const handleChange = e => {
     const { name, value, type, checked } = e.target
     setForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }))
+  }
+
+  const handleSubmit = async e => {
+    e.preventDefault()
+    setError('')
+    setSubmitting(true)
+    try {
+      const { user } = await signIn({ email: form.email, password: form.password })
+      const profile = await getProfile(user.id)
+      navigate(profile.role === 'parent' ? '/parent/dashboard' : '/kid/dashboard')
+    } catch (err) {
+      setError(err.message || 'Sign in failed. Check your email and password.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleGoogle = async () => {
+    setError('')
+    try {
+      await signInWithGoogle()
+    } catch (err) {
+      setError(err.message || 'Google sign in failed.')
+    }
   }
 
   const fieldStyle = name => ({ ...inputBase, ...(focused === name ? inputFocus : {}) })
@@ -97,9 +126,14 @@ export default function SignInPage() {
 
         {/* Form */}
         <form
-          onSubmit={e => { e.preventDefault(); navigate('/kid/dashboard') }}
+          onSubmit={handleSubmit}
           className="flex flex-col gap-4"
         >
+          {error && (
+            <div className="rounded-xl px-4 py-3 text-sm font-semibold" style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
+              {error}
+            </div>
+          )}
           {/* Email */}
           <div>
             <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide" style={{ color: '#64748B' }}>
@@ -194,12 +228,13 @@ export default function SignInPage() {
           {/* Submit */}
           <button
             type="submit"
-            className="mt-1 w-full rounded-xl py-3.5 text-sm font-extrabold text-white transition-all active:scale-[0.98]"
+            disabled={submitting}
+            className="mt-1 w-full rounded-xl py-3.5 text-sm font-extrabold text-white transition-all active:scale-[0.98] disabled:opacity-60"
             style={{ backgroundColor: ACCENT, boxShadow: '0 4px 16px rgba(107,63,160,0.35)' }}
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = ACCENT_HOVER)}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = ACCENT)}
           >
-            Sign In →
+            {submitting ? 'Signing in…' : 'Sign In →'}
           </button>
 
           {/* Divider */}
@@ -212,6 +247,7 @@ export default function SignInPage() {
           {/* Google */}
           <button
             type="button"
+            onClick={handleGoogle}
             className="flex w-full items-center justify-center gap-3 rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.98]"
             style={{ border: '1.5px solid #E2E8F0', backgroundColor: '#fff', color: '#374151', cursor: 'pointer' }}
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F8FAFC')}
