@@ -322,3 +322,4 @@ This makes lesson status specific to each kid profile. Progress is read from Sup
 
 Notes: If you want to record attempts (and not mark completed unless score ≥ X), we can adjust the logic (for example mark completed only for score ≥ 60%).
 
+ 
