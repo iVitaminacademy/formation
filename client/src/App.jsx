@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ProtectedRoute  from './components/ProtectedRoute'
 
 import LandingPage     from './pages/LandingPage'
+import HowItWorks      from './pages/HowItWorks'
 import FAQ             from './pages/FAQ'
 import SignInPage      from './pages/SignInPage'
 import SignUpPage      from './pages/SignUpPage'
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/faq"    element={<FAQ />} />
         <Route path="/login"  element={<SignInPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/how" element={<HowItWorks />} />
 
         {/* Parent */}
         <Route path="/parent/dashboard" element={<ProtectedRoute role="parent"><ParentDashboard /></ProtectedRoute>} />

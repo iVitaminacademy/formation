@@ -31,7 +31,7 @@ export default function ParentLayout({ children }) {
         style={{ backgroundColor: '#2D7A4F', boxShadow: '0 2px 12px rgba(45,122,79,0.25)' }}
       >
         <span className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
-          MathMates{' '}
+          Frazzl.kid{' '}
           <span className="hidden sm:inline-block text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full ml-1 align-middle">
             Parent Mode
           </span>

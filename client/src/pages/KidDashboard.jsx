@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import KidLayout from '../components/KidLayout'
+import { useAuth } from '../context/AuthContext'
 
 const child = { name: 'Emma', grade: 4, overallProgress: 62 }
 
@@ -25,6 +26,8 @@ function greeting() {
 
 export default function KidDashboard() {
   const navigate = useNavigate()
+  const { profile } = useAuth()
+  const childWithProfile = { ...child, name: profile?.name ?? child.name, grade: profile?.grade ?? child.grade, overallProgress: child.overallProgress }
 
   return (
     <KidLayout>
@@ -35,10 +38,10 @@ export default function KidDashboard() {
       >
         <div>
           <h1 className="text-2xl font-extrabold text-white mb-1">
-            {greeting()}, {child.name}! 👋
+            {greeting()}, {childWithProfile.name}! 👋
           </h1>
           <p className="text-orange-100 text-sm font-semibold">
-            You're {child.overallProgress}% through Grade {child.grade} — keep going!
+            You're {childWithProfile.overallProgress}% through Grade {childWithProfile.grade} — keep going!
           </p>
         </div>
         <span className="text-6xl select-none">🧒</span>

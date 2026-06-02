@@ -1,48 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import KidLayout from '../components/KidLayout'
-
-const curriculum = {
-  4: [
-    {
-      id: 1, name: 'Multiplication', icon: '✖️', color: '#F97316', bg: '#FFF7ED', border: '#FED7AA',
-      lessons: [
-        { id: 1, title: 'Times tables 1–5',     questions: 8,  time: 5, status: 'done'   },
-        { id: 2, title: 'Times tables 6–10',    questions: 10, time: 6, status: 'done'   },
-        { id: 3, title: 'Multiply by 2 digits', questions: 12, time: 8, status: 'start'  },
-        { id: 4, title: 'Word problems',        questions: 10, time: 7, status: 'locked' },
-      ],
-    },
-    {
-      id: 2, name: 'Division', icon: '➗', color: '#3B82F6', bg: '#EFF6FF', border: '#BFDBFE',
-      lessons: [
-        { id: 5, title: 'Basic division facts',  questions: 10, time: 5, status: 'done'   },
-        { id: 6, title: 'Long division intro',   questions: 8,  time: 7, status: 'start'  },
-        { id: 7, title: 'Remainders',            questions: 9,  time: 7, status: 'locked' },
-      ],
-    },
-    {
-      id: 3, name: 'Fractions', icon: '½', color: '#EC4899', bg: '#FDF2F8', border: '#FBCFE8',
-      lessons: [
-        { id: 8, title: 'What is a fraction?', questions: 8,  time: 5, status: 'start'  },
-        { id: 9, title: 'Adding fractions',    questions: 10, time: 6, status: 'locked' },
-      ],
-    },
-    {
-      id: 4, name: 'Geometry', icon: '📐', color: '#A855F7', bg: '#FAF5FF', border: '#E9D5FF',
-      lessons: [
-        { id: 10, title: 'Shapes & properties', questions: 9,  time: 6, status: 'done'  },
-        { id: 11, title: 'Perimeter',           questions: 8,  time: 6, status: 'done'  },
-        { id: 12, title: 'Area',                questions: 10, time: 7, status: 'start' },
-      ],
-    },
-  ],
-  5: [],
-}
+import { curriculum } from '../data/curriculum'
+import { useAuth } from '../context/AuthContext'
+import { getProgressMap } from '../services/progress'
 
 function StatusBadge({ status }) {
-  if (status === 'done')  return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#DCFCE7', color: '#16A34A' }}>✓ Done</span>
-  if (status === 'start') return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#FFF7ED', color: '#F97316' }}>▶ Start</span>
+  if (status === 'done')
+    return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#DCFCE7', color: '#16A34A' }}>✓ Done</span>
+  if (status === 'start')
+    return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#FFF7ED', color: '#F97316' }}>▶ Start</span>
   return <span className="text-lg">🔒</span>
 }
 
@@ -52,20 +19,26 @@ function TopicPanel({ topic, onStart }) {
 
   return (
     <div className="bg-white rounded-2xl border-2 overflow-hidden shadow-sm" style={{ borderColor: topic.border }}>
+      {/* Header */}
       <div className="flex items-center justify-between px-5 py-3.5" style={{ backgroundColor: topic.bg }}>
         <div className="flex items-center gap-2 font-extrabold" style={{ color: topic.color }}>
-          <span>{topic.icon}</span>
+          <span className="text-xl">{topic.icon}</span>
           <span>{topic.name}</span>
         </div>
-        <span className="text-xs font-bold text-gray-500">{done}/{total} done</span>
+        <div className="flex items-center gap-2">
+          <div className="h-1.5 w-16 rounded-full bg-white/60 overflow-hidden">
+            <div className="h-full rounded-full" style={{ width: `${total > 0 ? (done/total)*100 : 0}%`, backgroundColor: topic.color }} />
+          </div>
+          <span className="text-xs font-bold text-gray-500">{done}/{total}</span>
+        </div>
       </div>
 
+      {/* Lessons */}
       <div className="px-3 py-2">
-        {topic.lessons.map(lesson => (
+        {topic.lessons.map((lesson, idx) => (
           <div
             key={lesson.id}
-            className={`flex items-center justify-between px-3 py-3 rounded-xl mb-1 transition-colors ${lesson.status === 'locked' ? 'opacity-50' : 'cursor-pointer'}`}
-            style={{ ':hover': { backgroundColor: topic.bg } }}
+            className={`flex items-center justify-between px-3 py-3 rounded-xl mb-1 transition-colors ${lesson.status === 'locked' ? 'opacity-45' : 'cursor-pointer'}`}
             onClick={() => lesson.status !== 'locked' && onStart(lesson)}
             onMouseEnter={e => { if (lesson.status !== 'locked') e.currentTarget.style.backgroundColor = topic.bg }}
             onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
@@ -73,13 +46,10 @@ function TopicPanel({ topic, onStart }) {
           >
             <div className="flex items-center gap-3">
               <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-extrabold shrink-0"
-                style={{
-                  backgroundColor: lesson.status === 'done' ? '#16A34A' : lesson.status === 'start' ? topic.color : '#D1D5DB',
-                  color: '#fff',
-                }}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-extrabold shrink-0 text-white"
+                style={{ backgroundColor: lesson.status === 'done' ? '#16A34A' : lesson.status === 'start' ? topic.color : '#D1D5DB' }}
               >
-                {lesson.status === 'done' ? '✓' : lesson.id}
+                {lesson.status === 'done' ? '✓' : idx + 1}
               </div>
               <div>
                 <div className="text-sm font-bold text-gray-800">{lesson.title}</div>
@@ -95,14 +65,38 @@ function TopicPanel({ topic, onStart }) {
 }
 
 export default function KidLessons() {
-  const navigate = useNavigate()
+  const navigate     = useNavigate()
   const [grade, setGrade] = useState(4)
-  const topics = curriculum[grade]
+  const topics       = curriculum[grade] || []
+  const { user }     = useAuth()
+  const [progressMap, setProgressMap] = useState({})
+
+  useEffect(() => {
+    let mounted = true
+    async function load() {
+      if (!user?.id) {
+        setProgressMap({})
+        return
+      }
+      try {
+        const map = await getProgressMap(user.id)
+        if (!mounted) return
+        setProgressMap(map)
+      } catch (err) {
+        console.error('Failed to load progress map', err.message)
+      }
+    }
+    load()
+    return () => { mounted = false }
+  }, [user])
 
   return (
     <KidLayout>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-extrabold text-gray-900">📚 Lessons</h1>
+        <div>
+          <h1 className="text-2xl font-extrabold text-gray-900">📚 Lessons</h1>
+          <p className="text-xs text-gray-400 font-semibold mt-1">Click any lesson to start the quiz</p>
+        </div>
         <div className="flex gap-2">
           {[4, 5].map(g => (
             <button
@@ -129,13 +123,22 @@ export default function KidLessons() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {topics.map(topic => (
-            <TopicPanel
-              key={topic.id}
-              topic={topic}
-              onStart={lesson => navigate(`/kid/quiz/${lesson.id}`)}
-            />
-          ))}
+          {topics.map(topic => {
+              const topicCopy = {
+                ...topic,
+                lessons: topic.lessons.map(l => ({
+                  ...l,
+                  status: progressMap[l.id] && progressMap[l.id].completed ? 'done' : 'start',
+                })),
+              }
+              return (
+                <TopicPanel
+                  key={topic.id}
+                  topic={topicCopy}
+                  onStart={lesson => navigate(`/kid/quiz/${lesson.id}`)}
+                />
+              )
+            })}
         </div>
       )}
     </KidLayout>

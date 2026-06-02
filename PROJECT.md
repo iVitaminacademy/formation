@@ -6,15 +6,15 @@ Prepared by: Lahbabta Yousef | Started: May 2026
 
 ## Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | React.js (Vite) |
-| Backend | Node.js + Express |
-| Database | Supabase (hosted PostgreSQL) |
-| Auth | JWT — role-based (kid / parent) |
-| Hosting (frontend) | Vercel |
-| Hosting (backend) | Railway or Render |
-| Content | Admin JSON import (client uploads once) |
+| Layer | Technology | Status |
+|---|---|---|
+| Frontend | React.js (Vite) | ✅ Running |
+| Database + Auth | Supabase (PostgreSQL + Auth) | ✅ Schema written |
+| Hosting (frontend) | Vercel | ⬜ Not deployed yet |
+| Content | Admin JSON import via `src/services/admin.js` | ✅ Service written |
+| ~~Backend (Express)~~ | **Removed** — Supabase handles API + Auth directly | — |
+
+> **Architecture decision (2026-06-01):** Express backend dropped entirely. Supabase's auto-generated REST API + built-in Auth replaces all planned Express routes. Hosting simplified to 2 services: Vercel (frontend) + Supabase (DB + Auth).
 
 ---
 
@@ -22,38 +22,50 @@ Prepared by: Lahbabta Yousef | Started: May 2026
 
 ```
 MathProject/
-├── client/                              ← React (Vite) ✅ initialized
+├── client/                                    ← React (Vite) ✅
 │   ├── src/
 │   │   ├── pages/
-│   │   │   ├── LandingPage.jsx          ✅ Done
-│   │   │   ├── ParentDashboard.jsx      ✅ Done
-│   │   │   ├── ParentLessons.jsx        ✅ Done
-│   │   │   ├── ParentReports.jsx        ✅ Done
-│   │   │   ├── ParentProfile.jsx        ✅ Done
-│   │   │   ├── ParentTeachingGuide.jsx  ⬜ Not started
-│   │   │   ├── KidDashboard.jsx         ✅ Done
-│   │   │   ├── KidLessons.jsx           ✅ Done
-│   │   │   ├── KidQuiz.jsx              ✅ Done
-│   │   │   ├── KidProgress.jsx          ✅ Done
-│   │   │   ├── KidProfile.jsx           ✅ Done
-│   │   │   ├── Login.jsx                ⬜ Not started
-│   │   │   └── Register.jsx             ⬜ Not started
+│   │   │   ├── LandingPage.jsx                ✅ Done — responsive
+│   │   │   ├── SignInPage.jsx                 ✅ Done — Supabase auth wired
+│   │   │   ├── SignUpPage.jsx                 ✅ Done — role + grade, Supabase auth wired
+│   │   │   ├── FAQ.jsx                        ✅ Done
+│   │   │   ├── KidDashboard.jsx               ✅ Done — responsive
+│   │   │   ├── KidLessons.jsx                 ✅ Done — responsive
+│   │   │   ├── KidQuiz.jsx                    ✅ Done — responsive
+│   │   │   ├── KidProgress.jsx                ✅ Done — responsive
+│   │   │   ├── KidProfile.jsx                 ✅ Done — responsive
+│   │   │   ├── ParentDashboard.jsx            ✅ Done — responsive
+│   │   │   ├── ParentLessons.jsx              ✅ Done — responsive
+│   │   │   ├── ParentReports.jsx              ✅ Done — responsive
+│   │   │   ├── ParentProfile.jsx              ✅ Done — responsive, Supabase auth wired
+│   │   │   └── ParentTeachingGuide.jsx        ⬜ Not started
 │   │   ├── components/
-│   │   │   ├── ParentLayout.jsx         ✅ Done
-│   │   │   └── KidLayout.jsx            ✅ Done
-│   │   ├── context/                     ⬜ Not started
-│   │   ├── hooks/                       ⬜ Not started
-│   │   └── services/                    ⬜ Not started
-│   ├── index.html                       ✅ Updated
-│   ├── index.css                        ✅ Updated
-│   ├── vite.config.js                   ✅ Updated
+│   │   │   ├── KidLayout.jsx                  ✅ Done — mobile bottom nav
+│   │   │   ├── ParentLayout.jsx               ✅ Done — mobile bottom nav
+│   │   │   └── ProtectedRoute.jsx             ✅ Done — auth + role guard
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx                ✅ Done — session + profile + role
+│   │   ├── services/
+│   │   │   ├── supabaseClient.js              ✅ Done
+│   │   │   ├── auth.js                        ✅ Done — signUp/signIn/signOut/Google/profile
+│   │   │   ├── lessons.js                     ✅ Done — topics, lessons, questions
+│   │   │   ├── progress.js                    ✅ Done — upsert + read
+│   │   │   ├── badges.js                      ✅ Done — catalog, earned, award
+│   │   │   ├── family.js                      ✅ Done — parent ↔ child linking
+│   │   │   └── admin.js                       ✅ Done — JSON bulk import
+│   │   ├── data/
+│   │   │   └── curriculum.js                  ✅ Done — all Grade 4 & 5 questions with hints & explanations
+│   │   └── hooks/                             ⬜ Not started
+│   ├── index.html                             ✅ Updated
+│   ├── index.css                              ✅ Updated — CSS reset cleaned
+│   ├── vite.config.js                         ✅ Updated
+│   ├── .env.example                           ✅ Added
 │   └── package.json
-├── server/                              ⬜ Not started
-│   ├── routes/
-│   ├── middleware/
-│   ├── db/
-│   └── package.json
-├── PROJECT.md
+├── supabase/
+│   ├── schema.sql                             ✅ Done — 8 tables, RLS, indexes, triggers
+│   └── seed.sql                               ✅ Done — badges, Grade 4 topics, sample data
+├── UPDATES.md                                 ✅ Chronological change log
+├── PROJECT.md                                 ✅ This file
 └── README.md
 ```
 
@@ -67,57 +79,88 @@ MathProject/
 | react + react-dom | UI framework |
 | tailwindcss + @tailwindcss/vite | Styling (v4) |
 | react-router-dom | Client-side routing |
+| @supabase/supabase-js | Supabase client (DB + Auth) |
 
 ---
 
 ## Routes (client)
 
-| Path | Component | Status |
-|---|---|---|
-| `/` | LandingPage | ✅ Done |
-| `/faq` | FAQ | ✅ Done |
-| `/parent/dashboard` | ParentDashboard | ✅ Done |
-| `/parent/lessons` | ParentLessons | ✅ Done |
-| `/parent/reports` | ParentReports | ✅ Done |
-| `/parent/profile` | ParentProfile | ✅ Done |
-| `/parent/teaching-guide/:lessonId` | ParentTeachingGuide | ⬜ Not started |
-| `/kid/dashboard` | KidDashboard | ✅ Done |
-| `/kid/lessons` | KidLessons | ✅ Done |
-| `/kid/quiz/:id` | KidQuiz | ✅ Done |
-| `/kid/progress` | KidProgress | ✅ Done |
-| `/kid/profile` | KidProfile | ✅ Done |
-| `/login` | Login | ⬜ Not started |
-| `/register` | Register | ⬜ Not started |
+| Path | Component | Auth | Status |
+|---|---|---|---|
+| `/` | LandingPage | Public | ✅ Done |
+| `/login` | SignInPage | Public | ✅ Done |
+| `/signup` | SignUpPage | Public | ✅ Done |
+| `/faq` | FAQ | Public | ✅ Done |
+| `/kid/dashboard` | KidDashboard | 🔒 Kid only | ✅ Done |
+| `/kid/lessons` | KidLessons | 🔒 Kid only | ✅ Done |
+| `/kid/quiz/:id` | KidQuiz | 🔒 Kid only | ✅ Done |
+| `/kid/progress` | KidProgress | 🔒 Kid only | ✅ Done |
+| `/kid/profile` | KidProfile | 🔒 Kid only | ✅ Done |
+| `/parent/dashboard` | ParentDashboard | 🔒 Parent only | ✅ Done |
+| `/parent/lessons` | ParentLessons | 🔒 Parent only | ✅ Done |
+| `/parent/reports` | ParentReports | 🔒 Parent only | ✅ Done |
+| `/parent/profile` | ParentProfile | 🔒 Parent only | ✅ Done |
+| `/parent/teaching-guide/:lessonId` | ParentTeachingGuide | 🔒 Parent only | ⬜ Not started |
+
+---
+
+## Auth Flow
+
+```
+Landing page
+  ├── "Start learning" (Kid card)  → /signup?role=kid
+  ├── "Enter Parent Mode" (Parent) → /signup?role=parent
+  └── "Sign In" (navbar)           → /login
+
+SignUpPage
+  - Role picker (Kid / Parent)
+  - Kid: Full name + email + password + grade selector
+  - Parent: Full name + email + password
+  - Supabase signUp() → stores role + grade in profiles table
+  - On success → redirect to /kid/dashboard or /parent/dashboard
+
+SignInPage
+  - Email + password (or Google OAuth)
+  - Supabase signInWithPassword()
+  - Role read from profiles table → redirect to correct dashboard
+
+ProtectedRoute
+  - Wraps all /kid/* and /parent/* routes
+  - Checks session + role → redirects to /login if not authenticated
+  - Redirects wrong role to correct dashboard
+```
 
 ---
 
 ## Database Entities (Supabase / PostgreSQL)
 
-| Table | Key Fields |
-|---|---|
-| users | id, name, email, password_hash, role, grade, avatar |
-| parent_child | parent_id, child_id |
-| topics | id, name, grade, icon, order |
-| lessons | id, topic_id, title, content_text, order, unlock_after_id |
-| questions | id, lesson_id, question_text, options (JSON), correct_answer, hint, explanation, teaching_steps (JSON) |
-| progress | id, user_id, lesson_id, completed, score, attempts, last_date |
-| badges | id, name, icon, condition_type, condition_value |
-| user_badges | user_id, badge_id, earned_at |
+| Table | Key Fields | Notes |
+|---|---|---|
+| profiles | id (= auth.users.id), name, email, role, grade, avatar | Auto-created on signup via trigger |
+| parent_child | parent_id, child_id | Links parent to one or more children |
+| topics | id, name, grade, icon, order | Math topics per grade |
+| lessons | id, topic_id, title, content_text, order, unlock_after_id | Sequential unlock |
+| questions | id, lesson_id, question_text, options (JSON), correct_answer, hint, explanation, teaching_steps (JSON) | All content fields |
+| progress | id, user_id, lesson_id, completed, score, attempts, last_date | One row per user/lesson (upsert) |
+| badges | id, name, icon, condition_type, condition_value | Badge definitions |
+| user_badges | user_id, badge_id, earned_at | Earned badges per child |
+
+> **No `password_hash` column** — passwords handled entirely by Supabase Auth (`auth.users`), never stored in `profiles`.
 
 ---
 
-## API Endpoints
+## Supabase API — replaces Express endpoints
 
-| Method | Route | Purpose |
+| Old Express route | Supabase equivalent | Service file |
 |---|---|---|
-| POST | /auth/register | Create kid or parent account |
-| POST | /auth/login | Login → returns JWT |
-| GET | /lessons?grade=4 | Fetch all lessons for a grade |
-| GET | /lessons/:id/questions | Fetch questions for a lesson |
-| POST | /progress | Save completed lesson + score |
-| GET | /progress/:childId | Full progress report for a child |
-| GET | /badges/:userId | Earned and unearned badges |
-| POST | /admin/import | Upload lesson/question JSON (client content) |
+| `POST /auth/register` | `supabase.auth.signUp()` | `auth.js` |
+| `POST /auth/login` | `supabase.auth.signInWithPassword()` | `auth.js` |
+| `GET /lessons?grade=4` | `supabase.from('lessons').select().eq('grade',4)` | `lessons.js` |
+| `GET /lessons/:id/questions` | `supabase.from('questions').select().eq('lesson_id',id)` | `lessons.js` |
+| `POST /progress` | `supabase.from('progress').upsert()` | `progress.js` |
+| `GET /progress/:childId` | `supabase.from('progress').select().eq('user_id',id)` | `progress.js` |
+| `GET /badges/:userId` | `supabase.from('user_badges').select()` | `badges.js` |
+| `POST /admin/import` | bulk insert via service function | `admin.js` |
 
 ---
 
@@ -125,7 +168,10 @@ MathProject/
 
 | # | Screen | Mode | File | Status |
 |---|---|---|---|---|
-| 1 | Mode Selection & Login (Landing) | Public | LandingPage.jsx | ✅ Done |
+| 1 | Landing — Mode Selection | Public | LandingPage.jsx | ✅ Done |
+| — | Sign In | Public | SignInPage.jsx | ✅ Done |
+| — | Sign Up | Public | SignUpPage.jsx | ✅ Done |
+| — | FAQ | Public | FAQ.jsx | ✅ Done |
 | 2 | Kid Dashboard | Kid | KidDashboard.jsx | ✅ Done |
 | 3 | Lessons Page | Kid | KidLessons.jsx | ✅ Done |
 | 4 | Quiz / Practice Screen | Kid | KidQuiz.jsx | ✅ Done |
@@ -136,8 +182,6 @@ MathProject/
 | 7 | Parent Teaching Guide | Parent | ParentTeachingGuide.jsx | ⬜ Not started |
 | 8 | Profile & Settings (Kid) | Kid | KidProfile.jsx | ✅ Done |
 | 8b | Profile & Settings (Parent) | Parent | ParentProfile.jsx | ✅ Done |
-| — | Login | Public | Login.jsx | ⬜ Not started |
-| — | Register | Public | Register.jsx | ⬜ Not started |
 
 ---
 
@@ -146,67 +190,73 @@ MathProject/
 ### Phase 1 — Foundation ✅ Done
 - [x] Init `/client` (Vite + React)
 - [x] Install Tailwind CSS v4 + React Router
-- [x] Landing page (Screen 1)
-- [x] Design system: color tokens, Nunito font, shared layouts
+- [x] Landing page (Screen 1) — responsive
+- [x] Design system: Nunito font, color tokens, shared layouts
 
 ### Phase 2 — Kid Side ✅ Done
-- [x] KidLayout — shared purple navbar + sidebar
+- [x] KidLayout — mobile bottom nav + desktop sidebar
 - [x] Kid Dashboard (Screen 2)
-- [x] Lessons Page (Screen 3) — sequential unlock, status badges, grade switcher
+- [x] Lessons Page (Screen 3) — sequential unlock, grade switcher
 - [x] Quiz / Practice Screen (Screen 4) — hint, feedback, progress dots, score page
 - [x] Progress Page (Screen 5) — stats, topic bars, quiz history
 - [x] Kid Profile (Screen 8) — badges grid, mode toggle, settings
-- [ ] Backend: lessons API, progress API, badge logic
-- [ ] Streak counter logic
-- [ ] Sequential lesson unlock logic
+- [x] Full responsive pass — all kid pages
 
 ### Phase 3 — Parent Side 🔄 In Progress
-- [x] ParentLayout — shared green navbar + sidebar
+- [x] ParentLayout — mobile bottom nav + desktop sidebar
 - [x] Parent Dashboard (Screen 6)
 - [x] Lessons & Guides page
 - [x] Reports page
 - [x] Parent Profile & Settings (Screen 8b)
-- [ ] Teaching Guide (Screen 7) ← next
-- [ ] Content loader: JSON import
+- [x] Full responsive pass — all parent pages
+- [ ] Teaching Guide (Screen 7) ← **next**
 
-### Phase 4 — Auth 🔄 Pending
-- [ ] Login page
-- [ ] Register page (kid + parent flows)
-- [ ] JWT auth context
-- [ ] Protected routes
+### Phase 4 — Auth ✅ Done
+- [x] SignInPage — email/password + Google UI, Supabase wired
+- [x] SignUpPage — role picker, grade selector, Supabase wired
+- [x] AuthContext — session + profile + role exposed
+- [x] ProtectedRoute — auth + role-based guard on all /kid/* and /parent/*
+- [x] Routes `/login` and `/signup` added to App.jsx
 
-### Phase 5 — Backend ⬜ Not started
-- [ ] Express server setup
-- [ ] Supabase schema + seed data
-- [ ] All API endpoints
-- [ ] Replace mock data with real API calls
+### Phase 5 — Supabase Backend ✅ Schema done / 🔄 Integration pending
+- [x] `supabase/schema.sql` — 8 tables, RLS policies, indexes, triggers
+- [x] `supabase/seed.sql` — badges, Grade 4 topics, sample lesson
+- [x] All service files written (`auth`, `lessons`, `progress`, `badges`, `family`, `admin`)
+- [ ] Connect Supabase project → add `.env.local` with real keys
+- [ ] Replace mock data in all pages with real service calls
+- [ ] Test RLS policies end-to-end
 
 ### Phase 6 — QA & Launch ⬜ Not started
-- [ ] End-to-end testing
+- [ ] End-to-end testing (kid + parent flows)
 - [ ] Bug fixes
 - [ ] Deploy frontend → Vercel
-- [ ] Deploy backend → Railway/Render
-- [ ] Client review
+- [ ] Client review + content upload (JSON import)
 
 ---
 
 ## Design System
 
-### Kid Mode (Purple)
-- Primary: `#6B3FA0`
-- Background: `#F5F0FF`
-- Sidebar bg: `#EDE4FF`
-- Border accent: `#D4B8F0`
+### Brand (Frazzl.kid)
+- Logo: `Frazzl` in dark `#111827` + `.kid` in lime green `#16A34A`
 
-### Parent Mode (Green)
-- Primary: `#2D7A4F`
+### Kid Mode
+- Navbar: `#16A34A` (lime green)
+- Background: `#F0FDF4`
+- Sidebar bg: `#DCFCE7`
+- Active nav: `#EC4899` (hot pink)
+- Topics: Orange `#F97316` / Blue `#3B82F6` / Pink `#EC4899` / Purple `#A855F7`
+
+### Parent Mode
+- Navbar: `#2D7A4F` (dark green)
 - Background: `#F0FAF4`
 - Sidebar bg: `#E8F7EE`
 - Border accent: `#C8E6D4`
 
 ### Shared
 - Font: Nunito (Google Fonts)
-- Layout: sticky navbar + sidebar (w-48/w-52) + scrollable main
+- Breakpoints: `sm` 640px / `md` 768px / `lg` 1024px
+- Responsive pattern: `flex-col lg:flex-row` for two-column layouts
+- Mobile nav: bottom bar (`md:hidden`) + desktop sidebar (`hidden md:flex`)
 - Progress colors: green ≥50%, orange 20–49%, red <20%
 - Score colors: green ≥80%, orange 60–79%, red <60%
 
@@ -216,31 +266,22 @@ MathProject/
 
 | Component | File | Used by |
 |---|---|---|
-| KidLayout | components/KidLayout.jsx | KidDashboard, KidLessons, KidQuiz, KidProgress, KidProfile |
-| ParentLayout | components/ParentLayout.jsx | ParentDashboard, ParentLessons, ParentReports, ParentProfile |
+| KidLayout | components/KidLayout.jsx | All `/kid/*` pages |
+| ParentLayout | components/ParentLayout.jsx | All `/parent/*` pages |
+| ProtectedRoute | components/ProtectedRoute.jsx | All authenticated routes in App.jsx |
 
 ---
 
-## Quiz Logic (KidQuiz.jsx)
-
-- State: `current`, `selected`, `showHint`, `answered`, `quizDone`
-- On select: immediately highlights answer + saves to `answered` map
-- Correct → green feedback + explanation shown
-- Wrong → red on selected, green on correct + explanation shown
-- Progress dots: purple = current, green = correct, red = wrong
-- After last question → ScorePage with stars (3=90%+, 2=70%+, 1=below)
-- Retry resets all state
-
 ## Badge Conditions
 
-| Badge | Icon | Condition | Mock state |
-|---|---|---|---|
-| Quick Learner | ⭐ | Complete 5 lessons | ✅ Earned |
-| On Fire | 🔥 | 5-day streak | ✅ Earned |
-| Accurate | 🎯 | Score 100% on a quiz | ✅ Earned |
-| Rocket Start | 🚀 | Complete a full topic | 🔒 Locked |
-| Diamond | 💎 | 10-day streak | 🔒 Locked |
-| Champion | 🏆 | Complete full Grade 4 | 🔒 Locked |
+| Badge | Icon | Condition |
+|---|---|---|
+| Quick Learner | ⭐ | Complete 5 lessons |
+| On Fire | 🔥 | 5-day streak |
+| Accurate | 🎯 | Score 100% on a quiz |
+| Rocket Start | 🚀 | Complete a full topic |
+| Diamond | 💎 | 10-day streak |
+| Champion | 🏆 | Complete full Grade 4 |
 
 ---
 
@@ -248,14 +289,32 @@ MathProject/
 
 | Date | Decision | Reason |
 |---|---|---|
-| 2026-05-31 | Supabase over raw PostgreSQL | Managed hosting, less infra |
 | 2026-05-31 | Vite + React | Faster builds, modern tooling |
 | 2026-05-31 | Tailwind CSS v4 | No config file, Vite plugin |
-| 2026-05-31 | Nunito font | Kid-friendly, rounded, matches purple theme |
-| 2026-05-31 | ParentLayout + KidLayout components | Avoid repeating navbar+sidebar per page |
-| 2026-05-31 | Mock data on all frontend pages | Backend not started — swap to API in Phase 5 |
-| 2026-05-31 | `/admin/import` endpoint added | Client provides content as JSON once |
-| 2026-05-31 | Quiz state fully local (useState) | No backend needed to demo; will POST on submit |
+| 2026-05-31 | Nunito font | Kid-friendly, matches brand |
+| 2026-05-31 | KidLayout + ParentLayout components | Avoid repeating navbar/sidebar per page |
+| 2026-06-01 | Express backend dropped → Supabase only | Eliminates Railway/Render hosting, reduces to 2 services |
+| 2026-06-01 | Supabase Auth replaces manual JWT | Built-in session, Google OAuth, RLS ties to auth.uid() |
+| 2026-06-01 | `profiles` table auto-created via trigger | Keeps role/grade in sync with Supabase auth.users |
+| 2026-06-01 | Rebranded MathMates → Frazzl.kid | Client decision |
+| 2026-06-01 | Full responsive pass — all pages | Mobile-first delivery requirement |
+| 2026-06-01 | Quiz state local (useState) | No backend needed to demo; will POST on lesson complete |
+
+---
+
+## Setup Checklist (for deployment)
+
+- [ ] Create Supabase project at supabase.com
+- [ ] Run `supabase/schema.sql` in SQL Editor
+- [ ] Run `supabase/seed.sql` in SQL Editor
+- [ ] Create `client/.env.local`:
+  ```
+  VITE_SUPABASE_URL=https://xxxx.supabase.co
+  VITE_SUPABASE_ANON_KEY=your-anon-key
+  ```
+- [ ] (Optional) Enable Google provider in Supabase Auth dashboard
+- [ ] `cd client && npm install && npm run dev`
+- [ ] Deploy to Vercel → add env vars in Vercel dashboard
 
 ---
 

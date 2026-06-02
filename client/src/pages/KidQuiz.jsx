@@ -1,20 +1,17 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import KidLayout from '../components/KidLayout'
+import lessonsContent from '../content/lessonsContent'
+import { useAuth } from '../context/AuthContext'
+import { saveProgress } from '../services/progress'
+import { getQuizByLessonId } from '../data/curriculum'
 
-const quizData = {
-  lessonTitle: 'Times tables 6–10',
-  topic: 'Multiplication',
-  topicColor: '#F97316',
+const defaultQuiz = {
+  lessonTitle: 'Sample Quiz',
+  topicName: 'Math',
+  topicColor: '#6366F1',
   questions: [
-    { id: 1, text: 'What is 7 × 8?',  options: ['48', '56', '54', '63'], correct: '56', hint: 'Think of 7 groups of 8. Count by 8s: 8, 16, 24, 32, 40, 48, 56!',              explanation: '7 × 8 = 56. Think of it as 7 groups of 8 — that\'s 56 things in total!' },
-    { id: 2, text: 'What is 9 × 4?',  options: ['32', '36', '40', '27'], correct: '36', hint: 'Try counting by 9s: 9, 18, 27, 36. How many steps did it take?',               explanation: '9 × 4 = 36. You can count by 9s four times: 9, 18, 27, 36.' },
-    { id: 3, text: 'What is 6 × 7?',  options: ['42', '48', '36', '45'], correct: '42', hint: 'Count by 6s: 6, 12, 18, 24, 30, 36, 42. Count 7 steps!',                       explanation: '6 × 7 = 42. Six multiplied by 7 gives you 42.' },
-    { id: 4, text: 'What is 8 × 9?',  options: ['63', '64', '72', '81'], correct: '72', hint: '8 × 10 = 80, so 8 × 9 is just 8 less than that!',                              explanation: '8 × 9 = 72. Trick: 8 × 10 = 80, then subtract 8 to get 72.' },
-    { id: 5, text: 'What is 10 × 6?', options: ['56', '66', '60', '65'], correct: '60', hint: 'Multiplying by 10 is easy — just add a zero!',                                  explanation: '10 × 6 = 60. Multiplying any number by 10 just adds a zero.' },
-    { id: 6, text: 'What is 7 × 6?',  options: ['42', '43', '48', '36'], correct: '42', hint: 'You already know 6 × 7 = 42! Multiplication works both ways.',                  explanation: '7 × 6 = 42. Same as 6 × 7 — multiplication is commutative!' },
-    { id: 7, text: 'What is 9 × 9?',  options: ['81', '72', '90', '63'], correct: '81', hint: 'Use the 9s trick: the digits of the answer always add up to 9!',               explanation: '9 × 9 = 81. Notice 8 + 1 = 9. The 9 times table has this cool pattern!' },
-    { id: 8, text: 'What is 8 × 6?',  options: ['42', '48', '54', '46'], correct: '48', hint: 'Count by 8s six times: 8, 16, 24, 32, 40, 48.',                                explanation: '8 × 6 = 48. Count by 8s: 8, 16, 24, 32, 40, 48 — six steps!' },
+    { text: 'What is 7 × 8?', options: ['48', '56', '54', '63'], correct: '56', hint: 'Count by 8s seven times.', explanation: '7 × 8 = 56.' },
   ],
 }
 
@@ -61,6 +58,10 @@ function ScorePage({ score, total, onRetry, onBack }) {
 
 export default function KidQuiz() {
   const navigate  = useNavigate()
+  const { id }    = useParams()
+  const key       = Number(id)
+  const { user }  = useAuth()
+  const quizData  = lessonsContent[key] || getQuizByLessonId(key) || defaultQuiz
   const questions = quizData.questions
 
   const [current,   setCurrent]   = useState(0)
@@ -80,12 +81,21 @@ export default function KidQuiz() {
     setAnswered(prev => ({ ...prev, [current]: { selected: opt, correct: opt === q.correct } }))
   }
 
-  function handleNext() {
+  async function handleNext() {
     if (current < questions.length - 1) {
       setCurrent(c => c + 1)
       setSelected(null)
       setShowHint(false)
     } else {
+      // quiz finished — save progress for this user and lesson
+      const scoreNow = Object.values(answered).filter(a => a.correct).length
+      try {
+        if (user?.id && Number.isFinite(key)) {
+          await saveProgress({ userId: user.id, lessonId: key, score: scoreNow, completed: true })
+        }
+      } catch (err) {
+        console.error('Failed to save progress', err.message)
+      }
       setQuizDone(true)
     }
   }
@@ -115,7 +125,7 @@ export default function KidQuiz() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-lg font-extrabold text-gray-900">{quizData.lessonTitle}</h1>
-          <p className="text-xs text-gray-400 font-semibold">{quizData.topic}</p>
+          <p className="text-xs text-gray-400 font-semibold">{quizData.topicName}</p>
         </div>
         <span className="text-sm font-extrabold" style={{ color: quizData.topicColor }}>
           Question {current + 1} of {questions.length}

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import ParentLayout from '../components/ParentLayout'
+import { useAuth } from '../context/AuthContext'
 
 const child = {
   name: 'Emma Johnson',
@@ -67,13 +68,15 @@ function TopicRow({ topic, onGuideClick }) {
 
 export default function ParentDashboard() {
   const navigate = useNavigate()
+  const { profile } = useAuth()
   const weakest  = weakTopics[0] || topics[topics.length - 1]
+  const childWithProfile = { ...child, name: profile?.name ?? child.name }
 
   return (
     <ParentLayout>
       {/* Title */}
       <h1 className="text-2xl font-extrabold mb-6" style={{ color: '#1a1a2e' }}>
-        {child.name}'s Report — Grade {child.grade}
+        {childWithProfile.name}'s Report — Grade {childWithProfile.grade}
       </h1>
 
       {/* Stat Cards */}
@@ -110,8 +113,8 @@ export default function ParentDashboard() {
               {child.avatar}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-extrabold text-gray-800 truncate">{child.name}</div>
-              <div className="text-xs text-gray-400 font-semibold">Grade {child.grade} · Active {child.lastActive}</div>
+              <div className="font-extrabold text-gray-800 truncate">{childWithProfile.name}</div>
+              <div className="text-xs text-gray-400 font-semibold">Grade {childWithProfile.grade} · Active {childWithProfile.lastActive}</div>
             </div>
             <span className="text-gray-300">›</span>
           </div>
@@ -123,11 +126,11 @@ export default function ParentDashboard() {
               className="rounded-xl p-4 text-sm leading-relaxed"
               style={{ backgroundColor: '#FFFBEB', borderLeft: '4px solid #E07B00' }}
             >
-              <div className="font-bold text-orange-700 mb-1">
-                💡 Help {child.name.split(' ')[0]} with {weakest.name}
+                <div className="font-bold text-orange-700 mb-1">
+                💡 Help {childWithProfile.name.split(' ')[0]} with {weakest.name}
               </div>
               <div className="text-gray-600 text-xs leading-relaxed">
-                {child.name.split(' ')[0]} is at only {weakest.progress}% in {weakest.name}.
+                {childWithProfile.name.split(' ')[0]} is at only {weakest.progress}% in {weakest.name}.
                 Open the Teaching Guide for step-by-step instructions on how to explain{' '}
                 {weakest.name.toLowerCase()} in a simple way.
               </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import KidLayout from '../components/KidLayout'
+import { useAuth } from '../context/AuthContext'
 
 const user = { name: 'Emma Johnson', grade: 4, streak: 5, avatar: '🧒' }
 
@@ -22,7 +23,16 @@ const settingsItems = [
 
 export default function KidProfile() {
   const navigate = useNavigate()
+  const { profile, signOut } = useAuth()
   const [parentMode, setParentMode] = useState(false)
+
+  const userWithProfile = {
+    ...user,
+    name: profile?.name ?? user.name,
+    grade: profile?.grade ?? user.grade,
+    avatar: profile?.avatar ?? user.avatar,
+    streak: profile?.streak ?? user.streak,
+  }
 
   function handleToggle() {
     setParentMode(v => !v)
@@ -44,17 +54,17 @@ export default function KidProfile() {
               className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-3 border-4"
               style={{ backgroundColor: '#DCFCE7', borderColor: '#16A34A' }}
             >
-              {user.avatar}
+              {userWithProfile.avatar}
             </div>
-            <div className="font-extrabold text-gray-900 text-lg">{user.name}</div>
+            <div className="font-extrabold text-gray-900 text-lg">{userWithProfile.name}</div>
             <div
               className="mt-1 px-3 py-1 rounded-full text-xs font-extrabold"
               style={{ backgroundColor: '#FFF7ED', color: '#F97316' }}
             >
-              Grade {user.grade} · Kid Mode
+              Grade {userWithProfile.grade} · Kid Mode
             </div>
             <div className="mt-3 flex items-center gap-1.5 text-sm font-bold" style={{ color: '#EF4444' }}>
-              🔥 {user.streak}-day streak
+              🔥 {userWithProfile.streak}-day streak
             </div>
           </div>
 
@@ -101,7 +111,7 @@ export default function KidProfile() {
 
           {/* Log out */}
           <button
-            onClick={() => navigate('/')}
+            onClick={async () => { try { await signOut() } catch {} ; navigate('/') }}
             className="w-full py-3 rounded-2xl text-sm font-extrabold border-2 transition-colors"
             style={{ borderColor: '#FCA5A5', color: '#EF4444', backgroundColor: '#FFF5F5' }}
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#FEE2E2')}

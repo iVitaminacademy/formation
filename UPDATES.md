@@ -258,3 +258,67 @@ Screenshot showed three issues:
 - Added public routes:
   - `/login` → `<SignInPage />`
   - `/signup` → `<SignUpPage />`
+
+---
+
+## [2026-06-02] — UI tweaks & How It Works page
+
+### Changes
+- `client/src/components/ParentLayout.jsx`: Replaced displayed brand `MathMates` with `Frazzl.kid` (Parent header).
+- `client/src/pages/ParentDashboard.jsx`: Use authenticated `profile.name` (via `useAuth()`) for the displayed child/parent name; fallback to sample data when profile is not available.
+- `client/src/pages/HowItWorks.jsx`: Added new standalone page to host the "How it works" content previously anchored from the landing page.
+- `client/src/pages/LandingPage.jsx`: Updated the top navigation `How it works` link to navigate to `/how` instead of an anchor.
+- `client/src/App.jsx`: Added `/how` route and imported `HowItWorks` page.
+
+These edits were made to improve branding consistency and move longer informational content into a dedicated route for easier linking and sharing.
+
+---
+
+## [2026-06-02] — Kid Sign Out
+
+### Changes
+- `client/src/components/KidLayout.jsx`: Added a `Sign Out` button in the top navbar for signed-in kids. The button calls `signOut()` from `AuthContext` and redirects to `/` on completion.
+
+This ensures kids can log out from any `/kid/*` page.
+
+---
+
+## [2026-06-02] — Kid pages: show connected username
+
+### Changes
+- `client/src/pages/KidDashboard.jsx`: Greeting now uses the authenticated `profile.name` from `AuthContext` (falls back to sample `Emma`).
+- `client/src/pages/KidProfile.jsx`: Profile header and avatar now read from `profile` when available; the Log Out button now calls `signOut()` and redirects to `/`.
+
+These changes ensure the UI displays the currently signed-in kid's name and performs a proper sign-out.
+
+---
+
+## [2026-06-02] — Lessons content (local demo)
+
+### Added
+- `client/src/content/lessonsContent.js` — a local mapping of lesson IDs → quiz content used for quick demos (Grade 4 and Grade 5 example content).
+
+### Changed
+- `client/src/pages/KidLessons.jsx` — lessons entries now include `contentId` fields so lesson cards open the matching demo content when available.
+- `client/src/pages/KidQuiz.jsx` — quiz now reads the route param (`/kid/quiz/:id`) and loads content from `lessonsContent.js` when a matching id is found (falls back to existing sample quiz otherwise).
+
+Notes: This is an in-memory demo import so content appears immediately without needing to seed Supabase. For persistent storage, we can migrate these entries into `supabase/seed.sql` or use `src/services/admin.js` to bulk-import.
+
+---
+
+## [2026-06-02] — Per-user lesson status
+
+### Changed
+- `client/src/pages/KidLessons.jsx` — lessons now read the signed-in kid's progress via `getProgressMap(userId)` and display each lesson as `start` by default; lessons with a completed progress row are shown as `done`.
+
+This makes lesson status specific to each kid profile. Progress is read from Supabase `progress` table; if you prefer a local demo-only mode, the existing in-memory `curriculum` entries remain usable.
+
+---
+
+## [2026-06-02] — Persist quiz completion
+
+### Changed
+- `client/src/pages/KidQuiz.jsx` — when a kid finishes a quiz the app now calls `saveProgress({ userId, lessonId, score, completed: true })` to persist the result to the Supabase `progress` table so lesson status updates for that profile.
+
+Notes: If you want to record attempts (and not mark completed unless score ≥ X), we can adjust the logic (for example mark completed only for score ≥ 60%).
+
