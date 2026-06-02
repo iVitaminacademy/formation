@@ -81,6 +81,21 @@ export default function KidLessons() {
       try {
         const map = await getProgressMap(user.id)
         if (!mounted) return
+        console.log('[KidLessons] loaded progress map', map)
+        // Merge any locally-saved demo progress (localStorage) so demo lessons show completed
+        try {
+          const localKey = `local_progress:${user.id}`
+          const localJson = localStorage.getItem(localKey)
+          if (localJson) {
+            const localMap = JSON.parse(localJson)
+            for (const k of Object.keys(localMap)) {
+              const num = Number(k)
+              if (!Number.isNaN(num)) map[num] = { ...map[num], ...localMap[k] }
+            }
+          }
+        } catch (e) {
+          console.warn('[KidLessons] failed to merge local progress', e)
+        }
         setProgressMap(map)
       } catch (err) {
         console.error('Failed to load progress map', err.message)
@@ -89,6 +104,19 @@ export default function KidLessons() {
     load()
     return () => { mounted = false }
   }, [user])
+
+  // Listen for saved progress events so the lessons UI updates immediately
+  useEffect(() => {
+    function onProgressUpdated(e) {
+      const detail = e?.detail || {}
+      const lessonId = typeof detail.lessonId === 'string' ? Number(detail.lessonId) : detail.lessonId
+      const row = detail.row
+      if (!lessonId) return
+      setProgressMap(prev => ({ ...prev, [lessonId]: row }))
+    }
+    window.addEventListener('progressUpdated', onProgressUpdated)
+    return () => window.removeEventListener('progressUpdated', onProgressUpdated)
+  }, [])
 
   return (
     <KidLayout>
@@ -124,21 +152,22 @@ export default function KidLessons() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {topics.map(topic => {
-              const topicCopy = {
-                ...topic,
-                lessons: topic.lessons.map(l => ({
-                  ...l,
-                  status: progressMap[l.id] && progressMap[l.id].completed ? 'done' : 'start',
-                })),
+            const lessonsWithStatus = topic.lessons.map((lesson, idx) => {
+              const isDone   = progressMap[lesson.id]?.completed === true
+              const prevDone = idx === 0 || progressMap[topic.lessons[idx - 1].id]?.completed === true
+              return {
+                ...lesson,
+                status: isDone ? 'done' : prevDone ? 'start' : 'locked',
               }
-              return (
-                <TopicPanel
-                  key={topic.id}
-                  topic={topicCopy}
-                  onStart={lesson => navigate(`/kid/quiz/${lesson.id}`)}
-                />
-              )
-            })}
+            })
+            return (
+              <TopicPanel
+                key={topic.id}
+                topic={{ ...topic, lessons: lessonsWithStatus }}
+                onStart={lesson => navigate(`/kid/quiz/${lesson.id}`)}
+              />
+            )
+          })}
         </div>
       )}
     </KidLayout>

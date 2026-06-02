@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import KidLayout from '../components/KidLayout'
-import lessonsContent from '../content/lessonsContent'
 import { useAuth } from '../context/AuthContext'
 import { saveProgress } from '../services/progress'
 import { getQuizByLessonId } from '../data/curriculum'
@@ -58,10 +57,10 @@ function ScorePage({ score, total, onRetry, onBack }) {
 
 export default function KidQuiz() {
   const navigate  = useNavigate()
-  const { id }    = useParams()
-  const key       = Number(id)
-  const { user }  = useAuth()
-  const quizData  = lessonsContent[key] || getQuizByLessonId(key) || defaultQuiz
+  const { id }   = useParams()
+  const lessonId = Number(id)
+  const { user } = useAuth()
+  const quizData = getQuizByLessonId(lessonId) || defaultQuiz
   const questions = quizData.questions
 
   const [current,   setCurrent]   = useState(0)
@@ -86,18 +85,29 @@ export default function KidQuiz() {
       setCurrent(c => c + 1)
       setSelected(null)
       setShowHint(false)
-    } else {
-      // quiz finished — save progress for this user and lesson
-      const scoreNow = Object.values(answered).filter(a => a.correct).length
-      try {
-        if (user?.id && Number.isFinite(key)) {
-          await saveProgress({ userId: user.id, lessonId: key, score: scoreNow, completed: true })
-        }
-      } catch (err) {
-        console.error('Failed to save progress', err.message)
-      }
-      setQuizDone(true)
+      return
     }
+
+    // ── Last question answered — save progress ──────────────────────────────
+    const finalScore = Object.values({ ...answered, [current]: { correct: isCorrect } })
+      .filter(a => a.correct).length
+
+    try {
+      const saved = await saveProgress({
+        userId:   user?.id || 'demo',
+        lessonId: lessonId,
+        score:    finalScore,
+        completed: true,
+      })
+      // Tell KidLessons to refresh its status badges immediately
+      window.dispatchEvent(new CustomEvent('progressUpdated', {
+        detail: { lessonId, row: saved },
+      }))
+    } catch (err) {
+      console.warn('[KidQuiz] saveProgress failed:', err.message)
+    }
+
+    setQuizDone(true)
   }
 
   function handleRetry() {
@@ -111,10 +121,12 @@ export default function KidQuiz() {
     return { backgroundColor: '#fff', borderColor: '#E5E7EB', color: '#9CA3AF' }
   }
 
+  const finalScore = Object.values(answered).filter(a => a.correct).length
+
   if (quizDone) {
     return (
       <KidLayout>
-        <ScorePage score={score} total={questions.length} onRetry={handleRetry} onBack={() => navigate('/kid/lessons')} />
+        <ScorePage score={finalScore} total={questions.length} onRetry={handleRetry} onBack={() => navigate('/kid/lessons')} />
       </KidLayout>
     )
   }

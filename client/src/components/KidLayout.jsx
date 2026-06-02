@@ -9,12 +9,12 @@ const navLinks = [
   { label: 'Profile',     icon: '👤', path: '/kid/profile',   activePath: '/kid/profile'   },
 ]
 
-const streak = 5
-
 export default function KidLayout({ children }) {
   const navigate = useNavigate()
-  const { signOut } = useAuth()
+  const { signOut, profile } = useAuth()
   const { pathname } = useLocation()
+  const avatar = profile?.avatar ?? '🧒'
+  const streak = profile?.streak_days ?? 0
 
   const handleLogout = async () => {
     try {
@@ -52,7 +52,7 @@ export default function KidLayout({ children }) {
             style={{ backgroundColor: 'rgba(255,255,255,0.22)' }}
             onClick={() => navigate('/kid/profile')}
           >
-            🧒
+            {avatar}
           </div>
           <button
             onClick={handleLogout}

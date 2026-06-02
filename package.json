@@ -1,0 +1,10 @@
+{
+  "name": "frazzlkid",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev":      "node supabase/apply.mjs && cd client && npm run dev",
+    "build":    "cd client && npm run build",
+    "db:setup": "node supabase/apply.mjs"
+  }
+}

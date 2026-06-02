@@ -10,6 +10,17 @@ export async function getChildren(parentId) {
   return data.map(r => r.profiles)
 }
 
+// Link a child to the current parent using the kid's short link code.
+// Uses a SECURITY DEFINER RPC so RLS doesn't hide the kid's profile.
+export async function linkChildByCode(code) {
+  const { data, error } = await supabase.rpc('link_child_by_code', {
+    p_code: (code || '').trim(),
+  })
+  if (error) throw error
+  // RPC returns a table → take the first row
+  return Array.isArray(data) ? data[0] : data
+}
+
 export async function linkChild(parentId, childId) {
   const { data, error } = await supabase
     .from('parent_child')

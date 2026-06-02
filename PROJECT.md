@@ -9,8 +9,8 @@ Prepared by: Lahbabta Yousef | Started: May 2026
 | Layer | Technology | Status |
 |---|---|---|
 | Frontend | React.js (Vite) | ✅ Running |
-| Database + Auth | Supabase (PostgreSQL + Auth) | ✅ Schema written |
-| Hosting (frontend) | Vercel | ⬜ Not deployed yet |
+| Database + Auth | Supabase (PostgreSQL + Auth) | ✅ Running — user_progress saving live |
+| Hosting (frontend) | Vercel | 🔄 Deployed — production branch = `main`, root dir = `client`, env vars set. ⚠ Live site builds from `main`; latest responsive/DB work lives uncommitted on `dev` and must be merged to `main` to go live. |
 | Content | Admin JSON import via `src/services/admin.js` | ✅ Service written |
 | ~~Backend (Express)~~ | **Removed** — Supabase handles API + Auth directly | — |
 
@@ -29,15 +29,15 @@ MathProject/
 │   │   │   ├── SignInPage.jsx                 ✅ Done — Supabase auth wired
 │   │   │   ├── SignUpPage.jsx                 ✅ Done — role + grade, Supabase auth wired
 │   │   │   ├── FAQ.jsx                        ✅ Done
-│   │   │   ├── KidDashboard.jsx               ✅ Done — responsive
-│   │   │   ├── KidLessons.jsx                 ✅ Done — responsive
-│   │   │   ├── KidQuiz.jsx                    ✅ Done — responsive
-│   │   │   ├── KidProgress.jsx                ✅ Done — responsive
-│   │   │   ├── KidProfile.jsx                 ✅ Done — responsive
-│   │   │   ├── ParentDashboard.jsx            ✅ Done — responsive
-│   │   │   ├── ParentLessons.jsx              ✅ Done — responsive
-│   │   │   ├── ParentReports.jsx              ✅ Done — responsive
-│   │   │   ├── ParentProfile.jsx              ✅ Done — responsive, Supabase auth wired
+│   │   │   ├── KidDashboard.jsx               ✅ Done — responsive, real DB data
+│   │   │   ├── KidLessons.jsx                 ✅ Done — responsive, real progress unlock
+│   │   │   ├── KidQuiz.jsx                    ✅ Done — responsive, saves to DB
+│   │   │   ├── KidProgress.jsx                ✅ Done — responsive, real DB data + streak
+│   │   │   ├── KidProfile.jsx                 ✅ Done — responsive, real DB badges + profile
+│   │   │   ├── ParentDashboard.jsx            ✅ Done — real child stats, topics, suggestion
+│   │   │   ├── ParentLessons.jsx              ✅ Done — curriculum + linked child progress, grade switcher
+│   │   │   ├── ParentReports.jsx              ✅ Done — real child report (stats, topics, quizzes, weak alerts)
+│   │   │   ├── ParentProfile.jsx              ✅ Done — real linked children + link-by-code + child badges
 │   │   │   └── ParentTeachingGuide.jsx        ⬜ Not started
 │   │   ├── components/
 │   │   │   ├── KidLayout.jsx                  ✅ Done — mobile bottom nav
@@ -49,7 +49,7 @@ MathProject/
 │   │   │   ├── supabaseClient.js              ✅ Done
 │   │   │   ├── auth.js                        ✅ Done — signUp/signIn/signOut/Google/profile
 │   │   │   ├── lessons.js                     ✅ Done — topics, lessons, questions
-│   │   │   ├── progress.js                    ✅ Done — upsert + read
+│   │   │   ├── progress.js                    ✅ Done — dual-mode save (localStorage + Supabase), streak update
 │   │   │   ├── badges.js                      ✅ Done — catalog, earned, award
 │   │   │   ├── family.js                      ✅ Done — parent ↔ child linking
 │   │   │   └── admin.js                       ✅ Done — JSON bulk import
@@ -63,7 +63,12 @@ MathProject/
 │   └── package.json
 ├── supabase/
 │   ├── schema.sql                             ✅ Done — 8 tables, RLS, indexes, triggers
-│   └── seed.sql                               ✅ Done — badges, Grade 4 topics, sample data
+│   ├── seed.sql                               ✅ Done — badges, Grade 4 topics, sample data
+│   ├── full_setup.sql                         ✅ Done — all 9 tables in one file (run once in SQL Editor)
+│   ├── create_user_progress.sql               ✅ Done — user_progress table (TEXT lesson_ref, no FK)
+│   ├── add_streak_column.sql                  ✅ Done — adds last_quiz_date to profiles
+│   ├── link_child_code.sql                    ✅ Done — kid link_code + link_child_by_code RPC + parent-read RLS
+│   └── migration_progress_text_id.sql         ✅ Done — legacy migration (superseded by full_setup.sql)
 ├── UPDATES.md                                 ✅ Chronological change log
 ├── PROJECT.md                                 ✅ This file
 └── README.md
