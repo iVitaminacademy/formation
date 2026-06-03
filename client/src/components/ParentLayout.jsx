@@ -11,7 +11,7 @@ const navLinks = [
 export default function ParentLayout({ children }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const { signOut } = useAuth()
+  const { signOut, profile } = useAuth()
 
   const handleLogout = async () => {
     try {
@@ -38,21 +38,14 @@ export default function ParentLayout({ children }) {
         </span>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            onClick={() => navigate('/kid/dashboard')}
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-sm font-bold text-white border-2 transition-all duration-200"
-            style={{ borderColor: 'rgba(255,255,255,0.35)' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.12)')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
-          >
-            ⇄ <span className="hidden sm:inline">Switch to Kid Mode</span>
-          </button>
+          
           <div
             className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center text-lg cursor-pointer"
             style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
             onClick={() => navigate('/parent/profile')}
+            title={profile?.name ?? 'Profile'}
           >
-            🧒
+            {profile?.avatar ?? '👩'}
           </div>
           <button
             onClick={handleLogout}

@@ -114,117 +114,143 @@ export default function ParentProfile() {
   const [lastSeen, setLastSeen] = useState(null)
   const [loadingNotifications, setLoadingNotifications] = useState(false)
 
-  // Load recent progress items as notifications (local + DB) and subscribe realtime
-  useEffect(() => {
-    if (!activeChild?.id) { setNotifications([]); setLastSeen(null); return }
+  const notificationKey = `parent_notifications_last_seen_${user?.id || 'guest'}_${activeChild?.id || 'all'}`
+
+  function buildNotificationMessage(notification) {
+    const lesson_ref = notification.payload?.lesson_ref ?? null
+    const title = findLessonTitle(lesson_ref) || (lesson_ref ? `Lesson ${lesson_ref}` : 'Activity')
+    return notification.payload?.completed
+      ? `Completed \u201C${title}\u201D`
+      : `Progress on \u201C${title}\u201D`
+  }
+
+  function normalizeNotificationRow(row) {
+    return {
+      id: row.id,
+      child_id: row.child_id,
+      lesson_ref: row.payload?.lesson_ref ?? null,
+      score: row.payload?.score ?? null,
+      last_date: row.created_at,
+      message: buildNotificationMessage(row),
+      read: row.read,
+    }
+  }
+
+  async function loadNotifications(parentId, childId) {
+    if (!parentId || !childId) {
+      setNotifications([])
+      setLastSeen(null)
+      return
+    }
+
     setLoadingNotifications(true)
-    const key = `parent_notifications_last_seen_${user?.id}_${activeChild.id}`
-    const saved = localStorage.getItem(key)
+    const saved = localStorage.getItem(notificationKey)
     setLastSeen(saved)
 
-    ;(async () => {
-      try {
-        if (isSupabaseConfigured && user?.id) {
-          const { data, error } = await supabase
-            .from('notifications')
-            .select('id, child_id, type, payload, read, created_at')
-            .eq('parent_id', user.id)
-            .eq('child_id', activeChild.id)
-            .order('created_at', { ascending: false })
-            .limit(50)
-          if (error) throw error
-          const items = (data || []).map(n => {
-            const lesson_ref = n.payload?.lesson_ref ?? null
-            const title = findLessonTitle(lesson_ref) || (lesson_ref ? `Lesson ${lesson_ref}` : 'Activity')
-            const message = n.payload?.completed ? `Completed \u201C${title}\u201D` : `Progress on \u201C${title}\u201D`
-            return { id: n.id, lesson_ref, score: n.payload?.score, last_date: n.created_at, message, read: n.read }
-          })
-          setNotifications(items)
-        } else {
-          const rows = await getProgress(activeChild.id)
-          const items = (rows || []).slice(0, 30).map(r => {
-            const title = findLessonTitle(r.lesson_ref) || `Lesson ${r.lesson_ref}`
-            const message = r.completed ? `Completed \u201C${title}\u201D` : `Progress on \u201C${title}\u201D`
-            return { id: `${r.lesson_ref}_${r.last_date}`, lesson_ref: r.lesson_ref, score: r.score, last_date: r.last_date, message }
-          })
-          setNotifications(items)
-        }
-      } catch (err) {
-        console.error('[ParentProfile] notifications load', err)
-      } finally {
-        setLoadingNotifications(false)
-      }
-    })()
+    try {
+      if (isSupabaseConfigured) {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('id, parent_id, child_id, type, payload, read, created_at')
+          .eq('parent_id', parentId)
+          .eq('child_id', childId)
+          .eq('read', false)
+          .order('created_at', { ascending: false })
+          .limit(50)
 
-    // Realtime via Supabase (cross-device) + fallback to in-page event (same-browser)
-    let channel = null
-    if (isSupabaseConfigured && user?.id) {
-      channel = supabase
-        .channel(`parent-notify-${user.id}`)
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `parent_id=eq.${user.id}` }, payload => {
-          const n = payload.new
-          if (!n) return
-          if (String(n.child_id) !== String(activeChild.id)) return
-          const lesson_ref = n.payload?.lesson_ref ?? null
-          const title = findLessonTitle(lesson_ref) || (lesson_ref ? `Lesson ${lesson_ref}` : 'Activity')
-          const message = n.payload?.completed ? `Completed \u201C${title}\u201D` : `Progress on \u201C${title}\u201D`
-          const item = { id: n.id, lesson_ref, score: n.payload?.score, last_date: n.created_at, message, read: n.read }
-          setNotifications(prev => [item, ...prev.filter(i => i.id !== item.id)].slice(0, 50))
-        })
-        .subscribe()
+        if (error) throw error
+        setNotifications((data || []).map(normalizeNotificationRow))
+      } else {
+        const rows = await getProgress(childId)
+        const items = (rows || [])
+          .filter(r => !r.read)
+          .slice(0, 50)
+          .map(r => ({
+            id: `${r.lesson_ref}_${r.last_date}`,
+            child_id: childId,
+            lesson_ref: r.lesson_ref,
+            score: r.score,
+            last_date: r.last_date,
+            read: false,
+            message: r.completed ? `Completed \u201C${findLessonTitle(r.lesson_ref) || `Lesson ${r.lesson_ref}`}\u201D` : `Progress on \u201C${findLessonTitle(r.lesson_ref) || `Lesson ${r.lesson_ref}`}\u201D`,
+          }))
+        setNotifications(items)
+      }
+    } catch (err) {
+      console.error('[ParentProfile] notifications load', err)
+    } finally {
+      setLoadingNotifications(false)
     }
+  }
+
+  useEffect(() => {
+    loadNotifications(user?.id, activeChild?.id)
+  }, [user?.id, activeChild?.id])
+
+  // Realtime via Supabase (cross-device) + fallback to in-page event (same-browser)
+  useEffect(() => {
+    if (!isSupabaseConfigured || !user?.id || !activeChild?.id) return
+
+    const channel = supabase
+      .channel(`parent-notify-${user.id}-${activeChild.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `parent_id=eq.${user.id}` }, payload => {
+        const n = payload.new
+        if (!n || String(n.child_id) !== String(activeChild.id) || n.read === true) return
+        const item = normalizeNotificationRow(n)
+        setNotifications(prev => [item, ...prev.filter(i => i.id !== item.id)].slice(0, 50))
+      })
+      .subscribe()
 
     const handler = (e) => {
       const d = e?.detail || {}
       const r = d.row
       if (!r) return
-      // only handle events for the active child
       const uid = r.user_id || r.userId || d.userId
-      if (!uid || String(uid) !== String(activeChild.id)) return
-      const title = findLessonTitle(r.lesson_ref) || `Lesson ${r.lesson_ref}`
-      const message = r.completed ? `Completed \u201C${title}\u201D` : `Progress on \u201C${title}\u201D`
-      const item = { id: `${r.lesson_ref}_${r.last_date || new Date().toISOString()}`, lesson_ref: r.lesson_ref, score: r.score, last_date: r.last_date || new Date().toISOString(), message }
-      setNotifications(prev => [item, ...prev.filter(i => i.id !== item.id)].slice(0,50))
+      if (!uid || String(uid) !== String(activeChild?.id) || r.read === true) return
+      const lesson_ref = r.lesson_ref ?? null
+      const title = findLessonTitle(lesson_ref) || (lesson_ref ? `Lesson ${lesson_ref}` : 'Activity')
+      const item = {
+        id: `${r.lesson_ref}_${r.last_date || new Date().toISOString()}`,
+        child_id: uid,
+        lesson_ref: r.lesson_ref,
+        score: r.score,
+        last_date: r.last_date || new Date().toISOString(),
+        read: false,
+        message: r.completed ? `Completed \u201C${title}\u201D` : `Progress on \u201C${title}\u201D`,
+      }
+      setNotifications(prev => [item, ...prev.filter(i => i.id !== item.id)].slice(0, 50))
     }
+
     window.addEventListener('progressUpdated', handler)
 
     return () => {
       window.removeEventListener('progressUpdated', handler)
-      if (channel) {
-        try { supabase.removeChannel(channel) } catch (e) { /* ignore */ }
-      }
+      try { supabase.removeChannel(channel) } catch (e) { /* ignore */ }
     }
-  }, [activeChild?.id])
+  }, [user?.id, activeChild?.id])
 
   async function markAllRead() {
     if (!user?.id || !activeChild?.id) return
     const now = new Date().toISOString()
-    const key = `parent_notifications_last_seen_${user.id}_${activeChild.id}`
-    localStorage.setItem(key, now)
+    localStorage.setItem(notificationKey, now)
     setLastSeen(now)
 
-    if (isSupabaseConfigured) {
-      try {
+    try {
+      if (isSupabaseConfigured) {
         await supabase
           .from('notifications')
           .update({ read: true })
           .eq('parent_id', user.id)
           .eq('child_id', activeChild.id)
           .eq('read', false)
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-      } catch (err) {
-        console.warn('[ParentProfile] markAllRead failed', err.message || err)
       }
+      setNotifications([])
+    } catch (err) {
+      console.warn('[ParentProfile] markAllRead failed', err.message || err)
     }
   }
 
-  // A notification is unread if the DB says so; fall back to the local last-seen cursor.
-  function isUnread(n) {
-    if (n.read === true) return false
-    if (n.read === false) return true
-    return !lastSeen || new Date(n.last_date) > new Date(lastSeen)
-  }
-  const unreadCount = notifications.filter(isUnread).length
+  const unreadCount = notifications.length
 
   const stats = useMemo(
     () => ({ ...computeStats(progressMap, activeChild?.grade ?? 4), streak: activeChild?.streak_days ?? 0 }),
@@ -418,7 +444,17 @@ export default function ParentProfile() {
                 onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F0FAF4')}
                 onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
               >
-                <span className="text-lg w-6 text-center">{item.icon}</span>
+                <span className="relative inline-flex items-center justify-center text-lg w-6 text-center">
+                  {item.icon}
+                  {item.label === 'Notifications' && unreadCount > 0 && (
+                    <span
+                      className="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full text-[10px] font-extrabold text-white flex items-center justify-center"
+                      style={{ backgroundColor: '#EF4444' }}
+                    >
+                      {unreadCount}
+                    </span>
+                  )}
+                </span>
                 <div className="flex-1">
                   <div className="text-sm font-bold text-gray-800">{item.label}</div>
                   <div className="text-xs text-gray-400 font-medium">{item.desc}</div>
@@ -473,21 +509,20 @@ export default function ParentProfile() {
               <p className="text-sm text-gray-400 font-medium">No recent activity.</p>
             ) : (
               <ul className="flex flex-col gap-3">
-                {notifications.map(n => {
-                  const unread = isUnread(n)
-                  return (
-                    <li key={n.id} className="flex items-start gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${unread ? 'bg-green-100' : 'bg-gray-100'}`}>
-                        🔔
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-bold text-gray-800">{n.message}</div>
-                        <div className="text-xs text-gray-400">{new Date(n.last_date).toLocaleString()}</div>
-                      </div>
-                      {unread && <div className="ml-2 text-xs font-bold text-white px-2 py-1 rounded-full" style={{ backgroundColor: '#EF4444' }}>New</div>}
-                    </li>
-                  )
-                })}
+                {notifications.map(n => (
+                  <li key={n.id} className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg bg-green-100">
+                      🔔
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm font-bold text-gray-800">{n.message}</div>
+                      <div className="text-xs text-gray-400">{new Date(n.last_date).toLocaleString()}</div>
+                    </div>
+                    <div className="ml-2 text-xs font-bold text-white px-2 py-1 rounded-full" style={{ backgroundColor: '#EF4444' }}>
+                      New
+                    </div>
+                  </li>
+                ))}
               </ul>
             )}
           </div>

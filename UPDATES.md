@@ -4,6 +4,31 @@ All frontend changes are recorded here in chronological order.
 
 ---
 
+## [2026-06-03] — Parent header avatar fix
+
+### Changed
+- `client/src/components/ParentLayout.jsx` — render authenticated user's avatar (`profile.avatar`) in the parent header so edits made on `/parent/profile` appear immediately after saving.
+
+### Notes
+- Mirrors `KidLayout.jsx` behavior which already reads `profile.avatar` from `AuthContext`.
+
+---
+
+## [2026-06-03] — Admin dashboard system added
+
+### Changed
+- `client/src/pages/AdminLoginPage.jsx` — added a dedicated admin-only login page for `admin@admin.com`, with Supabase auth + admin role checks and bootstrap fallback if the account is missing.
+- `client/src/pages/AdminDashboardPage.jsx` — added the admin dashboard UI with KPIs, parent/child management, profile editing, progress editing, searchable parent-child cards, per-child unlink buttons, and persisted dark/light mode.
+- `client/src/services/admin.js` — added admin data helpers for dashboard fetches, profile updates, progress updates, and parent-child linking/unlinking.
+- `client/src/components/ProtectedRoute.jsx` — updated route guarding so admin users redirect to `/admin/dashboard`.
+- `client/src/App.jsx` — registered `/admin/login` and `/admin/dashboard`.
+- `supabase/full_setup.sql` — updated `user_progress` RLS policies to allow admin read/write access.
+
+### Validation
+- `npm run build` passes successfully after the admin updates.
+- Remaining build output is the existing Vite chunk-size warning only.
+
+
 ## [2026-06-01] — Supabase Integration (Database + Auth)
 
 **Decision:** Connect React directly to Supabase (no Express layer), protected by Row Level Security (RLS). Uses Supabase Auth instead of manual JWT.
@@ -282,6 +307,18 @@ These edits were made to improve branding consistency and move longer informatio
 ### Changed
 - `client/src/services/progress.js` — after successfully upserting a `user_progress` row, the client now calls the `notify_parents_for_progress()` RPC so notifications are recorded server-side for linked parents.
 - `client/src/pages/ParentProfile.jsx` — the Profile page now reads persistent notifications from the `notifications` table and subscribes to real-time inserts so parents see updates instantly. A local `Mark all read` last-seen cursor is used for quick unread UI.
+
+### [2026-06-03] — Parent notifications UI refinements
+
+### Changed
+- `client/src/pages/ParentProfile.jsx` — notifications are now filtered by the selected child, only unread rows (`read = false`) are shown in the Recent Activity list, and read rows disappear after **Mark all read**.
+- `client/src/pages/ParentProfile.jsx` — the Notifications menu item now displays an unread-count badge based on the selected child’s unread notification rows.
+- `client/src/pages/ParentProfile.jsx` — the bell/icon badge was tightened so the unread count is visible directly on the Notifications icon.
+
+### Result
+- Parent notifications stay child-specific.
+- The unread count matches `read = false` rows for the active child.
+- Marking notifications as read clears them from the UI.
 
 ### Setup required (manual)
 1. Run `supabase/create_notifications.sql` in the Supabase SQL Editor (re-run is safe).

@@ -328,3 +328,36 @@ ProtectedRoute
 - 🔄 In progress
 - ✅ Done
 - ❌ Blocked
+
+---
+
+## [2026-06-03] — Parent header avatar fix
+
+- `client/src/components/ParentLayout.jsx`: now reads `profile.avatar` from `AuthContext` and displays it in the parent top navbar so changes made on `/parent/profile` update the header immediately.
+
+---
+
+## [2026-06-03] — Admin dashboard system added
+
+### Files added / updated
+- `client/src/pages/AdminLoginPage.jsx`
+- `client/src/pages/AdminDashboardPage.jsx`
+- `client/src/services/admin.js`
+- `client/src/components/ProtectedRoute.jsx`
+- `client/src/App.jsx`
+- `supabase/full_setup.sql`
+
+### Changes
+- Added a dedicated admin-only login path at `/admin/login`.
+- Added a protected admin dashboard at `/admin/dashboard`.
+- Added Supabase-only admin role gating for `role = admin`.
+- Added admin KPI cards, parent/child management, profile editing, progress editing, and theme persistence.
+- Added search inside the “Parents with children” section.
+- Restored the per-child **Unlink** action on linked child cards.
+- Updated progress editor display to show lesson titles, readable score labels, and human-readable dates.
+- Updated Supabase RLS so admins can read and manage the data required by the dashboard.
+- Kept the project Supabase-only; no Express backend was added.
+
+### Validation
+- `npm run build` passes successfully after the admin updates.
+- Remaining build output is the existing Vite chunk-size warning only.

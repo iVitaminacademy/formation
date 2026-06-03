@@ -316,11 +316,16 @@ create policy "progress_write_own" on public.progress for all using (user_id = a
 
 -- user_progress (active)
 drop policy if exists "user_progress_all_own" on public.user_progress;
-create policy "user_progress_all_own" on public.user_progress for all using (user_id = auth.uid()) with check (user_id = auth.uid());
--- let a parent READ their linked child's progress
+create policy "user_progress_all_own" on public.user_progress for all using (
+  user_id = auth.uid() or public.is_admin()
+) with check (
+  user_id = auth.uid() or public.is_admin()
+);
+-- let a parent/admin READ a linked child's progress
 drop policy if exists "user_progress_select_own_or_child" on public.user_progress;
 create policy "user_progress_select_own_or_child" on public.user_progress for select using (
   user_id = auth.uid()
+  or public.is_admin()
   or exists (select 1 from public.parent_child pc where pc.parent_id = auth.uid() and pc.child_id = user_progress.user_id)
 );
 
