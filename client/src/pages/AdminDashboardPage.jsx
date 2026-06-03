@@ -424,15 +424,15 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
           <StatCard label="Total users" value={kpis.totalUsers} helper={`${kpis.parents} parents · ${kpis.kids} students`} theme={theme} />
           <StatCard label="Active parents" value={kpis.activeParents} helper={`${kpis.linkedParents} parent-child links`} color={theme.primary} theme={theme} />
           <StatCard label="Independent students" value={kpis.independentStudents} helper="Students without parent links" color={theme.accent} theme={theme} />
           <StatCard label="Progress completion" value={`${kpis.completionRate}%`} helper={`${kpis.totalProgress} progress rows · avg score ${kpis.avgScore}%`} color={theme.warning} theme={theme} />
         </div>
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-3">
-          <div className="space-y-6 xl:col-span-2">
+        <div className="mt-6 grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
             <SectionCard
               title="Parents with children"
               theme={theme}
@@ -472,7 +472,7 @@ export default function AdminDashboardPage() {
                         </Pill>
                       </div>
 
-                      <div className="mt-4 grid gap-3 md:grid-cols-2">
+                      <div className="mt-4 grid gap-3 grid-cols-1 md:grid-cols-2">
                         {parent.children.length === 0 ? (
                           <div className="text-sm" style={{ color: theme.subtext }}>
                             No children linked.
@@ -540,7 +540,7 @@ export default function AdminDashboardPage() {
                   All students are linked to a parent.
                 </p>
               ) : (
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
                   {filteredIndependentStudents.map(student => (
                     <button
                       key={student.id}
