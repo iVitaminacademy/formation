@@ -331,6 +331,10 @@ ProtectedRoute
 
 ---
 
+## [2026-06-06] — Landing page redesign
+
+- `client/src/pages/LandingPage.jsx`: polished redesign — kept the `/favicon.svg` logo at proper sizes (40px header, 80px hero), background changed to `#F4F6FA`, ModeCard component upgraded with decorative circles, emoji glow, colored mode badges, feature bullet lists, enhanced gradient illustrations, hover lift animation, shadow button effects, footer added.
+
 ## [2026-06-06] — Admin dashboard change password
 
 - `client/src/pages/AdminDashboardPage.jsx`: added a "Change admin password" section in the right sidebar (above Database overview). Form with new password + confirm, client-side validation, calls `changePassword()` from `services/auth.js` (uses `supabase.auth.updateUser()`). Success/error inline messages, fields clear on success, respects dark/light theme.

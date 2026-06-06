@@ -4,6 +4,23 @@ All frontend changes are recorded here in chronological order.
 
 ---
 
+## [2026-06-06] — Landing page redesign
+
+### Changed
+- `client/src/pages/LandingPage.jsx` — polished redesign with improved card section:
+  - Logo: kept `/favicon.svg` at proper sizes (40px header, 80px hero) instead of the previous 128px blow-up
+  - Background: changed from `#F0FDF4` to `#F4F6FA` (cool neutral slate)
+  - Header: logo icon + "Frazzl.kid" text side by side with gap, mobile-responsive
+  - ModeCard component: added decorative background circles, emoji glow effect, colored mode badges ("Kid Mode" / "Parent Mode"), 3 feature bullet lists per card with ✓ checkmarks, enhanced gradient illustration areas, improved hover lift animation, buttons with shadow transitions
+  - Trust bar: emoji + colored text icons with better spacing
+  - Footer: added with copyright line
+  - Card titles changed to "I'm Learning" / "I'm Helping" with descriptive subtitles
+
+### Validation
+- `npm run build` passes successfully.
+
+---
+
 ## [2026-06-06] — Admin dashboard change password
 
 ### Changed
