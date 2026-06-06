@@ -14,6 +14,7 @@ import ParentDashboard from './pages/ParentDashboard'
 import ParentLessons from './pages/ParentLessons'
 import ParentReports from './pages/ParentReports'
 import ParentProfile from './pages/ParentProfile'
+import ParentCalculator from './pages/ParentCalculator'
 
 import KidDashboard from './pages/KidDashboard'
 import KidLessons from './pages/KidLessons'
@@ -41,6 +42,7 @@ export default function App() {
         <Route path="/parent/lessons" element={<ProtectedRoute role="parent"><ParentLessons /></ProtectedRoute>} />
         <Route path="/parent/reports" element={<ProtectedRoute role="parent"><ParentReports /></ProtectedRoute>} />
         <Route path="/parent/profile" element={<ProtectedRoute role="parent"><ParentProfile /></ProtectedRoute>} />
+        <Route path="/parent/calculator" element={<ProtectedRoute role="parent"><ParentCalculator /></ProtectedRoute>} />
 
         {/* Kid */}
         <Route path="/kid/dashboard" element={<ProtectedRoute role="kid"><KidDashboard /></ProtectedRoute>} />

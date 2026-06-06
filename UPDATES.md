@@ -4,6 +4,18 @@ All frontend changes are recorded here in chronological order.
 
 ---
 
+## [2026-06-06] — Parent calculator added
+
+### Added
+- `client/src/pages/ParentCalculator.jsx` — full calculator page for parents to help kids with math during quizzes. Features expression evaluation (handles +, −, ×, ÷, %, ±), history display, formatted output with thousand separators, backspace (⌫), clear (C), and a tips section. Styled to match parent mode colors.
+- `client/src/App.jsx` — registered `/parent/calculator` route (protected, parent-only).
+- `client/src/components/ParentLayout.jsx` — added "Calculator" nav item with 🧮 icon between Reports and Profile.
+
+### Validation
+- `npm run build` passes successfully.
+
+---
+
 ## [2026-06-06] — Landing page redesign
 
 ### Changed

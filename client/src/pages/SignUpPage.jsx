@@ -112,8 +112,18 @@ export default function SignUpPage() {
     }
     setSubmitting(true)
     try {
+      // If the email field was removed from the form, generate a fallback
+      // email so signUp() still receives a valid address. This avoids
+      // breaking submissions when the UI doesn't collect an email.
+      const sanitized = (form.name || 'user')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '.')
+        .replace(/[^a-z0-9.]/g, '') || 'user'
+      const emailToUse = form.email || `${sanitized}+${Date.now()}@frazzl.kid`
+
       const { session } = await signUp({
-        email: form.email,
+        email: emailToUse,
         password: form.password,
         name: form.name,
         role,
@@ -173,18 +183,25 @@ export default function SignUpPage() {
         style={{ boxShadow: '0 20px 60px rgba(22,163,74,0.12)' }}
       >
         {/* Logo */}
-        <div className="mb-6 text-center">
-          <div className="text-3xl font-extrabold tracking-tight">
-            <span style={{ color: '#111827' }}>Frazzl</span>
-            <span style={{ color: '#16A34A' }}>.kid</span>
+          <div className="mb-6 text-center">
+            <div className="flex items-center justify-center gap-3">
+              <img
+                src="/favicon.svg"
+                alt="Frazzl.kid logo"
+                className="h-10 w-10 rounded-xl shadow-sm"
+              />
+              <div className="text-3xl font-extrabold tracking-tight">
+                <span style={{ color: '#111827' }}>Frazzl</span>
+                <span style={{ color: '#16A34A' }}>.kid</span>
+              </div>
+            </div>
+            <h1 className="mt-4 text-2xl font-extrabold" style={{ color: '#1A1A2E' }}>
+              Create your account
+            </h1>
+            <p className="mt-1.5 text-sm" style={{ color: '#94A3B8' }}>
+              Join thousands of learners today ✨
+            </p>
           </div>
-          <h1 className="mt-4 text-2xl font-extrabold" style={{ color: '#1A1A2E' }}>
-            Create your account
-          </h1>
-          <p className="mt-1.5 text-sm" style={{ color: '#94A3B8' }}>
-            Join thousands of learners today ✨
-          </p>
-        </div>
 
         {/* Role selector */}
         <div className="mb-5 grid grid-cols-2 gap-3">
@@ -294,33 +311,7 @@ export default function SignUpPage() {
             </div>
           </div>
 
-          {/* Email */}
-          <div>
-            <label
-              className="mb-1.5 block text-xs font-bold uppercase tracking-wide"
-              style={{ color: '#64748B' }}
-            >
-              Email
-            </label>
-            <div className="relative">
-              <span
-                className="absolute left-3.5 top-1/2 -translate-y-1/2"
-                style={{ color: '#94A3B8' }}
-              >
-                <EnvelopeIcon />
-              </span>
-              <input
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                onFocus={() => setFocused('email')}
-                onBlur={() => setFocused('')}
-                placeholder="you@example.com"
-                style={{ ...fieldStyle('email'), padding: '11px 16px 11px 40px' }}
-              />
-            </div>
-          </div>
+          
 
           {/* Password */}
           <div>
@@ -432,24 +423,9 @@ export default function SignUpPage() {
             {submitting ? 'Creating account…' : role === 'kid' ? '🧒 Start Learning →' : '👨‍👧 Join as Parent →'}
           </button>
 
-          {/* Divider */}
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1" style={{ backgroundColor: '#E2E8F0' }} />
-            <span className="text-xs font-medium" style={{ color: '#94A3B8' }}>or sign up with</span>
-            <div className="h-px flex-1" style={{ backgroundColor: '#E2E8F0' }} />
-          </div>
+      
 
-          {/* Google */}
-          <button
-            type="button"
-            className="flex w-full items-center justify-center gap-3 rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.98]"
-            style={{ border: '1.5px solid #E2E8F0', backgroundColor: '#fff', color: '#374151', cursor: 'pointer' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F8FAFC')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#fff')}
-          >
-            <GoogleIcon />
-            Continue with Google
-          </button>
+          
         </form>
 
         {/* Footer link */}

@@ -331,6 +331,12 @@ ProtectedRoute
 
 ---
 
+## [2026-06-06] — Parent calculator added
+
+- `client/src/pages/ParentCalculator.jsx`: new page — full calculator for parents to help kids with math during quizzes. Supports +, −, ×, ÷, %, ±, decimals, backspace, clear, with history display and formatted output.
+- `client/src/App.jsx`: registered `/parent/calculator` route (protected, parent-only).
+- `client/src/components/ParentLayout.jsx`: added Calculator nav item with 🧮 icon.
+
 ## [2026-06-06] — Landing page redesign
 
 - `client/src/pages/LandingPage.jsx`: polished redesign — kept the `/favicon.svg` logo at proper sizes (40px header, 80px hero), background changed to `#F4F6FA`, ModeCard component upgraded with decorative circles, emoji glow, colored mode badges, feature bullet lists, enhanced gradient illustrations, hover lift animation, shadow button effects, footer added.

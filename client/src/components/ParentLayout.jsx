@@ -5,6 +5,7 @@ const navLinks = [
   { label: 'Dashboard',        icon: '🏠', path: '/parent/dashboard' },
   { label: 'Lessons & Guides', icon: '📚', path: '/parent/lessons' },
   { label: 'Reports',          icon: '📊', path: '/parent/reports' },
+  { label: 'Calculator',      icon: '🧮', path: '/parent/calculator' },
   { label: 'Profile',          icon: '👤', path: '/parent/profile' },
 ]
 

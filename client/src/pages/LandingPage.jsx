@@ -126,7 +126,11 @@ export default function LandingPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen w-full" style={{ backgroundColor: '#F4F6FA' }}>
+    <div className="min-h-screen w-full relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #EEF2FF 0%, #F0FDF4 30%, #FFF7ED 60%, #FDF2F8 100%)' }}>
+      {/* Subtle decorative blobs */}
+      <div className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-violet-200/30 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-emerald-200/25 blur-3xl" />
+      <div className="pointer-events-none absolute top-1/3 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-amber-100/20 blur-3xl" />
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-6">
 
         {/* Header */}
@@ -162,11 +166,6 @@ export default function LandingPage() {
 
           {/* Hero */}
           <section className="flex flex-col items-center text-center">
-            <img
-              src="/favicon.svg"
-              alt="Frazzl.kid logo"
-              className="mb-6 h-20 w-20 rounded-2xl shadow-[0_12px_32px_rgba(34,25,82,0.10)]"
-            />
             <h1 className="text-4xl font-extrabold leading-tight text-gray-900 sm:text-5xl">
               Math learning made{' '}
               <span className="whitespace-nowrap" style={{ color: '#EC4899' }}>fun & simple</span>
