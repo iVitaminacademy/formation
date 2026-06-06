@@ -35,12 +35,12 @@ const ACCENT = '#5E17EB'
 const ACCENT_HOVER = '#4C0FC4'
 
 function friendlyError(err) {
-  const msg = (err?.message || '').toLowerCase()
+  const msg = (err?.message || String(err || '')).toLowerCase()
   if (msg.includes('invalid login credentials') || msg.includes('invalid email')) {
     return 'Incorrect email or password. Please try again.'
   }
-  if (msg.includes('failed to fetch') || msg.includes('network')) {
-    return 'Unable to connect. Please check your internet connection and try again.'
+  if (msg.includes('failed to fetch') || msg.includes('network') || msg.includes('name_not_resolved') || msg.includes('dns')) {
+    return 'Unable to connect to the server. Please check your internet connection and try again.'
   }
   if (msg.includes('email not confirmed')) {
     return 'Please verify your email address before signing in.'

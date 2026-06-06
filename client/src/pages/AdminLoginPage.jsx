@@ -7,12 +7,12 @@ const ADMIN_EMAIL = 'admin@admin.com'
 const ADMIN_PASSWORD_HINT = '@dmIn7'
 
 function friendlyError(err) {
-  const msg = (err?.message || '').toLowerCase()
+  const msg = (err?.message || String(err || '')).toLowerCase()
   if (msg.includes('invalid login credentials') || msg.includes('invalid email')) {
     return 'Incorrect email or password. Please try again.'
   }
-  if (msg.includes('failed to fetch') || msg.includes('network')) {
-    return 'Unable to connect. Please check your internet connection and try again.'
+  if (msg.includes('failed to fetch') || msg.includes('network') || msg.includes('name_not_resolved') || msg.includes('dns')) {
+    return 'Unable to connect to the server. Please check your internet connection and try again.'
   }
   if (msg.includes('too many requests') || msg.includes('rate limit')) {
     return 'Too many attempts. Please wait a moment and try again.'
@@ -49,9 +49,27 @@ export default function AdminLoginPage() {
         return
       }
 
+      // Helper: sign in with retry on network errors
+      const signInWithRetry = async (retries = 2) => {
+        for (let attempt = 1; attempt <= retries; attempt++) {
+          try {
+            return await signIn({ email, password: form.password })
+          } catch (err) {
+            const msg = (err?.message || '').toLowerCase()
+            const isNetworkError = msg.includes('failed to fetch') || msg.includes('network') || msg.includes('name_not_resolved')
+            if (isNetworkError && attempt < retries) {
+              // Wait briefly then retry
+              await new Promise(r => setTimeout(r, 1000 * attempt))
+              continue
+            }
+            throw err
+          }
+        }
+      }
+
       let authResult
       try {
-        authResult = await signIn({ email, password: form.password })
+        authResult = await signInWithRetry()
       } catch (signInErr) {
         const message = signInErr?.message || ''
         if (!message.toLowerCase().includes('invalid login credentials')) throw signInErr
@@ -64,7 +82,7 @@ export default function AdminLoginPage() {
         })
 
         if (!authResult?.session) {
-          authResult = await signIn({ email, password: form.password })
+          authResult = await signInWithRetry()
         }
       }
 

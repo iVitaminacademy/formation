@@ -4,11 +4,11 @@ All frontend changes are recorded here in chronological order.
 
 ---
 
-## [2026-06-06] — User-friendly error messages on sign-in pages
+## [2026-06-06] — User-friendly error messages + network retry on sign-in pages
 
 ### Changed
-- `client/src/pages/SignInPage.jsx` — added `friendlyError()` helper that maps raw Supabase error messages to human-readable text. Replaced `err.message` fallback in the catch block with `friendlyError(err)`. Users now see messages like "Incorrect email or password" instead of "failed to fetch".
-- `client/src/pages/AdminLoginPage.jsx` — added same `friendlyError()` helper with an additional "already registered" case. Wired into the outer catch block.
+- `client/src/pages/SignInPage.jsx` — added `friendlyError()` helper that maps raw Supabase error messages to human-readable text. Covers invalid credentials, network failures (including DNS/`ERR_NAME_NOT_RESOLVED`), email not confirmed, and rate limits. Replaced `err.message` fallback with `friendlyError(err)`.
+- `client/src/pages/AdminLoginPage.jsx` — added `friendlyError()` with same patterns plus "already registered" case. Added `signInWithRetry()` helper that automatically retries sign-in up to 2 times on network errors (`failed to fetch`, `ERR_NAME_NOT_RESOLVED`) with a 1s/2s backoff. This handles intermittent DNS/connectivity issues that were causing raw "failed to fetch" errors.
 
 ### Validation
 - `npm run build` passes successfully.
