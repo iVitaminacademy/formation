@@ -34,6 +34,23 @@ const EyeClosedIcon = () => (
 const ACCENT = '#5E17EB'
 const ACCENT_HOVER = '#4C0FC4'
 
+function friendlyError(err) {
+  const msg = (err?.message || '').toLowerCase()
+  if (msg.includes('invalid login credentials') || msg.includes('invalid email')) {
+    return 'Incorrect email or password. Please try again.'
+  }
+  if (msg.includes('failed to fetch') || msg.includes('network')) {
+    return 'Unable to connect. Please check your internet connection and try again.'
+  }
+  if (msg.includes('email not confirmed')) {
+    return 'Please verify your email address before signing in.'
+  }
+  if (msg.includes('too many requests') || msg.includes('rate limit')) {
+    return 'Too many attempts. Please wait a moment and try again.'
+  }
+  return 'Something went wrong. Please try again.'
+}
+
 const inputBase = {
   borderColor: '#E2E8F0',
   backgroundColor: '#F8FAFC',
@@ -69,7 +86,7 @@ export default function SignInPage() {
       const profile = await getProfile(user.id)
       navigate(profile.role === 'parent' ? '/parent/dashboard' : '/kid/dashboard')
     } catch (err) {
-      setError(err.message || 'Sign in failed. Check your email and password.')
+      setError(friendlyError(err))
     } finally {
       setSubmitting(false)
     }

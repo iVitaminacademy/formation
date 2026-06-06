@@ -6,6 +6,23 @@ import { getProfile, signUp as signUpAuth } from '../services/auth'
 const ADMIN_EMAIL = 'admin@admin.com'
 const ADMIN_PASSWORD_HINT = '@dmIn7'
 
+function friendlyError(err) {
+  const msg = (err?.message || '').toLowerCase()
+  if (msg.includes('invalid login credentials') || msg.includes('invalid email')) {
+    return 'Incorrect email or password. Please try again.'
+  }
+  if (msg.includes('failed to fetch') || msg.includes('network')) {
+    return 'Unable to connect. Please check your internet connection and try again.'
+  }
+  if (msg.includes('too many requests') || msg.includes('rate limit')) {
+    return 'Too many attempts. Please wait a moment and try again.'
+  }
+  if (msg.includes('already registered') || msg.includes('already exists')) {
+    return 'This admin account already exists. Please sign in instead.'
+  }
+  return 'Something went wrong. Please try again.'
+}
+
 export default function AdminLoginPage() {
   const navigate = useNavigate()
   const { signIn, signOut } = useAuth()
@@ -66,7 +83,7 @@ export default function AdminLoginPage() {
 
       navigate('/admin/dashboard')
     } catch (err) {
-      setError(err.message || 'Admin sign in failed.')
+      setError(friendlyError(err))
     } finally {
       setLoading(false)
     }

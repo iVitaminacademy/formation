@@ -4,6 +4,17 @@ All frontend changes are recorded here in chronological order.
 
 ---
 
+## [2026-06-06] — User-friendly error messages on sign-in pages
+
+### Changed
+- `client/src/pages/SignInPage.jsx` — added `friendlyError()` helper that maps raw Supabase error messages to human-readable text. Replaced `err.message` fallback in the catch block with `friendlyError(err)`. Users now see messages like "Incorrect email or password" instead of "failed to fetch".
+- `client/src/pages/AdminLoginPage.jsx` — added same `friendlyError()` helper with an additional "already registered" case. Wired into the outer catch block.
+
+### Validation
+- `npm run build` passes successfully.
+
+---
+
 ## [2026-06-06] — Parent calculator added
 
 ### Added
