@@ -139,7 +139,7 @@ export default function LandingPage() {
             <img
               src="/favicon.svg"
               alt="Frazzl.kid logo"
-              className="h-10 w-10 rounded-xl shadow-sm"
+              className="h-16 w-16 rounded-xl shadow-sm"
             />
             <div className="text-2xl font-extrabold tracking-tight">
               <span style={{ color: '#111827' }}>Frazzl</span>
@@ -165,7 +165,7 @@ export default function LandingPage() {
         <main className="flex flex-1 flex-col items-center pb-14 pt-10">
 
           {/* Hero */}
-          <section className="flex flex-col items-center text-center">
+          <section className="flex flex-col items-center text-center">           
             <h1 className="text-4xl font-extrabold leading-tight text-gray-900 sm:text-5xl">
               Math learning made{' '}
               <span className="whitespace-nowrap" style={{ color: '#EC4899' }}>fun & simple</span>
