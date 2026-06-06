@@ -18,7 +18,12 @@ const BADGE_DEFS = [
 
 const LOCKED = { color: '#9CA3AF', bg: '#F9FAFB', border: '#E5E7EB' }
 
-const AVATAR_OPTIONS = ['🧒', '👦', '👧', '🦊', '🐱', '🐶', '🐼', '🦁', '🐵', '🦄', '🐸', '🤖']
+const AVATAR_OPTIONS = [
+  '😀', '😎', '🤓', '😊', '🥳',
+  '🦊', '🐱', '🐶', '🐼', '🐨',
+  '🦁', '🐯', '🐸', '🐵', '🐰',
+  '🦄', '🐻', '🐧', '🐢', '🐬'
+]
 
 function computeStats(progressMap, grade) {
   const topics     = curriculum[grade] || []

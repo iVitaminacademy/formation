@@ -168,7 +168,8 @@ export default function LandingPage() {
           <section className="flex flex-col items-center text-center">           
             <h1 className="text-4xl font-extrabold leading-tight text-gray-900 sm:text-5xl">
               Math learning made{' '}
-              <span className="whitespace-nowrap" style={{ color: '#EC4899' }}>fun & simple</span>
+              <span className="whitespace-nowrap" style={{ color: '#5E17EB' }}>fun &  </span>
+              <span className="whitespace-nowrap" style={{ color: '#743290' }}> simple</span>
               <br />
               for Grades 4 & 5
             </h1>

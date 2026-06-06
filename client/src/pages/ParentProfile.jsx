@@ -39,8 +39,29 @@ const settingsItems = [
   { icon: '❓', label: 'Help & FAQ',       desc: 'Get help or read the FAQ', to: '/faq' },
 ]
 
-const AVATAR_OPTIONS = ['👩', '👨', '🧑', '👩‍🦰', '👨‍🦰', '👩‍🦱', '👨‍🦱', '🧔', '🧕', '👵', '👴', '👱']
-
+const AVATAR_OPTIONS = [
+  '👩', '👨', '🧑',
+  '👩‍🦰', '👨‍🦰',
+  '👩‍🦱', '👨‍🦱',
+  '👩‍🦳', '👨‍🦳',
+  '👩‍🦲', '👨‍🦲',
+  '🧔', '🧔‍♀️', '🧔‍♂️',
+  '🧕', '👳‍♀️', '👳‍♂️',
+  '👵', '👴',
+  '👱‍♀️', '👱‍♂️',
+  '👩‍🏫', '👨‍🏫',
+  '👩‍💼', '👨‍💼',
+  '👩‍⚕️', '👨‍⚕️',
+  '👩‍🔬', '👨‍🔬',
+  '👩‍🎓', '👨‍🎓',
+  '👩‍🚀', '👨‍🚀',
+  '👩‍🍳', '👨‍🍳',
+  '👸', '🤴',
+  '🦸‍♀️', '🦸‍♂️',
+  '🧙‍♀️', '🧙‍♂️',
+  '🧝‍♀️', '🧝‍♂️',
+  '🧛‍♀️', '🧛‍♂️'
+]
 export default function ParentProfile() {
   const navigate = useNavigate()
   const { user, profile, signOut, refreshProfile } = useAuth()
