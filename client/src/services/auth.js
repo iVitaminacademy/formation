@@ -55,6 +55,12 @@ export async function getProfile(userId) {
   return data
 }
 
+export async function changePassword(newPassword) {
+  const { data, error } = await supabase.auth.updateUser({ password: newPassword })
+  if (error) throw error
+  return data
+}
+
 export async function updateProfile(userId, updates) {
   const { data, error } = await supabase
     .from('profiles')

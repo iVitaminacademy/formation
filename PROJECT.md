@@ -331,6 +331,10 @@ ProtectedRoute
 
 ---
 
+## [2026-06-06] — Admin dashboard change password
+
+- `client/src/pages/AdminDashboardPage.jsx`: added a "Change admin password" section in the right sidebar (above Database overview). Form with new password + confirm, client-side validation, calls `changePassword()` from `services/auth.js` (uses `supabase.auth.updateUser()`). Success/error inline messages, fields clear on success, respects dark/light theme.
+
 ## [2026-06-03] — Parent header avatar fix
 
 - `client/src/components/ParentLayout.jsx`: now reads `profile.avatar` from `AuthContext` and displays it in the parent top navbar so changes made on `/parent/profile` update the header immediately.

@@ -4,6 +4,16 @@ All frontend changes are recorded here in chronological order.
 
 ---
 
+## [2026-06-06] — Admin dashboard change password
+
+### Changed
+- `client/src/pages/AdminDashboardPage.jsx` — added a "Change admin password" section in the right sidebar (above Database overview). The form has new password + confirm fields with client-side validation (both required, min 6 chars, must match) and calls the existing `changePassword()` from `services/auth.js` which uses `supabase.auth.updateUser()`. Success/error messages displayed inline; fields clear on success. Uses the same dark/light theme as the rest of the dashboard.
+
+### Validation
+- `npm run build` passes successfully.
+
+---
+
 ## [2026-06-03] — Parent header avatar fix
 
 ### Changed
@@ -27,6 +37,20 @@ All frontend changes are recorded here in chronological order.
 ### Validation
 - `npm run build` passes successfully after the admin updates.
 - Remaining build output is the existing Vite chunk-size warning only.
+
+---
+
+## [2026-06-06] — Admin dashboard pagination added
+
+### Changed
+- `client/src/pages/AdminDashboardPage.jsx`
+  - Parents with children section: paginated, 3 parents per page.
+  - Independent students section: paginated, 5 students per page.
+  - Relationship manager table: paginated, 5 rows per page.
+  - Search resets pagination to page 1.
+
+### Validation
+- `npm run build` passes successfully.
 
 
 ## [2026-06-01] — Supabase Integration (Database + Auth)
