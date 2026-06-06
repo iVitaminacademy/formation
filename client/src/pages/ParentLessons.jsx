@@ -23,6 +23,7 @@ function LessonRow({ lesson, index, topicColor, done, onOpen }) {
           </div>
         </div>
       </div>
+    {/*
       <button
         onClick={() => onOpen(lesson)}
         className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-extrabold text-white opacity-0 group-hover:opacity-100 transition-opacity"
@@ -30,6 +31,7 @@ function LessonRow({ lesson, index, topicColor, done, onOpen }) {
       >
         📖 Teaching Guide
       </button>
+    */}
     </div>
   )
 }
