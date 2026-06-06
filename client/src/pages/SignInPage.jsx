@@ -31,8 +31,8 @@ const EyeClosedIcon = () => (
   </svg>
 )
 
-const ACCENT = '#16A34A'
-const ACCENT_HOVER = '#15803D'
+const ACCENT = '#5E17EB'
+const ACCENT_HOVER = '#4C0FC4'
 
 const inputBase = {
   borderColor: '#E2E8F0',
@@ -82,17 +82,17 @@ export default function SignInPage() {
   return (
     <div
       className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-4 py-12"
-      style={{ backgroundColor: '#F0FDF4' }}
+      style={{ background: 'linear-gradient(160deg, #F5F0FF 0%, #EDE4FF 25%, #F3E8FF 50%, #F8F4FF 75%, #FDFBFF 100%)' }}
     >
       {/* Background decorative blobs */}
-      <div className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full opacity-25 blur-3xl" style={{ backgroundColor: '#86EFAC' }} />
-      <div className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full opacity-20 blur-3xl" style={{ backgroundColor: '#FB923C' }} />
-      <div className="pointer-events-none absolute right-16 top-1/3 h-56 w-56 rounded-full opacity-15 blur-3xl" style={{ backgroundColor: '#A855F7' }} />
+      <div className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full opacity-20 blur-3xl" style={{ backgroundColor: '#743290' }} />
+      <div className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full opacity-15 blur-3xl" style={{ backgroundColor: '#5E17EB' }} />
+      <div className="pointer-events-none absolute right-16 top-1/3 h-56 w-56 rounded-full opacity-10 blur-3xl" style={{ backgroundColor: '#743290' }} />
 
       {/* Card */}
       <div
         className="relative w-full max-w-md rounded-3xl bg-white px-8 py-10"
-        style={{ boxShadow: '0 20px 60px rgba(22,163,74,0.12)' }}
+        style={{ boxShadow: '0 20px 60px rgba(94,23,235,0.10)' }}
       >
         {/* Logo */}
         <div className="mb-8 text-center">
@@ -103,8 +103,8 @@ export default function SignInPage() {
               className="h-10 w-10 rounded-xl shadow-sm"
             />
             <div className="text-3xl font-extrabold tracking-tight">
-              <span style={{ color: '#111827' }}>Frazzl</span>
-              <span style={{ color: '#16A34A' }}>.kid</span>
+              <span style={{ color: '#743290' }}>Frazzl</span>
+              <span style={{ color: '#5E17EB' }}>.kid</span>
             </div>
           </div>
           <h1 className="mt-5 text-2xl font-extrabold" style={{ color: '#1A1A2E' }}>
@@ -221,7 +221,7 @@ export default function SignInPage() {
             type="submit"
             disabled={submitting}
             className="mt-1 w-full rounded-xl py-3.5 text-sm font-extrabold text-white transition-all active:scale-[0.98] disabled:opacity-60"
-            style={{ backgroundColor: ACCENT, boxShadow: '0 4px 16px rgba(107,63,160,0.35)' }}
+            style={{ backgroundColor: ACCENT, boxShadow: '0 4px 20px rgba(94,23,235,0.35)' }}
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = ACCENT_HOVER)}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = ACCENT)}
           >

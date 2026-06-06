@@ -126,11 +126,11 @@ export default function LandingPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #EEF2FF 0%, #F0FDF4 30%, #FFF7ED 60%, #FDF2F8 100%)' }}>
+    <div className="min-h-screen w-full relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #F5F0FF 0%, #EDE4FF 25%, #F3E8FF 50%, #F8F4FF 75%, #FDFBFF 100%)' }}>
       {/* Subtle decorative blobs */}
-      <div className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-violet-200/30 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-emerald-200/25 blur-3xl" />
-      <div className="pointer-events-none absolute top-1/3 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-amber-100/20 blur-3xl" />
+      <div className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-[#743290]/15 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-[#5E17EB]/10 blur-3xl" />
+      <div className="pointer-events-none absolute top-1/3 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-[#743290]/8 blur-3xl" />
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-6">
 
         {/* Header */}
@@ -142,8 +142,8 @@ export default function LandingPage() {
               className="h-16 w-16 rounded-xl shadow-sm"
             />
             <div className="text-2xl font-extrabold tracking-tight">
-              <span style={{ color: '#111827' }}>Frazzl</span>
-              <span style={{ color: '#16A34A' }}>.kid</span>
+              <span style={{ color: '#743290' }}>Frazzl</span>
+              <span style={{ color: '#5E17EB' }}>.kid</span>
             </div>
           </div>
 
@@ -155,7 +155,7 @@ export default function LandingPage() {
           <button
             onClick={() => navigate('/login')}
             className="rounded-lg px-5 py-2.5 text-sm font-bold text-white transition hover:opacity-90"
-            style={{ backgroundColor: '#A855F7' }}
+            style={{ backgroundColor: '#5E17EB' }}
           >
             Sign In
           </button>
