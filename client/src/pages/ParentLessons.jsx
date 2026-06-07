@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import ParentLayout from '../components/ParentLayout'
 import { useAuth } from '../context/AuthContext'
 import { getChildren } from '../services/family'
@@ -23,15 +22,13 @@ function LessonRow({ lesson, index, topicColor, done, onOpen }) {
           </div>
         </div>
       </div>
-    {/*
       <button
         onClick={() => onOpen(lesson)}
         className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-extrabold text-white opacity-0 group-hover:opacity-100 transition-opacity"
         style={{ backgroundColor: '#2D7A4F' }}
       >
-        📖 Teaching Guide
+        📖 Answer Key
       </button>
-    */}
     </div>
   )
 }
@@ -81,8 +78,80 @@ function TopicPanel({ topic, progressMap, onOpen }) {
   )
 }
 
+function LessonAnswersModal({ lesson, child, progress, onClose }) {
+  if (!lesson) return null
+  const quiz = lesson.quiz || []
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-xl w-full max-w-2xl flex flex-col"
+        style={{ maxHeight: '85vh' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: '#E5E7EB' }}>
+          <div>
+            <h2 className="text-lg font-extrabold text-gray-900">{lesson.title}</h2>
+            <p className="text-xs text-gray-500 font-medium mt-0.5">
+              Answer key &amp; explanations
+              {child ? ` · ${child.name}` : ''}
+              {progress?.completed && progress?.score != null ? ` · Score: ${progress.score}` : ''}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 text-2xl leading-none"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="overflow-y-auto px-6 py-4 flex flex-col gap-5">
+          {quiz.length === 0 ? (
+            <p className="text-sm text-gray-400 font-medium">No questions available for this lesson yet.</p>
+          ) : quiz.map((q, i) => (
+            <div key={i} className="rounded-xl border p-4" style={{ borderColor: '#E5E7EB' }}>
+              <div className="text-sm font-bold text-gray-800 mb-3">{i + 1}. {q.text}</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+                {(q.options || []).map((opt, j) => {
+                  const isCorrect = opt === q.correct
+                  return (
+                    <div
+                      key={j}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold"
+                      style={isCorrect
+                        ? { backgroundColor: '#DCFCE7', color: '#15803D', border: '1px solid #86EFAC' }
+                        : { backgroundColor: '#F8FAFC', color: '#64748B', border: '1px solid #E2E8F0' }}
+                    >
+                      {isCorrect && <span>✓</span>}
+                      <span>{opt}</span>
+                    </div>
+                  )
+                })}
+              </div>
+              {q.hint && (
+                <div className="text-xs text-gray-500 mb-1"><span className="font-bold">Hint:</span> {q.hint}</div>
+              )}
+              {q.explanation && (
+                <div className="text-xs rounded-lg px-3 py-2" style={{ backgroundColor: '#F0FAF4', color: '#2D7A4F' }}>
+                  <span className="font-bold">Explanation:</span> {q.explanation}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function ParentLessons() {
-  const navigate = useNavigate()
   const { user } = useAuth()
 
   const [children, setChildren]           = useState([])
@@ -113,8 +182,10 @@ export default function ParentLessons() {
       .catch(err => console.error('[ParentLessons] progress', err))
   }, [activeChild?.id])
 
+  const [openLesson, setOpenLesson] = useState(null)
+
   const handleOpen = (lesson) => {
-    navigate(`/parent/teaching-guide/${lesson.id}`)
+    setOpenLesson(lesson)
   }
 
   return (
@@ -180,6 +251,13 @@ export default function ParentLessons() {
           ))}
         </div>
       )}
+
+      <LessonAnswersModal
+        lesson={openLesson}
+        child={activeChild}
+        progress={openLesson ? progressMap[openLesson.id] : null}
+        onClose={() => setOpenLesson(null)}
+      />
     </ParentLayout>
   )
 }
