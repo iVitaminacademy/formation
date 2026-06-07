@@ -5,7 +5,7 @@ import { getChildren } from '../services/family'
 import { getProgressMap } from '../services/progress'
 import { curriculum } from '../data/curriculum'
 
-function LessonRow({ lesson, index, topicColor, done, onOpen }) {
+function LessonRow({ lesson, index, topicColor, topicName, done, onOpen }) {
   return (
     <div className="flex items-center justify-between py-3 px-4 rounded-xl hover:bg-gray-50 transition-colors group">
       <div className="flex items-center gap-3">
@@ -23,9 +23,9 @@ function LessonRow({ lesson, index, topicColor, done, onOpen }) {
         </div>
       </div>
       <button
-        onClick={() => onOpen(lesson)}
-        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-extrabold text-white opacity-0 group-hover:opacity-100 transition-opacity"
-        style={{ backgroundColor: '#2D7A4F' }}
+        onClick={() => onOpen(lesson, topicColor, topicName)}
+        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-extrabold text-white shadow-sm hover:brightness-110 transition"
+        style={{ backgroundColor: topicColor }}
       >
         📖 Answer Key
       </button>
@@ -69,6 +69,7 @@ function TopicPanel({ topic, progressMap, onOpen }) {
             lesson={lesson}
             index={i + 1}
             topicColor={color}
+            topicName={topic.name}
             done={!!progressMap[lesson.id]?.completed}
             onOpen={onOpen}
           />
@@ -78,73 +79,141 @@ function TopicPanel({ topic, progressMap, onOpen }) {
   )
 }
 
-function LessonAnswersModal({ lesson, child, progress, onClose }) {
+function LessonAnswersModal({ lesson, child, progress, accent = '#2D7A4F', topicName, onClose }) {
+  useEffect(() => {
+    if (!lesson) return
+    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prev
+    }
+  }, [lesson, onClose])
+
   if (!lesson) return null
-  const quiz = lesson.quiz || []
+  const quiz      = lesson.quiz || []
+  const total     = quiz.length
+  const completed = !!progress?.completed
+  const hasScore  = completed && progress?.score != null
+  const correct   = hasScore ? Number(progress.score) : null
+  const pct       = hasScore && total > 0 ? Math.round((correct / total) * 100) : null
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+      style={{ backgroundColor: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(2px)' }}
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-2xl flex flex-col"
-        style={{ maxHeight: '85vh' }}
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden"
+        style={{ maxHeight: '88vh' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: '#E5E7EB' }}>
-          <div>
-            <h2 className="text-lg font-extrabold text-gray-900">{lesson.title}</h2>
-            <p className="text-xs text-gray-500 font-medium mt-0.5">
-              Answer key &amp; explanations
-              {child ? ` · ${child.name}` : ''}
-              {progress?.completed && progress?.score != null ? ` · Score: ${progress.score}` : ''}
-            </p>
+        <div className="px-6 py-5 text-white" style={{ background: `linear-gradient(135deg, ${accent}, ${accent}cc)` }}>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              {topicName && (
+                <span className="inline-block text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-white/20 mb-1.5">
+                  {topicName}
+                </span>
+              )}
+              <h2 className="text-xl font-extrabold leading-tight">📖 {lesson.title}</h2>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1.5 text-xs font-semibold text-white/90">
+                <span>{total} question{total === 1 ? '' : 's'}</span>
+                {lesson.time ? <span>· ~{lesson.time} min</span> : null}
+                {child ? <span>· {child.name}</span> : null}
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-white/80 hover:bg-white/20 text-2xl leading-none"
+              aria-label="Close"
+            >
+              ×
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 text-2xl leading-none"
-            aria-label="Close"
-          >
-            ×
-          </button>
+
+          {/* Score / status */}
+          <div className="mt-4">
+            {hasScore ? (
+              <div>
+                <div className="flex items-center justify-between text-xs font-bold mb-1">
+                  <span>Score: {correct}/{total}</span>
+                  <span>{pct}%</span>
+                </div>
+                <div className="h-2 rounded-full bg-white/25 overflow-hidden">
+                  <div className="h-full rounded-full bg-white" style={{ width: `${pct}%` }} />
+                </div>
+              </div>
+            ) : (
+              <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/20">
+                {child ? 'Not attempted yet' : 'Link a child to see their score'}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Body */}
-        <div className="overflow-y-auto px-6 py-4 flex flex-col gap-5">
-          {quiz.length === 0 ? (
+        <div className="overflow-y-auto px-6 py-5 flex flex-col gap-4" style={{ backgroundColor: '#FAFAFA' }}>
+          {total === 0 ? (
             <p className="text-sm text-gray-400 font-medium">No questions available for this lesson yet.</p>
           ) : quiz.map((q, i) => (
-            <div key={i} className="rounded-xl border p-4" style={{ borderColor: '#E5E7EB' }}>
-              <div className="text-sm font-bold text-gray-800 mb-3">{i + 1}. {q.text}</div>
+            <div key={i} className="rounded-xl border bg-white p-4" style={{ borderColor: '#E5E7EB' }}>
+              <div className="flex items-start gap-3 mb-3">
+                <span
+                  className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-extrabold text-white"
+                  style={{ backgroundColor: accent }}
+                >
+                  {i + 1}
+                </span>
+                <span className="text-sm font-bold text-gray-800">{q.text}</span>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
                 {(q.options || []).map((opt, j) => {
                   const isCorrect = opt === q.correct
                   return (
                     <div
                       key={j}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold"
+                      className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm font-semibold"
                       style={isCorrect
                         ? { backgroundColor: '#DCFCE7', color: '#15803D', border: '1px solid #86EFAC' }
-                        : { backgroundColor: '#F8FAFC', color: '#64748B', border: '1px solid #E2E8F0' }}
+                        : { backgroundColor: '#F8FAFC', color: '#94A3B8', border: '1px solid #E2E8F0' }}
                     >
-                      {isCorrect && <span>✓</span>}
                       <span>{opt}</span>
+                      {isCorrect && <span className="text-[10px] font-extrabold uppercase tracking-wide">✓ Correct</span>}
                     </div>
                   )
                 })}
               </div>
               {q.hint && (
-                <div className="text-xs text-gray-500 mb-1"><span className="font-bold">Hint:</span> {q.hint}</div>
+                <div className="flex gap-1.5 text-xs text-gray-500 mb-1.5">
+                  <span>💡</span>
+                  <span><span className="font-bold">Hint:</span> {q.hint}</span>
+                </div>
               )}
               {q.explanation && (
-                <div className="text-xs rounded-lg px-3 py-2" style={{ backgroundColor: '#F0FAF4', color: '#2D7A4F' }}>
-                  <span className="font-bold">Explanation:</span> {q.explanation}
+                <div className="flex gap-1.5 text-xs rounded-lg px-3 py-2" style={{ backgroundColor: '#F0FAF4', color: '#2D7A4F' }}>
+                  <span>✅</span>
+                  <span><span className="font-bold">Explanation:</span> {q.explanation}</span>
                 </div>
               )}
             </div>
           ))}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-3 border-t flex items-center justify-between" style={{ borderColor: '#E5E7EB' }}>
+          <span className="text-xs text-gray-400 font-medium">Press Esc to close</span>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-lg text-sm font-bold text-white"
+            style={{ backgroundColor: accent }}
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>
@@ -183,8 +252,10 @@ export default function ParentLessons() {
   }, [activeChild?.id])
 
   const [openLesson, setOpenLesson] = useState(null)
+  const [openMeta, setOpenMeta] = useState({ color: '#2D7A4F', topicName: '' })
 
-  const handleOpen = (lesson) => {
+  const handleOpen = (lesson, color, topicName) => {
+    setOpenMeta({ color: color || '#2D7A4F', topicName: topicName || '' })
     setOpenLesson(lesson)
   }
 
@@ -256,6 +327,8 @@ export default function ParentLessons() {
         lesson={openLesson}
         child={activeChild}
         progress={openLesson ? progressMap[openLesson.id] : null}
+        accent={openMeta.color}
+        topicName={openMeta.topicName}
         onClose={() => setOpenLesson(null)}
       />
     </ParentLayout>

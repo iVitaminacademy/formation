@@ -35,10 +35,10 @@ MathProject/
 │   │   │   ├── KidProgress.jsx                ✅ Done — responsive, real DB data + streak
 │   │   │   ├── KidProfile.jsx                 ✅ Done — responsive, real DB badges + profile
 │   │   │   ├── ParentDashboard.jsx            ✅ Done — real child stats, topics, suggestion
-│   │   │   ├── ParentLessons.jsx              ✅ Done — curriculum + linked child progress, grade switcher
+│   │   │   ├── ParentLessons.jsx              ✅ Done — curriculum + linked child progress, grade switcher, Answer Key modal
 │   │   │   ├── ParentReports.jsx              ✅ Done — real child report (stats, topics, quizzes, weak alerts)
 │   │   │   ├── ParentProfile.jsx              ✅ Done — real linked children + link-by-code + child badges
-│   │   │   └── ParentTeachingGuide.jsx        ⬜ Not started
+│   │   │   └── ParentTeachingGuide.jsx        ✅ Done — implemented as Answer Key modal inside ParentLessons.jsx
 │   │   ├── components/
 │   │   │   ├── KidLayout.jsx                  ✅ Done — mobile bottom nav
 │   │   │   ├── ParentLayout.jsx               ✅ Done — mobile bottom nav
@@ -105,7 +105,7 @@ MathProject/
 | `/parent/lessons` | ParentLessons | 🔒 Parent only | ✅ Done |
 | `/parent/reports` | ParentReports | 🔒 Parent only | ✅ Done |
 | `/parent/profile` | ParentProfile | 🔒 Parent only | ✅ Done |
-| `/parent/teaching-guide/:lessonId` | ParentTeachingGuide | 🔒 Parent only | ⬜ Not started |
+| Answer Key modal (in ParentLessons) | ParentLessons | 🔒 Parent only | ✅ Done — replaces planned `/parent/teaching-guide/:lessonId` route |
 
 ---
 
@@ -184,7 +184,7 @@ ProtectedRoute
 | 6 | Parent Dashboard | Parent | ParentDashboard.jsx | ✅ Done |
 | 6b | Lessons & Guides | Parent | ParentLessons.jsx | ✅ Done |
 | 6c | Reports | Parent | ParentReports.jsx | ✅ Done |
-| 7 | Parent Teaching Guide | Parent | ParentTeachingGuide.jsx | ⬜ Not started |
+| 7 | Parent Teaching Guide (Answer Key) | Parent | ParentLessons.jsx (modal) | ✅ Done |
 | 8 | Profile & Settings (Kid) | Kid | KidProfile.jsx | ✅ Done |
 | 8b | Profile & Settings (Parent) | Parent | ParentProfile.jsx | ✅ Done |
 
@@ -214,7 +214,7 @@ ProtectedRoute
 - [x] Reports page
 - [x] Parent Profile & Settings (Screen 8b)
 - [x] Full responsive pass — all parent pages
-- [ ] Teaching Guide (Screen 7) ← **next**
+- [x] Teaching Guide (Screen 7) — implemented as Answer Key modal in ParentLessons.jsx
 
 ### Phase 4 — Auth ✅ Done
 - [x] SignInPage — email/password + Google UI, Supabase wired

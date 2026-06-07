@@ -4,6 +4,21 @@ All frontend changes are recorded here in chronological order.
 
 ---
 
+## [2026-06-07] — Parent Answer Key modal + signup email field
+
+### Changed
+- `client/src/pages/ParentLessons.jsx` — the per-lesson **📖 Answer Key** button (formerly a dead "Teaching Guide" link to the unbuilt `/parent/teaching-guide/:id` route) now opens a `LessonAnswersModal`. The modal lists every question for the lesson with the **correct option highlighted**, plus each question's **hint** and **explanation**, and shows the child's **score** for that lesson in the header. Data comes from `curriculum.js` (`lesson.quiz`), no extra DB calls. Removed the unused `useNavigate` import.
+- `client/src/pages/SignUpPage.jsx` — added a real **Email** input field. Previously the form auto-generated a fake address (`name+timestamp@frazzl.kid`), so users could never log in with their real email. Sign-up now uses the entered email directly and validates that it is present.
+
+### Notes
+- The Teaching Guide (Screen 7) is now considered done — implemented inline as the Answer Key modal rather than a separate `ParentTeachingGuide.jsx` page/route.
+- Per-question kid answers are not stored (quiz state is local in `KidQuiz`), so the modal shows the correct answer key + lesson score, not the kid's individual selections.
+
+### Validation
+- `npm run build` passes successfully.
+
+---
+
 ## [2026-06-06] — User-friendly error messages + network retry on sign-in pages
 
 ### Changed
