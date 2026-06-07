@@ -49,17 +49,16 @@ export default function AdminLoginPage() {
         return
       }
 
-      // Helper: sign in with retry on network errors
-      const signInWithRetry = async (retries = 2) => {
+      // Helper: retry any Supabase call on network errors
+      const withRetry = async (fn, retries = 3) => {
         for (let attempt = 1; attempt <= retries; attempt++) {
           try {
-            return await signIn({ email, password: form.password })
+            return await fn()
           } catch (err) {
             const msg = (err?.message || '').toLowerCase()
             const isNetworkError = msg.includes('failed to fetch') || msg.includes('network') || msg.includes('name_not_resolved')
             if (isNetworkError && attempt < retries) {
-              // Wait briefly then retry
-              await new Promise(r => setTimeout(r, 1000 * attempt))
+              await new Promise(r => setTimeout(r, 1500 * attempt))
               continue
             }
             throw err
@@ -69,20 +68,31 @@ export default function AdminLoginPage() {
 
       let authResult
       try {
-        authResult = await signInWithRetry()
+        authResult = await withRetry(() => signIn({ email, password: form.password }))
       } catch (signInErr) {
-        const message = signInErr?.message || ''
-        if (!message.toLowerCase().includes('invalid login credentials')) throw signInErr
+        const message = (signInErr?.message || '').toLowerCase()
+        if (!message.includes('invalid login credentials')) throw signInErr
 
-        authResult = await signUpAuth({
-          email,
-          password: form.password,
-          name: 'System Admin',
-          role: 'admin',
-        })
+        // Admin account doesn't exist yet — auto-create it
+        try {
+          authResult = await signUpAuth({
+            email,
+            password: form.password,
+            name: 'System Admin',
+            role: 'admin',
+          })
+        } catch (signUpErr) {
+          const signUpMsg = (signUpErr?.message || '').toLowerCase()
+          if (signUpMsg.includes('already registered') || signUpMsg.includes('already exists')) {
+            // Account exists but first sign-in failed — retry sign-in
+            authResult = await withRetry(() => signIn({ email, password: form.password }))
+          } else {
+            throw signUpErr
+          }
+        }
 
         if (!authResult?.session) {
-          authResult = await signInWithRetry()
+          authResult = await withRetry(() => signIn({ email, password: form.password }))
         }
       }
 
@@ -91,7 +101,7 @@ export default function AdminLoginPage() {
         throw new Error('Unable to establish an admin session.')
       }
 
-      const profile = await getProfile(user.id)
+      const profile = await withRetry(() => getProfile(user.id))
 
       if (profile?.role !== 'admin') {
         await signOut()

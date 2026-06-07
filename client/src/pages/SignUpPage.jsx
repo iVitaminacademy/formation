@@ -106,24 +106,18 @@ export default function SignUpPage() {
     e.preventDefault()
     setError('')
     setInfo('')
+    if (!form.email.trim()) {
+      setError('Please enter your email address.')
+      return
+    }
     if (!form.terms) {
       setError('Please accept the Terms of Service and Privacy Policy.')
       return
     }
     setSubmitting(true)
     try {
-      // If the email field was removed from the form, generate a fallback
-      // email so signUp() still receives a valid address. This avoids
-      // breaking submissions when the UI doesn't collect an email.
-      const sanitized = (form.name || 'user')
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, '.')
-        .replace(/[^a-z0-9.]/g, '') || 'user'
-      const emailToUse = form.email || `${sanitized}+${Date.now()}@frazzl.kid`
-
       const { session } = await signUp({
-        email: emailToUse,
+        email: form.email.trim(),
         password: form.password,
         name: form.name,
         role,
@@ -311,7 +305,34 @@ export default function SignUpPage() {
             </div>
           </div>
 
-          
+          {/* Email */}
+          <div>
+            <label
+              className="mb-1.5 block text-xs font-bold uppercase tracking-wide"
+              style={{ color: '#64748B' }}
+            >
+              Email
+            </label>
+            <div className="relative">
+              <span
+                className="absolute left-3.5 top-1/2 -translate-y-1/2"
+                style={{ color: '#94A3B8' }}
+              >
+                <EnvelopeIcon />
+              </span>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                onFocus={() => setFocused('email')}
+                onBlur={() => setFocused('')}
+                placeholder="you@example.com"
+                autoComplete="email"
+                style={{ ...fieldStyle('email'), padding: '11px 16px 11px 40px' }}
+              />
+            </div>
+          </div>
 
           {/* Password */}
           <div>

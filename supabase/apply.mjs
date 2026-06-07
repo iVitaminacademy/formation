@@ -53,18 +53,16 @@ if (!pgHost) {
 if (!pgPass) {
   console.error('ERROR: PGPASSWORD is not set.')
   console.error('Find it in: Supabase Dashboard → Settings → Database → Database password')
-  console.error('\nThen run:  PGPASSWORD=yourpassword node supabase/apply.mjs')
+  console.error('\nPowerShell:  $env:PGPASSWORD="yourpassword"; node supabase/apply.mjs')
+  console.error('Bash/zsh:    PGPASSWORD=yourpassword node supabase/apply.mjs')
   process.exit(1)
 }
 
 // ── SQL files to run in order ────────────────────────────────────────────────
+// full_setup.sql is the single, consolidated, idempotent setup (all 10 tables,
+// RLS, RPCs, link codes, notifications + realtime). Safe to re-run.
 const files = [
-  'schema.sql',               // base tables, RLS, indexes
-  'seed.sql',                 // badge definitions, Grade 4 topics
-  'create_user_progress.sql', // user_progress table (TEXT lesson_ref, no FK)
-  'add_streak_column.sql',    // profiles.last_quiz_date for streaks
-  'link_child_code.sql'       // kid link_code + link_child_by_code RPC + parent-read RLS
-  , 'create_notifications.sql' // notifications table + RPC for parent alerts
+  'full_setup.sql',
 ]
 
 const client = new pg.Client({
