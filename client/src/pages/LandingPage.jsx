@@ -116,6 +116,7 @@ export default function LandingPage() {
           <nav className="hidden gap-8 md:flex">
             <button type="button" onClick={() => navigate('/how')} className="text-sm font-semibold text-slate-600 transition hover:text-slate-900">How it works</button>
             <a href="/faq" className="text-sm font-semibold text-slate-600 transition hover:text-slate-900">FAQ</a>
+            <a href="/privacy" className="text-sm font-semibold text-slate-600 transition hover:text-slate-900">Privacy &amp; Terms</a>
           </nav>
 
           <button

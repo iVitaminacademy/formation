@@ -4,6 +4,74 @@ All frontend changes are recorded here in chronological order.
 
 ---
 
+## [2026-06-08] — KidLessons: practice-loop (re-lock after 100%)
+
+### Changed
+- `client/src/pages/KidLessons.jsx` — added a **practice round** system so the kid keeps practicing. Lessons still unlock sequentially, but completion is now measured **within the current round** instead of all-time:
+  - A per-kid+grade round-start timestamp is stored in `localStorage` (`practiceRound:<userId>:<grade>`). A lesson counts as done only if its `last_date` is on/after the round start.
+  - When **every lesson in the grade** is finished, a new round begins automatically (timestamp set to now), which **re-locks all lessons** so the kid restarts from the beginning. A celebratory banner is shown.
+  - No DB changes — `user_progress` history is preserved (replays just increment `attempts`); only the on-screen lock state resets per round.
+
+---
+
+## [2026-06-08] — ParentReports: deeper progress analytics
+
+### Changed
+- `client/src/pages/ParentReports.jsx` — expanded `computeReport()` and the UI to surface much more actionable progress data for parents, all derived from the existing `user_progress` fields (`completed`, `score`, `attempts`, `last_date`) + `curriculum.js`:
+  - **Summary cards** now include **Accuracy** (`questionsCorrect/questionsAnswered`), alongside overall %, lessons completed, avg score, and day streak.
+  - **Key Insights** card — auto-generated plain-language findings: strongest/weakest topic, overall accuracy, lessons mastered, lessons needing review, and an **inactivity alert** (≥5 days since last activity) or weekly momentum note.
+  - **Quiz Mastery** breakdown — counts of **Mastered (≥90%)**, **Proficient (70–89%)**, **Needs practice (<70%)**, with a stacked distribution bar.
+  - **Lessons to Review** — specific lessons flagged when score `<70%` **or** `attempts ≥ 3`, showing score, attempts, and a tip to use the Answer Key.
+  - **Recommended Next Lessons** — the first incomplete lessons in curriculum order.
+  - Header now shows **Last active** date; Recent Quizzes and Topic Breakdown now include **attempts**.
+
+---
+
+## [2026-06-08] — Privacy & Terms page + landing nav link
+
+### Added
+- `client/src/pages/PrivacyTerms.jsx` — new public page rendering the full **Terms of Service** (15 sections) and **Privacy Policy** (13 sections), styled to match `HowItWorks.jsx` / `FAQ.jsx`. Includes a "Back to home" button and `mailto:` support links.
+
+### Changed
+- `client/src/App.jsx` — imported `PrivacyTerms` and registered the public `/privacy` route.
+- `client/src/pages/LandingPage.jsx` — added a **Privacy & Terms** nav link (next to "How it works" and "FAQ") pointing to `/privacy`.
+
+---
+
+## [2026-06-07] — Curriculum expansion + Answer Key modal redesign
+
+### Changed
+- `client/src/data/curriculum.js` — expanded every lesson with the full question set from the parent-provided 4th/5th grade PDF. Each question keeps the source answer, hint, and explanation, with 3 auto-generated multiple-choice distractors. Per-lesson `questions` counts and `time` estimates were updated to match. **Totals went from 17 lessons / 48 questions → 17 lessons / 122 questions.**
+  - New per-lesson counts: `101`=7, `102`=7, `103`=7, `201`=7, `202`=7, `301`=7, `302`=7, `401`=8, `402`=7, `501`=7, `502`=8, `601`=8, `701`=6, `702`=7, `801`=7, `802`=8, `803`=7.
+  - Renamed lesson `102` "Addition & Subtraction" → **"Basic Math"** to match its mixed +/−/×/÷ content.
+  - **Fixed a flawed question**: lesson `701`'s `3,672 ÷ 48` had no exact integer answer (76 r24) and a self-contradicting explanation. Replaced with `3,648 ÷ 48 = 76` (divides evenly).
+- `client/src/pages/ParentLessons.jsx` — redesigned the **📖 Answer Key** modal (`LessonAnswersModal`):
+  - Themed **gradient header** using the topic's color, with a topic-name chip, lesson title, and meta line (question count, ~time, child name).
+  - **Score panel**: shows `Score X/total` + percentage with a progress bar when the child completed the lesson; otherwise a status pill ("Not attempted yet" / "Link a child to see their score").
+  - **Numbered question chips**, correct option labeled "✓ Correct" with dimmed distractors, and 💡 hint / ✅ explanation rows.
+  - **UX**: backdrop blur, Escape-to-close, body scroll-lock while open, sticky footer with Close. Topic color is threaded from `TopicPanel` → `LessonRow` → modal; the trigger button is now tinted per topic.
+
+### Notes
+- Quiz format stays multiple-choice; open-answer PDF items were converted with generated distractors (user-approved approach).
+- Per-question kid answers still aren't stored, so the modal shows the answer key + lesson score, not the kid's individual selections.
+
+### Validation
+- Build verification pending a local `npm run build` run (edits are string-exact and brace-balanced).
+
+---
+
+## [2026-06-07] — Single-file DB setup + migration runner
+
+### Changed
+- `supabase/full_setup.sql` — folded the **notifications** feature into the consolidated file: the `notifications` table (now the 10th table), its RLS policies, the `notify_parents_for_progress()` RPC, and registration of the table into the `supabase_realtime` publication (guarded `DO` block, safe to re-run). One paste now provisions the entire schema for a fresh Supabase project.
+- `supabase/apply.mjs` — now runs **only `full_setup.sql`** (instead of the older list of separate migration files), and the missing-`PGPASSWORD` hint shows both **PowerShell** (`$env:PGPASSWORD="..."; node supabase/apply.mjs`) and Bash syntax.
+
+### Notes
+- Database switching is done by editing `client/.env.local` (`VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` — use the `sb_publishable_…` key, never the `sb_secret_…` one) and restarting `npm run dev`. New Supabase projects often don't expose the direct `db.<ref>.supabase.co` host, so pasting `full_setup.sql` in the SQL Editor is the reliable setup path.
+- For local login to work on a fresh project, disable **Authentication → Providers → Email → Confirm email**.
+
+---
+
 ## [2026-06-07] — Parent Answer Key modal + signup email field
 
 ### Changed

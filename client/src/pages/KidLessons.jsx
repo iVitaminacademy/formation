@@ -70,6 +70,8 @@ export default function KidLessons() {
   const topics       = curriculum[grade] || []
   const { user }     = useAuth()
   const [progressMap, setProgressMap] = useState({})
+  const [roundStart, setRoundStart]   = useState(0)
+  const [justReset, setJustReset]     = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -118,6 +120,34 @@ export default function KidLessons() {
     return () => window.removeEventListener('progressUpdated', onProgressUpdated)
   }, [])
 
+  // Load the current practice-round start time for this kid + grade
+  useEffect(() => {
+    setJustReset(false)
+    if (!user?.id) { setRoundStart(0); return }
+    const stored = localStorage.getItem(`practiceRound:${user.id}:${grade}`)
+    setRoundStart(stored ? new Date(stored).getTime() : 0)
+  }, [user?.id, grade])
+
+  // A lesson counts as done only if it was completed during the current round
+  const doneThisRound = (lesson) => {
+    const r = progressMap[lesson.id]
+    if (!r?.completed) return false
+    if (!roundStart) return true
+    return r.last_date ? new Date(r.last_date).getTime() >= roundStart : false
+  }
+
+  const allLessons = topics.flatMap(t => t.lessons)
+  const allDone    = allLessons.length > 0 && allLessons.every(doneThisRound)
+
+  // When every lesson in the grade is finished, start a fresh round (re-locks all)
+  useEffect(() => {
+    if (!user?.id || !allDone) return
+    const now = new Date().toISOString()
+    localStorage.setItem(`practiceRound:${user.id}:${grade}`, now)
+    setRoundStart(new Date(now).getTime())
+    setJustReset(true)
+  }, [allDone, user?.id, grade])
+
   return (
     <KidLayout>
       <div className="flex items-center justify-between mb-6">
@@ -143,6 +173,13 @@ export default function KidLessons() {
         </div>
       </div>
 
+      {justReset && (
+        <div className="mb-5 rounded-2xl p-4 text-center" style={{ backgroundColor: '#DCFCE7', border: '2px solid #86EFAC' }}>
+          <p className="text-lg font-extrabold" style={{ color: '#16A34A' }}>🎉 Awesome! You finished every lesson!</p>
+          <p className="text-sm font-semibold text-green-700 mt-1">All lessons are locked again so you can practice from the beginning. Let's go! 🚀</p>
+        </div>
+      )}
+
       {topics.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-gray-400">
           <span className="text-5xl mb-4">🚀</span>
@@ -153,8 +190,8 @@ export default function KidLessons() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {topics.map(topic => {
             const lessonsWithStatus = topic.lessons.map((lesson, idx) => {
-              const isDone   = progressMap[lesson.id]?.completed === true
-              const prevDone = idx === 0 || progressMap[topic.lessons[idx - 1].id]?.completed === true
+              const isDone   = doneThisRound(lesson)
+              const prevDone = idx === 0 || doneThisRound(topic.lessons[idx - 1])
               return {
                 ...lesson,
                 status: isDone ? 'done' : prevDone ? 'start' : 'locked',

@@ -54,7 +54,7 @@ MathProject/
 │   │   │   ├── family.js                      ✅ Done — parent ↔ child linking
 │   │   │   └── admin.js                       ✅ Done — JSON bulk import
 │   │   ├── data/
-│   │   │   └── curriculum.js                  ✅ Done — all Grade 4 & 5 questions with hints & explanations
+│   │   │   └── curriculum.js                  ✅ Done — 17 lessons / 122 questions (Grade 4 & 5) with hints & explanations
 │   │   └── hooks/                             ⬜ Not started
 │   ├── index.html                             ✅ Updated
 │   ├── index.css                              ✅ Updated — CSS reset cleaned

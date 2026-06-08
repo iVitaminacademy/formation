@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import LandingPage from './pages/LandingPage'
 import HowItWorks from './pages/HowItWorks'
 import FAQ from './pages/FAQ'
+import PrivacyTerms from './pages/PrivacyTerms'
 import SignInPage from './pages/SignInPage'
 import SignUpPage from './pages/SignUpPage'
 import AdminLoginPage from './pages/AdminLoginPage'
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/how" element={<HowItWorks />} />
+        <Route path="/privacy" element={<PrivacyTerms />} />
 
         {/* Admin */}
         <Route path="/admin/dashboard" element={<ProtectedRoute role="admin"><AdminDashboardPage /></ProtectedRoute>} />
