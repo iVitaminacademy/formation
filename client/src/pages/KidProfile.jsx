@@ -41,7 +41,7 @@ function computeStats(progressMap, grade) {
 const settingsItems = [
   { icon: '✏️', label: 'Edit Profile',     desc: 'Change your name or avatar' },
   { icon: '🔔', label: 'Notifications',    desc: 'Daily learning reminders'   },
-  { icon: '🔒', label: 'Privacy & Policy', desc: 'Data & privacy info'        },
+  { icon: '🔒', label: 'Privacy & Policy', desc: 'Data & privacy info', to: '/privacy' },
   { icon: '❓', label: 'Help & FAQ',       desc: 'Get help or read the FAQ', to: '/faq' },
 ]
 
