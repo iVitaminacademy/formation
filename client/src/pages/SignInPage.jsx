@@ -35,7 +35,11 @@ const ACCENT = '#5E17EB'
 const ACCENT_HOVER = '#4C0FC4'
 
 function friendlyError(err) {
+  const status = err?.status ?? err?.code
   const msg = (err?.message || String(err || '')).toLowerCase()
+  if (status === 429 || msg.includes('too many requests') || msg.includes('rate limit') || msg.includes('over_request_rate_limit')) {
+    return 'Too many attempts. Please wait a minute before trying again.'
+  }
   if (msg.includes('invalid login credentials') || msg.includes('invalid email')) {
     return 'Incorrect email or password. Please try again.'
   }
@@ -44,9 +48,6 @@ function friendlyError(err) {
   }
   if (msg.includes('email not confirmed')) {
     return 'Please verify your email address before signing in.'
-  }
-  if (msg.includes('too many requests') || msg.includes('rate limit')) {
-    return 'Too many attempts. Please wait a moment and try again.'
   }
   return 'Something went wrong. Please try again.'
 }

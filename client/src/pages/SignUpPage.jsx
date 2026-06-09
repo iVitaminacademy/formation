@@ -130,7 +130,15 @@ export default function SignUpPage() {
       }
       navigate(role === 'kid' ? '/kid/dashboard' : '/parent/dashboard')
     } catch (err) {
-      setError(err.message || 'Sign up failed. Please try again.')
+      const status = err?.status ?? err?.code
+      const m = (err?.message || '').toLowerCase()
+      if (status === 429 || m.includes('too many requests') || m.includes('rate limit') || m.includes('over_email_send_rate_limit')) {
+        setError('Too many attempts. Please wait a minute before trying again.')
+      } else if (m.includes('already registered') || m.includes('already exists') || m.includes('user already')) {
+        setError('An account with this email already exists. Try signing in instead.')
+      } else {
+        setError(err.message || 'Sign up failed. Please try again.')
+      }
     } finally {
       setSubmitting(false)
     }
