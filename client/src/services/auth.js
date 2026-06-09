@@ -55,6 +55,15 @@ export async function getProfile(userId) {
   return data
 }
 
+// Send a password-reset email. The link routes the user to /reset-password,
+// where Supabase establishes a temporary recovery session.
+export async function sendPasswordReset(email) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  })
+  if (error) throw error
+}
+
 export async function changePassword(newPassword) {
   const { data, error } = await supabase.auth.updateUser({ password: newPassword })
   if (error) throw error

@@ -4,6 +4,20 @@ All frontend changes are recorded here in chronological order.
 
 ---
 
+## [2026-06-09] — Working forgot-password / reset flow
+
+### Added
+- `client/src/pages/ResetPasswordPage.jsx` — new public page at **`/reset-password`**. Reads the Supabase recovery session (token parsed from the email link via `detectSessionInUrl`), lets the user set + confirm a new password (`changePassword`), then signs out and links back to sign-in. Handles invalid/expired links and a "verifying…" state.
+- `client/src/services/auth.js` — added `sendPasswordReset(email)` using `supabase.auth.resetPasswordForEmail(email, { redirectTo: <origin>/reset-password })`.
+
+### Changed
+- `client/src/pages/SignInPage.jsx` — the **"Forgot password?"** link (was `href="#"`, did nothing) now opens a modal to email a reset link via `sendPasswordReset`, with loading/success/error states (prefilled with the typed email).
+- `client/src/App.jsx` — registered the public `/reset-password` route.
+
+> Note: requires Supabase Auth email settings — `/reset-password` must be added to the project's **Redirect URLs**, and an SMTP/email provider must be configured for the reset email to actually send in production.
+
+---
+
 ## [2026-06-08] — KidLessons: practice-loop (re-lock after 100%)
 
 ### Changed

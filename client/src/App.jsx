@@ -8,6 +8,7 @@ import FAQ from './pages/FAQ'
 import PrivacyTerms from './pages/PrivacyTerms'
 import SignInPage from './pages/SignInPage'
 import SignUpPage from './pages/SignUpPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/faq" element={<FAQ />} />
         <Route path="/login" element={<SignInPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/how" element={<HowItWorks />} />
         <Route path="/privacy" element={<PrivacyTerms />} />

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getProfile } from '../services/auth'
+import { getProfile, sendPasswordReset } from '../services/auth'
 
 const EnvelopeIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -71,6 +71,39 @@ export default function SignInPage() {
   const [form, setForm] = useState({ email: '', password: '', remember: false })
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  // Forgot-password modal state
+  const [showReset, setShowReset]       = useState(false)
+  const [resetEmail, setResetEmail]     = useState('')
+  const [resetSending, setResetSending] = useState(false)
+  const [resetMsg, setResetMsg]         = useState('')
+  const [resetErr, setResetErr]         = useState('')
+
+  const openReset = () => {
+    setResetEmail(form.email)
+    setResetMsg('')
+    setResetErr('')
+    setShowReset(true)
+  }
+
+  const handleSendReset = async e => {
+    e.preventDefault()
+    setResetErr('')
+    setResetMsg('')
+    if (!resetEmail.trim()) {
+      setResetErr('Please enter your email address.')
+      return
+    }
+    setResetSending(true)
+    try {
+      await sendPasswordReset(resetEmail.trim())
+      setResetMsg('If an account exists for that email, a password reset link is on its way. Check your inbox (and spam folder).')
+    } catch (err) {
+      setResetErr(friendlyError(err))
+    } finally {
+      setResetSending(false)
+    }
+  }
 
   const handleChange = e => {
     const { name, value, type, checked } = e.target
@@ -180,9 +213,14 @@ export default function SignInPage() {
               <label className="text-xs font-bold uppercase tracking-wide" style={{ color: '#64748B' }}>
                 Password
               </label>
-              <a href="#" className="text-xs font-semibold transition hover:underline" style={{ color: ACCENT }}>
+              <button
+                type="button"
+                onClick={openReset}
+                className="text-xs font-semibold transition hover:underline"
+                style={{ color: ACCENT, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
                 Forgot password?
-              </a>
+              </button>
             </div>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }}>
@@ -275,6 +313,93 @@ export default function SignInPage() {
           </span>
         </div>
       </div>
+
+      {/* Forgot-password modal */}
+      {showReset && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(26,26,46,0.45)' }}
+          onClick={() => setShowReset(false)}
+        >
+          <form
+            onClick={e => e.stopPropagation()}
+            onSubmit={handleSendReset}
+            className="w-full max-w-sm rounded-3xl bg-white px-7 py-7"
+            style={{ boxShadow: '0 20px 60px rgba(94,23,235,0.18)' }}
+          >
+            <div className="mb-1 flex items-center justify-between">
+              <h3 className="text-lg font-extrabold" style={{ color: '#1A1A2E' }}>Reset your password</h3>
+              <button
+                type="button"
+                onClick={() => setShowReset(false)}
+                className="text-xl leading-none"
+                style={{ color: '#94A3B8', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                ×
+              </button>
+            </div>
+            <p className="mb-5 text-sm" style={{ color: '#94A3B8' }}>
+              Enter your account email and we'll send you a link to set a new password.
+            </p>
+
+            {resetErr && (
+              <div className="mb-3 rounded-xl px-4 py-3 text-sm font-semibold" style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
+                {resetErr}
+              </div>
+            )}
+            {resetMsg && (
+              <div className="mb-3 rounded-xl px-4 py-3 text-sm font-semibold" style={{ backgroundColor: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}>
+                {resetMsg}
+              </div>
+            )}
+
+            {!resetMsg && (
+              <>
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide" style={{ color: '#64748B' }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={resetEmail}
+                  onChange={e => setResetEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  style={{
+                    ...inputBase,
+                    width: '100%',
+                    borderWidth: 1.5,
+                    borderStyle: 'solid',
+                    borderRadius: 12,
+                    padding: '11px 16px',
+                    fontSize: 14,
+                    color: '#1E293B',
+                    outline: 'none',
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={resetSending}
+                  className="mt-4 w-full rounded-xl py-3 text-sm font-extrabold text-white transition-all active:scale-[0.98] disabled:opacity-60"
+                  style={{ backgroundColor: ACCENT }}
+                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = ACCENT_HOVER)}
+                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = ACCENT)}
+                >
+                  {resetSending ? 'Sending…' : 'Send reset link'}
+                </button>
+              </>
+            )}
+            {resetMsg && (
+              <button
+                type="button"
+                onClick={() => setShowReset(false)}
+                className="mt-1 w-full rounded-xl py-3 text-sm font-extrabold text-white transition-all active:scale-[0.98]"
+                style={{ backgroundColor: ACCENT }}
+              >
+                Done
+              </button>
+            )}
+          </form>
+        </div>
+      )}
     </div>
   )
 }
