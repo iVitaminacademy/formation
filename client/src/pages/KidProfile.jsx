@@ -193,20 +193,7 @@ export default function KidProfile() {
             </div>
           )}
 
-          {/* Parent mode toggle */}
-          <div className="bg-white rounded-2xl border-2 p-4 shadow-sm flex items-center justify-between" style={{ borderColor: '#FB923C' }}>
-            
-            <button
-              onClick={handleToggle}
-              className="relative w-12 h-6 rounded-full transition-all duration-300 shrink-0"
-              style={{ backgroundColor: parentMode ? '#F97316' : '#D1D5DB' }}
-            >
-              <span
-                className="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-300"
-                style={{ left: parentMode ? '28px' : '4px' }}
-              />
-            </button>
-          </div>
+         
 
           {/* Settings */}
           <div className="bg-white rounded-2xl border-2 overflow-hidden shadow-sm" style={{ borderColor: '#FB923C' }}>
