@@ -33,6 +33,22 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     let mounted = true
 
+    // If the link itself came back with an error (e.g. expired/invalid), surface it.
+    const hash = window.location.hash?.startsWith('#') ? window.location.hash.slice(1) : ''
+    const hashParams = new URLSearchParams(hash)
+    const linkError = hashParams.get('error_description') || hashParams.get('error')
+    if (linkError) {
+      const code = hashParams.get('error_code') || ''
+      setError(
+        code === 'otp_expired'
+          ? 'This reset link has expired. Reset links are valid for a limited time — please request a new one.'
+          : decodeURIComponent(linkError.replace(/\+/g, ' '))
+      )
+      setHasSession(false)
+      setReady(true)
+      return () => { mounted = false }
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return
       if (data.session) setHasSession(true)
@@ -114,7 +130,7 @@ export default function ResetPasswordPage() {
         ) : !hasSession ? (
           <div className="flex flex-col gap-4 text-center">
             <div className="rounded-xl px-4 py-3 text-sm font-semibold" style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
-              This password reset link is invalid or has expired. Please request a new one from the sign-in page.
+              {error || 'This password reset link is invalid or has expired. Please request a new one from the sign-in page.'}
             </div>
             <Link
               to="/login"
