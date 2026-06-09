@@ -57,9 +57,25 @@ export async function getProfile(userId) {
 
 // Send a password-reset email. The link routes the user to /reset-password,
 // where Supabase establishes a temporary recovery session.
+// 
+// NOTE: The redirect URL passed here may be overridden by the Supabase
+// Dashboard's Site URL setting. Make sure the Dashboard has the correct
+// production URL (not localhost:3000) configured under
+// Authentication → URL Configuration → Site URL.
 export async function sendPasswordReset(email) {
+  const origin = window.location.origin
+  const redirectTo = `${origin}/reset-password`
+
+  // Safety: warn if we detect a mismatch that suggests the Supabase config
+  // still points to the wrong domain.
+  if (origin === 'http://localhost:5173') {
+    console.log('[auth] Local dev: reset-password redirect is', redirectTo)
+  } else if (!origin.startsWith('https://')) {
+    console.warn('[auth] Non-HTTPS origin for password reset:', origin)
+  }
+
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/reset-password`,
+    redirectTo,
   })
   if (error) throw error
 }

@@ -3,186 +3,442 @@ import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../services/supabaseClient'
 import { changePassword } from '../services/auth'
 
-const ACCENT = '#5E17EB'
-const ACCENT_HOVER = '#4C0FC4'
-
-const inputBase = {
-  borderColor: '#E2E8F0',
-  backgroundColor: '#F8FAFC',
-  width: '100%',
-  borderWidth: 1.5,
-  borderStyle: 'solid',
-  borderRadius: 12,
-  padding: '11px 16px',
-  fontSize: 14,
-  color: '#1E293B',
-  outline: 'none',
+// ── helper ───────────────────────────────────────────────────────────────────
+function passwordScore(pw) {
+  let score = 0
+  if (pw.length >= 8) score += 1
+  if (pw.length >= 12) score += 1
+  if (/[A-Z]/.test(pw))    score += 1
+  if (/[a-z]/.test(pw))    score += 1
+  if (/[0-9]/.test(pw))    score += 1
+  if (/[^A-Za-z0-9]/.test(pw)) score += 1
+  return Math.min(score, 5)
 }
 
-export default function ResetPasswordPage() {
-  const navigate = useNavigate()
-  const [ready, setReady]       = useState(false)
-  const [hasSession, setHasSession] = useState(false)
-  const [password, setPassword] = useState('')
-  const [confirm, setConfirm]   = useState('')
-  const [saving, setSaving]     = useState(false)
-  const [error, setError]       = useState('')
-  const [done, setDone]         = useState(false)
+function StrengthBar({ pw }) {
+  const s = passwordScore(pw)
+  const labels   = ['Weak', 'Fair', 'Good', 'Strong', 'Great']
+  const colors   = ['#EF4444', '#F97316', '#EAB308', '#22C55E', '#16A34A']
+  const widths   = ['20%', '40%', '60%', '80%', '100%']
+  const idx      = Math.max(0, Math.min(s - 1, colors.length - 1))
+  return (
+    <div className="mt-1">
+      <div className="h-1.5 rounded-full overflow-hidden bg-gray-200">
+        <div
+          className="h-full rounded-full transition-all duration-300"
+          style={{ width: widths[idx] || '0%', backgroundColor: s > 0 ? colors[idx] : '#E5E7EB' }}
+        />
+      </div>
+      {s > 0 && <p className="text-xs font-semibold mt-0.5" style={{ color: colors[idx] }}>{labels[idx]}</p>}
+    </div>
+  )
+}
 
-  // Supabase parses the recovery token from the URL and emits PASSWORD_RECOVERY.
+// ══ Page ═════════════════════════════════════════════════════════════════════
+export default function ResetPasswordPage() {
+  const navigate   = useNavigate()
+
+  const [phase,    setPhase]     = useState('checking') // checking | ready | success | error
+  const [statusMsg, setStatusMsg] = useState('Checking your reset link…')
+  const [errorHint, setErrorHint] = useState('')
+
+  const [pw,       setPw]        = useState('')
+  const [pw2,      setPw2]       = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [localErr, setLocalErr]   = useState('')
+
+  // ── Phase 1: establish the recovery session ──
   useEffect(() => {
     let mounted = true
 
-    // If the link itself came back with an error (e.g. expired/invalid), surface it.
-    const hash = window.location.hash?.startsWith('#') ? window.location.hash.slice(1) : ''
-    const hashParams = new URLSearchParams(hash)
-    const linkError = hashParams.get('error_description') || hashParams.get('error')
-    if (linkError) {
-      const code = hashParams.get('error_code') || ''
-      setError(
-        code === 'otp_expired'
-          ? 'This reset link has expired. Reset links are valid for a limited time — please request a new one.'
-          : decodeURIComponent(linkError.replace(/\+/g, ' '))
-      )
-      setHasSession(false)
-      setReady(true)
-      return () => { mounted = false }
+    async function tryRecover() {
+      // Supabase puts the recovery tokens in the URL hash (#). Before
+      // `getSession()` can resolve the recovery, we must have the hash
+      // accessible — this is automatic on normal page load but on SPA
+      // navigation we need to ensure supabase processes it.
+      try {
+        // If there's no hash at all, the link may have been stripped.
+        // Give a helpful message.
+        if (!window.location.hash || !window.location.hash.includes('access_token')) {
+          if (mounted) {
+            setPhase('error')
+            setStatusMsg('Invalid or expired reset link.')
+            setErrorHint(
+              'The password reset link appears to be missing a security token. ' +
+              'This can happen if the link was copied incorrectly. ' +
+              'Please request a new reset link from the sign-in page.'
+            )
+          }
+          return
+        }
+
+        const { data, error } = await supabase.auth.getSession()
+        if (error || !data?.session) {
+          if (mounted) {
+            setPhase('error')
+            setStatusMsg('Reset link expired or invalid.')
+            setErrorHint(
+              'This link may have already been used or has expired. ' +
+              'Please request a new one from the sign-in page.'
+            )
+          }
+          return
+        }
+
+        if (mounted) {
+          setPhase('ready')
+          setStatusMsg('')
+        }
+      } catch (err) {
+        console.error('[ResetPassword]', err)
+        if (mounted) {
+          setPhase('error')
+          setStatusMsg('Something went wrong while verifying your reset link.')
+          setErrorHint('Please try requesting a new reset link from the sign-in page.')
+        }
+      }
     }
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return
-      if (data.session) setHasSession(true)
-      setReady(true)
-    })
-
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!mounted) return
-      if (event === 'PASSWORD_RECOVERY' || session) {
-        setHasSession(true)
-        setReady(true)
-      }
-    })
-
+    // Small delay so Supabase auth state resolves from the hash
+    const t = setTimeout(() => tryRecover(), 600)
     return () => {
       mounted = false
-      sub?.subscription?.unsubscribe?.()
+      clearTimeout(t)
     }
   }, [])
 
-  const handleSubmit = async e => {
+  // ── Phase 2: submit new password ──
+  async function handleSubmit(e) {
     e.preventDefault()
-    setError('')
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.')
+    setLocalErr('')
+
+    if (pw !== pw2) {
+      setLocalErr('Passwords do not match.')
       return
     }
-    if (password !== confirm) {
-      setError('Passwords do not match.')
+    if (pw.length < 8) {
+      setLocalErr('Password must be at least 8 characters.')
       return
     }
-    setSaving(true)
+
+    setSubmitting(true)
     try {
-      await changePassword(password)
-      setDone(true)
-      await supabase.auth.signOut()
+      await changePassword(pw)
+      setPhase('success')
+      setStatusMsg('')
     } catch (err) {
-      setError(err?.message || 'Could not update your password. The reset link may have expired.')
+      console.error('[ResetPassword] change error', err)
+      setLocalErr(err.message || 'Could not update password. The link may have expired.')
+      setPhase('error')
     } finally {
-      setSaving(false)
+      setSubmitting(false)
     }
   }
 
-  return (
-    <div
-      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-4 py-12"
-      style={{ background: 'linear-gradient(160deg, #F5F0FF 0%, #EDE4FF 25%, #F3E8FF 50%, #F8F4FF 75%, #FDFBFF 100%)' }}
-    >
-      <div className="relative w-full max-w-md rounded-3xl bg-white px-8 py-10" style={{ boxShadow: '0 20px 60px rgba(94,23,235,0.10)' }}>
-        <div className="mb-8 text-center">
-          <div className="flex items-center justify-center gap-3">
-            <img src="/favicon.svg" alt="Frazzl.kid logo" className="h-10 w-10 rounded-xl shadow-sm" />
-            <div className="text-3xl font-extrabold tracking-tight">
-              <span style={{ color: '#743290' }}>Frazzl</span>
-              <span style={{ color: '#5E17EB' }}>.kid</span>
-            </div>
-          </div>
-          <h1 className="mt-5 text-2xl font-extrabold" style={{ color: '#1A1A2E' }}>Set a new password</h1>
-          <p className="mt-1.5 text-sm" style={{ color: '#94A3B8' }}>Choose a new password for your account</p>
-        </div>
+  // ── RENDER ─────────────────────────────────────────────────────────────────
 
-        {done ? (
-          <div className="flex flex-col gap-4 text-center">
-            <div className="rounded-xl px-4 py-3 text-sm font-semibold" style={{ backgroundColor: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}>
-              Your password has been updated. You can now sign in with your new password.
-            </div>
-            <button
-              onClick={() => navigate('/login')}
-              className="w-full rounded-xl py-3.5 text-sm font-extrabold text-white transition-all active:scale-[0.98]"
-              style={{ backgroundColor: ACCENT }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = ACCENT_HOVER)}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = ACCENT)}
-            >
-              Go to sign in →
-            </button>
+  const containerStyle = {
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F9FAFB',
+    padding: '1rem',
+  }
+
+  const cardStyle = {
+    width: '100%',
+    maxWidth: 420,
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: '2rem',
+    border: '2px solid #F3F4F6',
+    boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+  }
+
+  const linkStyle = {
+    color: '#F97316',
+    fontWeight: 700,
+    textDecoration: 'underline',
+  }
+
+  // ── Checking / Loading ──
+  if (phase === 'checking') {
+    return (
+      <div style={containerStyle}>
+        <div style={cardStyle}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '.5rem' }}>🔐</div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1F2937' }}>
+              Reset Password
+            </h2>
+            <p style={{ marginTop: 12, color: '#6B7280', fontSize: '.9rem', fontWeight:600 }}>
+              {statusMsg}
+            </p>
           </div>
-        ) : !ready ? (
-          <p className="text-center text-sm" style={{ color: '#94A3B8' }}>Verifying your reset link…</p>
-        ) : !hasSession ? (
-          <div className="flex flex-col gap-4 text-center">
-            <div className="rounded-xl px-4 py-3 text-sm font-semibold" style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
-              {error || 'This password reset link is invalid or has expired. Please request a new one from the sign-in page.'}
-            </div>
+          {/* Spinner */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
+            <div
+              style={{
+                width: 28,
+                height: 28,
+                border: '3px solid #E5E7EB',
+                borderTopColor: '#F97316',
+                borderRadius: '50%',
+                animation: 'spin .6s linear infinite',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Error ──
+  if (phase === 'error') {
+    return (
+      <div style={containerStyle}>
+        <div style={cardStyle}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '.5rem' }}>⏱️</div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#991B1B' }}>
+              Reset Link Expired
+            </h2>
+            <p style={{ marginTop: 12, color: '#374151', fontSize: '.9rem', fontWeight: 600 }}>
+              {statusMsg}
+            </p>
+            {errorHint && (
+              <p style={{ marginTop: 8, color: '#6B7280', fontSize: '.85rem', lineHeight: 1.5 }}>
+                {errorHint}
+              </p>
+            )}
+            {localErr && (
+              <p style={{ marginTop: 8, color: '#DC2626', fontSize: '.85rem', fontWeight: 600 }}>
+                {localErr}
+              </p>
+            )}
+          </div>
+
+          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <Link
               to="/login"
-              className="w-full rounded-xl py-3.5 text-center text-sm font-extrabold text-white transition-all active:scale-[0.98]"
-              style={{ backgroundColor: ACCENT }}
+              style={{
+                display: 'block',
+                textAlign: 'center',
+                padding: '12px 0',
+                backgroundColor: '#F97316',
+                color: '#fff',
+                borderRadius: 12,
+                fontWeight: 800,
+                textDecoration: 'none',
+              }}
             >
-              Back to sign in
+              Back to Sign In
             </Link>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {error && (
-              <div className="rounded-xl px-4 py-3 text-sm font-semibold" style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
-                {error}
-              </div>
-            )}
-            <div>
-              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide" style={{ color: '#64748B' }}>
-                New password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                style={inputBase}
-              />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide" style={{ color: '#64748B' }}>
-                Confirm new password
-              </label>
-              <input
-                type="password"
-                value={confirm}
-                onChange={e => setConfirm(e.target.value)}
-                placeholder="••••••••"
-                style={inputBase}
-              />
-            </div>
             <button
-              type="submit"
-              disabled={saving}
-              className="mt-1 w-full rounded-xl py-3.5 text-sm font-extrabold text-white transition-all active:scale-[0.98] disabled:opacity-60"
-              style={{ backgroundColor: ACCENT, boxShadow: '0 4px 20px rgba(94,23,235,0.35)' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = ACCENT_HOVER)}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = ACCENT)}
+              type="button"
+              onClick={() => window.location.reload()}
+              style={{
+                background: 'transparent',
+                border: '2px solid #E5E7EB',
+                borderRadius: 12,
+                padding: '10px 0',
+                fontWeight: 700,
+                cursor: 'pointer',
+                color: '#6B7280',
+              }}
             >
-              {saving ? 'Updating…' : 'Update password'}
+              Try reloading page
             </button>
-          </form>
-        )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Success ──
+  if (phase === 'success') {
+    return (
+      <div style={containerStyle}>
+        <div style={cardStyle}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '.5rem' }}>✅</div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#EA580C' }}>
+              Password Updated!
+            </h2>
+            <p style={{ marginTop: 12, color: '#374151', fontSize: '.9rem', fontWeight: 600 }}>
+              You can now sign in with your new password.
+            </p>
+          </div>
+
+          <Link
+            to="/login"
+            style={{
+              display: 'block',
+              marginTop: 28,
+              textAlign: 'center',
+              padding: '12px 0',
+              backgroundColor: '#F97316',
+              color: '#fff',
+              borderRadius: 12,
+              fontWeight: 800,
+              textDecoration: 'none',
+            }}
+          >
+            Sign In
+          </Link>
+
+          {/* Success tip banner — orange now, previously green */}
+          <div
+            style={{
+              marginTop: 20,
+              padding: '1rem',
+              borderRadius: 12,
+              border: '2px solid #FB923C',
+              backgroundColor: '#FFF7ED',
+            }}
+          >
+            <p style={{ fontSize: '.85rem', fontWeight: 700, color: '#9A3412' }}>
+              💡 Tip: For security, you'll be signed out of all other devices.
+              Sign in to continue learning!
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Ready (password form) ──
+  return (
+    <div style={containerStyle}>
+      <div style={cardStyle}>
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '.5rem' }}>🔒</div>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1F2937' }}>
+            Set New Password
+          </h2>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: 16 }}>
+            <label
+              htmlFor="pw"
+              style={{
+                display: 'block',
+                fontSize: '.8rem',
+                fontWeight: 800,
+                color: '#6B7280',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                marginBottom: 6,
+              }}
+            >
+              New password
+            </label>
+            <input
+              id="pw"
+              type="password"
+              value={pw}
+              onChange={e => setPw(e.target.value)}
+              placeholder="At least 8 characters"
+              required
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                border: '2px solid #E5E7EB',
+                borderRadius: 12,
+                fontSize: '.95rem',
+                fontWeight: 600,
+                outline: 'none',
+                transition: 'border-color 0.15s',
+              }}
+              onFocus={e => (e.target.style.borderColor = '#F97316')}
+              onBlur={e => (e.target.style.borderColor = '#E5E7EB')}
+            />
+            <StrengthBar pw={pw} />
+          </div>
+
+          <div style={{ marginBottom: 8 }}>
+            <label
+              htmlFor="pw2"
+              style={{
+                display: 'block',
+                fontSize: '.8rem',
+                fontWeight: 800,
+                color: '#6B7280',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                marginBottom: 6,
+              }}
+            >
+              Confirm password
+            </label>
+            <input
+              id="pw2"
+              type="password"
+              value={pw2}
+              onChange={e => setPw2(e.target.value)}
+              placeholder="Retype your new password"
+              required
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                border: `2px solid ${pw2 && pw !== pw2 ? '#EF4444' : '#E5E7EB'}`,
+                borderRadius: 12,
+                fontSize: '.95rem',
+                fontWeight: 600,
+                outline: 'none',
+              }}
+              onFocus={e => (e.target.style.borderColor = pw2 && pw !== pw2 ? '#EF4444' : '#F97316')}
+              onBlur={e => (e.target.style.borderColor = pw2 && pw !== pw2 ? '#EF4444' : '#E5E7EB')}
+            />
+            {pw2 && pw !== pw2 && (
+              <p style={{ color: '#EF4444', fontSize: '.8rem', fontWeight: 600, marginTop: 4 }}>
+                Passwords don't match
+              </p>
+            )}
+          </div>
+
+          {localErr && (
+            <div
+              style={{
+                backgroundColor: '#FEF2F2',
+                border: '2px solid #FECACA',
+                borderRadius: 12,
+                padding: '.75rem 1rem',
+                marginBottom: 16,
+              }}
+            >
+              <p style={{ color: '#B91C1C', fontSize: '.85rem', fontWeight: 700 }}>{localErr}</p>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={submitting}
+            style={{
+              width: '100%',
+              marginTop: 8,
+              padding: '14px 0',
+              backgroundColor: submitting ? '#FDBA74' : '#F97316',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 12,
+              fontWeight: 800,
+              fontSize: '1rem',
+              cursor: submitting ? 'not-allowed' : 'pointer',
+              boxShadow: submitting ? 'none' : '0 4px 14px rgba(249,115,22,0.35)',
+              transition: 'background-color 0.15s',
+            }}
+          >
+            {submitting ? 'Updating password…' : 'Update password'}
+          </button>
+        </form>
+
+        <p style={{ marginTop: 20, textAlign: 'center', fontSize: '.85rem', color: '#6B7280' }}>
+          Remember your password?{' '}
+          <Link to="/login" style={linkStyle}>Sign in</Link>
+        </p>
       </div>
     </div>
   )
