@@ -195,10 +195,7 @@ export default function KidProfile() {
 
           {/* Parent mode toggle */}
           <div className="bg-white rounded-2xl border-2 p-4 shadow-sm flex items-center justify-between" style={{ borderColor: '#FB923C' }}>
-            <div>
-              <div className="text-sm font-extrabold text-gray-800">Switch to Parent Mode</div>
-              <div className="text-xs text-gray-400 font-medium">For a parent or guardian</div>
-            </div>
+            
             <button
               onClick={handleToggle}
               className="relative w-12 h-6 rounded-full transition-all duration-300 shrink-0"
