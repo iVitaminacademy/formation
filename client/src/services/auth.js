@@ -55,31 +55,28 @@ export async function getProfile(userId) {
   return data
 }
 
-// Send a password-reset email. The link routes the user to /reset-password,
-// where Supabase establishes a temporary recovery session.
-// 
-// NOTE: The redirect URL passed here may be overridden by the Supabase
-// Dashboard's Site URL setting. Make sure the Dashboard has the correct
-// production URL (not localhost:3000) configured under
-// Authentication → URL Configuration → Site URL.
-export async function sendPasswordReset(email) {
-  const origin = window.location.origin
-  const redirectTo = `${origin}/reset-password`
+// ── Password reset via magic link ────────────────────────────────────────
 
-  // Safety: warn if we detect a mismatch that suggests the Supabase config
-  // still points to the wrong domain.
-  if (origin === 'http://localhost:5173') {
-    console.log('[auth] Local dev: reset-password redirect is', redirectTo)
-  } else if (!origin.startsWith('https://')) {
-    console.warn('[auth] Non-HTTPS origin for password reset:', origin)
-  }
-
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo,
+/**
+ * Send a magic link to the user's email. When clicked, the user returns to
+ * /login?reset=1 with a session established. The modal detects this and
+ * prompts for a new password.
+ */
+export async function sendResetLink(email) {
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: false,
+      // Don't set redirectTo — let Supabase use its default redirect
+      // which includes the token hash. We'll detect the session on return.
+    },
   })
   if (error) throw error
 }
 
+/**
+ * Change password (user must be authenticated via magic link first).
+ */
 export async function changePassword(newPassword) {
   const { data, error } = await supabase.auth.updateUser({ password: newPassword })
   if (error) throw error

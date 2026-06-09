@@ -1,0 +1,59 @@
+<!--
+  Supabase Magic Link template → modified to show a 6-digit code instead of a link.
+  Paste this into: Supabase Dashboard → Authentication → Email Templates → Magic Link
+  The key variable is {{ .Token }} — it renders the 6-digit OTP code.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: 'Segoe UI', system-ui, sans-serif; padding: 0; margin: 0; background: #f5f0ff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f0ff; padding: 40px 0;">
+    <tr>
+      <td align="center">
+        <table width="420" cellpadding="0" cellspacing="0" style="background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 24px rgba(94,23,235,0.10);">
+          <!-- Header -->
+          <tr>
+            <td style="padding: 32px 32px 0; text-align: center;">
+              <span style="font-size: 28px; font-weight: 800; color: #5E17EB;">Frazzl<span style="color: #743290;">.kid</span></span>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding: 28px 32px 32px; text-align: center;">
+              <p style="font-size: 18px; font-weight: 700; color: #1A1A2E; margin: 0 0 12px;">
+                Password Reset Code 🔐
+              </p>
+              <p style="font-size: 14px; color: #64748B; line-height: 1.6; margin: 0 0 24px;">
+                Use the 6-digit code below to reset your password on the login page.
+              </p>
+
+              <!-- CODE -->
+              <div style="background: #F5F0FF; border: 2px dashed #5E17EB; border-radius: 14px; padding: 20px; margin: 0 0 24px;">
+                <span style="font-size: 36px; font-weight: 800; letter-spacing: 6px; color: #5E17EB; font-family: 'Courier New', monospace;">
+                  {{ .Token }}
+                </span>
+              </div>
+
+              <p style="font-size: 12px; color: #94A3B8; margin: 0 0 6px;">
+                This code expires in a few minutes.
+              </p>
+              <p style="font-size: 12px; color: #94A3B8; margin: 0;">
+                If you didn't request a password reset, you can ignore this email.
+              </p>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="background: #F8FAFC; padding: 16px 32px; text-align: center; border-top: 1px solid #E2E8F0;">
+              <span style="font-size: 11px; color: #94A3B8;">Powered by Frazzl.kid · Math learning made fun</span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
