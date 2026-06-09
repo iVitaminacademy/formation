@@ -64,17 +64,17 @@ const ROLES = [
     emoji: '👨‍👧',
     label: "I'm a Parent",
     sub: "Track your child's progress",
-    accent: '#16A34A',
-    accentHover: '#15803D',
-    bg: '#F0FDF4',
-    bgSelected: '#DCFCE7',
-    border: '#86EFAC',
+    accent: '#F97316',
+    accentHover: '#EA580C',
+    bg: '#FFF7ED',
+    bgSelected: '#FFF7ED',
+    border: '#FB923C',
     shadow: 'rgba(22,163,74,0.18)',
   },
 ]
 
 const STRENGTH_LABELS = ['', 'Weak', 'Fair', 'Strong']
-const STRENGTH_COLORS = ['', '#EF4444', '#F59E0B', '#16A34A']
+const STRENGTH_COLORS = ['', '#EF4444', '#F59E0B', '#F97316']
 
 function getStrength(password) {
   if (!password) return 0
@@ -155,12 +155,12 @@ export default function SignUpPage() {
   return (
     <div
       className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-4 py-12"
-      style={{ backgroundColor: '#F0FDF4' }}
+      style={{ backgroundColor: '#FFF7ED' }}
     >
       {/* Background blobs */}
       <div
         className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full opacity-25 blur-3xl"
-        style={{ backgroundColor: '#86EFAC' }}
+        style={{ backgroundColor: '#FB923C' }}
       />
       <div
         className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full opacity-20 blur-3xl"
@@ -186,7 +186,7 @@ export default function SignUpPage() {
               />
               <div className="text-3xl font-extrabold tracking-tight">
                 <span style={{ color: '#111827' }}>Frazzl</span>
-                <span style={{ color: '#16A34A' }}>.kid</span>
+                <span style={{ color: '#F97316' }}>.kid</span>
               </div>
             </div>
             <h1 className="mt-4 text-2xl font-extrabold" style={{ color: '#1A1A2E' }}>
@@ -242,7 +242,7 @@ export default function SignUpPage() {
             </div>
           )}
           {info && (
-            <div className="rounded-xl px-4 py-3 text-sm font-semibold" style={{ backgroundColor: '#F0FDF4', color: '#15803D', border: '1px solid #BBF7D0' }}>
+            <div className="rounded-xl px-4 py-3 text-sm font-semibold" style={{ backgroundColor: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA' }}>
               {info}
             </div>
           )}
@@ -419,11 +419,11 @@ export default function SignUpPage() {
             />
             <span>
               I agree to the{' '}
-              <a href="#" className="font-semibold hover:underline" style={{ color: accent }}>
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="font-semibold hover:underline" style={{ color: accent }}>
                 Terms of Service
               </a>{' '}
               and{' '}
-              <a href="#" className="font-semibold hover:underline" style={{ color: accent }}>
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="font-semibold hover:underline" style={{ color: accent }}>
                 Privacy Policy
               </a>
             </span>

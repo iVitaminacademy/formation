@@ -10,7 +10,7 @@ import { curriculum } from '../data/curriculum'
 const BADGE_DEFS = [
   { id: 1, icon: '⭐', name: 'Quick Learner', desc: 'Complete 5 lessons',     color: '#F97316', bg: '#FFF7ED', border: '#FED7AA', check: s => s.doneCount >= 5 },
   { id: 2, icon: '🔥', name: 'On Fire',       desc: '5-day streak',           color: '#EF4444', bg: '#FEF2F2', border: '#FCA5A5', check: s => s.streak >= 5 },
-  { id: 3, icon: '🎯', name: 'Accurate',      desc: 'Score 100% on a quiz',  color: '#16A34A', bg: '#DCFCE7', border: '#86EFAC', check: s => s.perfectAny },
+  { id: 3, icon: '🎯', name: 'Accurate',      desc: 'Score 100% on a quiz',  color: '#F97316', bg: '#FFF7ED', border: '#FB923C', check: s => s.perfectAny },
   { id: 4, icon: '🚀', name: 'Rocket Start',  desc: 'Complete a full topic',  color: '#A855F7', bg: '#FAF5FF', border: '#D8B4FE', check: s => s.fullTopicAny },
   { id: 5, icon: '💎', name: 'Diamond',       desc: '10-day streak',          color: '#3B82F6', bg: '#EFF6FF', border: '#93C5FD', check: s => s.streak >= 10 },
   { id: 6, icon: '🏆', name: 'Champion',      desc: 'Complete the whole grade', color: '#F59E0B', bg: '#FFFBEB', border: '#FDE68A', check: s => s.gradeComplete },
@@ -142,10 +142,10 @@ export default function KidProfile() {
         <div className="w-full lg:w-72 shrink-0 flex flex-col gap-4">
 
           {/* Avatar card */}
-          <div className="bg-white rounded-2xl border-2 p-6 flex flex-col items-center text-center shadow-sm" style={{ borderColor: '#86EFAC' }}>
+          <div className="bg-white rounded-2xl border-2 p-6 flex flex-col items-center text-center shadow-sm" style={{ borderColor: '#FB923C' }}>
             <div
               className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-3 border-4"
-              style={{ backgroundColor: '#DCFCE7', borderColor: '#16A34A' }}
+              style={{ backgroundColor: '#FFF7ED', borderColor: '#F97316' }}
             >
               {userWithProfile.avatar}
             </div>
@@ -163,14 +163,14 @@ export default function KidProfile() {
 
           {/* Link code — share with parent */}
           {profile?.link_code && (
-            <div className="bg-white rounded-2xl border-2 p-4 shadow-sm" style={{ borderColor: '#86EFAC' }}>
+            <div className="bg-white rounded-2xl border-2 p-4 shadow-sm" style={{ borderColor: '#FB923C' }}>
               <div className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-2">
                 🔗 Parent Link Code
               </div>
               <div className="flex items-center gap-2">
                 <code
                   className="flex-1 text-center text-lg font-extrabold tracking-[0.3em] py-2 rounded-xl"
-                  style={{ backgroundColor: '#F0FDF4', color: '#16A34A' }}
+                  style={{ backgroundColor: '#FFF7ED', color: '#F97316' }}
                 >
                   {profile.link_code}
                 </code>
@@ -182,7 +182,7 @@ export default function KidProfile() {
                     setTimeout(() => setCopied(false), 1500)
                   }}
                   className="px-3 py-2 rounded-xl text-xs font-extrabold text-white shrink-0"
-                  style={{ backgroundColor: copied ? '#16A34A' : '#EC4899' }}
+                  style={{ backgroundColor: copied ? '#F97316' : '#EC4899' }}
                 >
                   {copied ? '✓ Copied' : 'Copy'}
                 </button>
@@ -194,7 +194,7 @@ export default function KidProfile() {
           )}
 
           {/* Parent mode toggle */}
-          <div className="bg-white rounded-2xl border-2 p-4 shadow-sm flex items-center justify-between" style={{ borderColor: '#86EFAC' }}>
+          <div className="bg-white rounded-2xl border-2 p-4 shadow-sm flex items-center justify-between" style={{ borderColor: '#FB923C' }}>
             <div>
               <div className="text-sm font-extrabold text-gray-800">Switch to Parent Mode</div>
               <div className="text-xs text-gray-400 font-medium">For a parent or guardian</div>
@@ -202,7 +202,7 @@ export default function KidProfile() {
             <button
               onClick={handleToggle}
               className="relative w-12 h-6 rounded-full transition-all duration-300 shrink-0"
-              style={{ backgroundColor: parentMode ? '#16A34A' : '#D1D5DB' }}
+              style={{ backgroundColor: parentMode ? '#F97316' : '#D1D5DB' }}
             >
               <span
                 className="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-300"
@@ -212,8 +212,8 @@ export default function KidProfile() {
           </div>
 
           {/* Settings */}
-          <div className="bg-white rounded-2xl border-2 overflow-hidden shadow-sm" style={{ borderColor: '#86EFAC' }}>
-            <div className="px-4 py-3 border-b" style={{ borderColor: '#DCFCE7' }}>
+          <div className="bg-white rounded-2xl border-2 overflow-hidden shadow-sm" style={{ borderColor: '#FB923C' }}>
+            <div className="px-4 py-3 border-b" style={{ borderColor: '#FFF7ED' }}>
               <span className="text-xs font-extrabold uppercase tracking-widest text-gray-400">Account</span>
             </div>
             {settingsItems.map(item => (
@@ -224,8 +224,8 @@ export default function KidProfile() {
                   else if (item.label === 'Edit Profile') openEdit()
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3.5 text-left border-b last:border-0 transition-colors"
-                style={{ borderColor: '#F0FDF4' }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F0FDF4')}
+                style={{ borderColor: '#FFF7ED' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#FFF7ED')}
                 onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
               >
                 <span className="text-lg w-6 text-center">{item.icon}</span>
@@ -252,7 +252,7 @@ export default function KidProfile() {
 
         {/* ── Right column — Badges ── */}
         <div className="flex-1">
-          <div className="bg-white rounded-2xl border-2 p-6 shadow-sm" style={{ borderColor: '#86EFAC' }}>
+          <div className="bg-white rounded-2xl border-2 p-6 shadow-sm" style={{ borderColor: '#FB923C' }}>
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400">🏆 My Badges</h2>
               <span className="text-xs font-bold text-gray-400">
@@ -299,7 +299,7 @@ export default function KidProfile() {
             onClick={e => e.stopPropagation()}
             onSubmit={handleSaveProfile}
             className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-xl border-2"
-            style={{ borderColor: '#86EFAC' }}
+            style={{ borderColor: '#FB923C' }}
           >
             <h3 className="text-lg font-extrabold text-gray-900 mb-1">Edit Profile</h3>
             <p className="text-xs text-gray-400 font-medium mb-5">Change your name or avatar</p>
@@ -307,7 +307,7 @@ export default function KidProfile() {
             <div className="flex justify-center mb-4">
               <div
                 className="w-20 h-20 rounded-full flex items-center justify-center text-4xl border-4"
-                style={{ backgroundColor: '#DCFCE7', borderColor: '#16A34A' }}
+                style={{ backgroundColor: '#FFF7ED', borderColor: '#F97316' }}
               >
                 {editAvatar}
               </div>
@@ -323,7 +323,7 @@ export default function KidProfile() {
                   className="aspect-square rounded-xl text-2xl flex items-center justify-center border-2 transition-all"
                   style={
                     editAvatar === a
-                      ? { borderColor: '#16A34A', backgroundColor: '#DCFCE7' }
+                      ? { borderColor: '#F97316', backgroundColor: '#FFF7ED' }
                       : { borderColor: '#E5E7EB', backgroundColor: '#fff' }
                   }
                 >
@@ -339,7 +339,7 @@ export default function KidProfile() {
               maxLength={40}
               placeholder="Your name"
               className="w-full mt-2 px-4 py-2.5 rounded-xl border-2 text-sm font-semibold text-gray-800 outline-none"
-              style={{ borderColor: '#86EFAC' }}
+              style={{ borderColor: '#FB923C' }}
             />
 
             {saveError && (
@@ -360,7 +360,7 @@ export default function KidProfile() {
                 type="submit"
                 disabled={saving}
                 className="flex-1 py-2.5 rounded-xl text-sm font-extrabold text-white transition-colors"
-                style={{ backgroundColor: saving ? '#86EFAC' : '#16A34A' }}
+                style={{ backgroundColor: saving ? '#FB923C' : '#F97316' }}
               >
                 {saving ? 'Saving…' : 'Save changes'}
               </button>

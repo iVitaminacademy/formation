@@ -8,8 +8,8 @@ export default function ProtectedRoute({ children, role }) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#F0FDF4' }}>
-        <p className="text-sm font-semibold" style={{ color: '#16A34A' }}>Loading…</p>
+      <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#FFF7ED' }}>
+        <p className="text-sm font-semibold" style={{ color: '#F97316' }}>Loading…</p>
       </div>
     )
   }

@@ -7,7 +7,7 @@ import { getProgressMap } from '../services/progress'
 
 function StatusBadge({ status }) {
   if (status === 'done')
-    return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#DCFCE7', color: '#16A34A' }}>✓ Done</span>
+    return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#FFF7ED', color: '#F97316' }}>✓ Done</span>
   if (status === 'start')
     return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#FFF7ED', color: '#F97316' }}>▶ Start</span>
   return <span className="text-lg">🔒</span>
@@ -47,7 +47,7 @@ function TopicPanel({ topic, onStart }) {
             <div className="flex items-center gap-3">
               <div
                 className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-extrabold shrink-0 text-white"
-                style={{ backgroundColor: lesson.status === 'done' ? '#16A34A' : lesson.status === 'start' ? topic.color : '#D1D5DB' }}
+                style={{ backgroundColor: lesson.status === 'done' ? '#F97316' : lesson.status === 'start' ? topic.color : '#D1D5DB' }}
               >
                 {lesson.status === 'done' ? '✓' : idx + 1}
               </div>
@@ -163,8 +163,8 @@ export default function KidLessons() {
               className="px-5 py-2 rounded-xl text-sm font-extrabold border-2 transition-all duration-150"
               style={
                 grade === g
-                  ? { backgroundColor: '#16A34A', color: '#fff', borderColor: '#16A34A' }
-                  : { backgroundColor: '#fff', color: '#16A34A', borderColor: '#86EFAC' }
+                  ? { backgroundColor: '#F97316', color: '#fff', borderColor: '#F97316' }
+                  : { backgroundColor: '#fff', color: '#F97316', borderColor: '#FB923C' }
               }
             >
               Grade {g}
@@ -174,8 +174,8 @@ export default function KidLessons() {
       </div>
 
       {justReset && (
-        <div className="mb-5 rounded-2xl p-4 text-center" style={{ backgroundColor: '#DCFCE7', border: '2px solid #86EFAC' }}>
-          <p className="text-lg font-extrabold" style={{ color: '#16A34A' }}>🎉 Awesome! You finished every lesson!</p>
+        <div className="mb-5 rounded-2xl p-4 text-center" style={{ backgroundColor: '#FFF7ED', border: '2px solid #FB923C' }}>
+          <p className="text-lg font-extrabold" style={{ color: '#F97316' }}>🎉 Awesome! You finished every lesson!</p>
           <p className="text-sm font-semibold text-green-700 mt-1">All lessons are locked again so you can practice from the beginning. Let's go! 🚀</p>
         </div>
       )}

@@ -26,7 +26,7 @@ function ScorePage({ score, total, onRetry, onBack }) {
       <p className="text-gray-500 font-semibold mb-2">You scored</p>
       <div
         className="text-6xl font-extrabold mb-2"
-        style={{ color: pct >= 70 ? '#16A34A' : '#EF4444' }}
+        style={{ color: pct >= 70 ? '#F97316' : '#EF4444' }}
       >
         {score}/{total}
       </div>
@@ -35,17 +35,17 @@ function ScorePage({ score, total, onRetry, onBack }) {
         <button
           onClick={onRetry}
           className="px-8 py-3 rounded-2xl text-white font-extrabold"
-          style={{ backgroundColor: '#16A34A' }}
-          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#15803D')}
-          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#16A34A')}
+          style={{ backgroundColor: '#F97316' }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#EA580C')}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#F97316')}
         >
           Try again
         </button>
         <button
           onClick={onBack}
           className="px-8 py-3 rounded-2xl font-extrabold border-2 transition-colors"
-          style={{ borderColor: '#86EFAC', color: '#16A34A' }}
-          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F0FDF4')}
+          style={{ borderColor: '#FB923C', color: '#F97316' }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#FFF7ED')}
           onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
         >
           Back to Lessons
@@ -116,7 +116,7 @@ export default function KidQuiz() {
 
   function optionStyle(opt) {
     if (!isAnswered) return { backgroundColor: '#fff', borderColor: '#E5E7EB', color: '#1a1a2e' }
-    if (opt === q.correct) return { backgroundColor: '#DCFCE7', borderColor: '#16A34A', color: '#15803D' }
+    if (opt === q.correct) return { backgroundColor: '#FFF7ED', borderColor: '#F97316', color: '#EA580C' }
     if (opt === selected)  return { backgroundColor: '#FEE2E2', borderColor: '#EF4444', color: '#EF4444' }
     return { backgroundColor: '#fff', borderColor: '#E5E7EB', color: '#9CA3AF' }
   }
@@ -148,7 +148,7 @@ export default function KidQuiz() {
       <div className="flex gap-2 mb-8">
         {questions.map((_, i) => {
           const ans = answered[i]
-          const bg  = ans ? (ans.correct ? '#16A34A' : '#EF4444') : i === current ? '#A855F7' : '#E5E7EB'
+          const bg  = ans ? (ans.correct ? '#F97316' : '#EF4444') : i === current ? '#A855F7' : '#E5E7EB'
           return (
             <div
               key={i}
@@ -165,7 +165,7 @@ export default function KidQuiz() {
           {/* Question card */}
           <div
             className="rounded-3xl p-5 sm:p-8 text-center border-2"
-            style={{ backgroundColor: '#F0FDF4', borderColor: '#86EFAC' }}
+            style={{ backgroundColor: '#FFF7ED', borderColor: '#FB923C' }}
           >
             <p className="text-xs font-extrabold uppercase tracking-widest mb-3" style={{ color: quizData.topicColor }}>
               Question {current + 1}
@@ -174,9 +174,9 @@ export default function KidQuiz() {
             <button
               onClick={() => setShowHint(v => !v)}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-colors"
-              style={{ backgroundColor: '#DCFCE7', color: '#16A34A' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#BBF7D0')}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#DCFCE7')}
+              style={{ backgroundColor: '#FFF7ED', color: '#F97316' }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#FED7AA')}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FFF7ED')}
             >
               💡 {showHint ? 'Hide hint' : 'Show hint'}
             </button>
@@ -214,16 +214,16 @@ export default function KidQuiz() {
             <div
               className="rounded-2xl p-5 flex items-start gap-3"
               style={{
-                backgroundColor: isCorrect ? '#DCFCE7' : '#FEE2E2',
-                borderLeft: `4px solid ${isCorrect ? '#16A34A' : '#EF4444'}`,
+                backgroundColor: isCorrect ? '#FFF7ED' : '#FEE2E2',
+                borderLeft: `4px solid ${isCorrect ? '#F97316' : '#EF4444'}`,
               }}
             >
               <span className="text-2xl">{isCorrect ? '🎉' : '💪'}</span>
               <div className="flex-1">
-                <p className="font-extrabold mb-1" style={{ color: isCorrect ? '#15803D' : '#B91C1C' }}>
+                <p className="font-extrabold mb-1" style={{ color: isCorrect ? '#EA580C' : '#B91C1C' }}>
                   {isCorrect ? 'Correct!' : `Not quite — the answer is ${q.correct}`}
                 </p>
-                <p className="text-sm leading-relaxed" style={{ color: isCorrect ? '#166534' : '#991B1B' }}>
+                <p className="text-sm leading-relaxed" style={{ color: isCorrect ? '#9A3412' : '#991B1B' }}>
                   {q.explanation}
                 </p>
               </div>
@@ -235,9 +235,9 @@ export default function KidQuiz() {
             <button
               onClick={handleNext}
               className="self-start px-8 py-3 rounded-2xl text-white font-extrabold transition-all duration-150"
-              style={{ backgroundColor: '#16A34A', boxShadow: '0 4px 14px rgba(22,163,74,0.35)' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#15803D')}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#16A34A')}
+              style={{ backgroundColor: '#F97316', boxShadow: '0 4px 14px rgba(22,163,74,0.35)' }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#EA580C')}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#F97316')}
             >
               {current < questions.length - 1 ? 'Next question →' : 'See my score 🎉'}
             </button>
@@ -247,7 +247,7 @@ export default function KidQuiz() {
         {/* Right panel — hidden on mobile */}
         <div
           className="hidden lg:block w-56 shrink-0 bg-white rounded-2xl border-2 p-4 self-start"
-          style={{ borderColor: '#86EFAC' }}
+          style={{ borderColor: '#FB923C' }}
         >
           <p className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">Quiz Progress</p>
           <div className="flex flex-col gap-1.5">
@@ -259,14 +259,14 @@ export default function KidQuiz() {
                   key={i}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-semibold"
                   style={{
-                    backgroundColor: active ? '#DCFCE7' : 'transparent',
-                    color: ans ? (ans.correct ? '#16A34A' : '#EF4444') : active ? '#A855F7' : '#9CA3AF',
+                    backgroundColor: active ? '#FFF7ED' : 'transparent',
+                    color: ans ? (ans.correct ? '#F97316' : '#EF4444') : active ? '#A855F7' : '#9CA3AF',
                   }}
                 >
                   <span
                     className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0"
                     style={{
-                      backgroundColor: ans ? (ans.correct ? '#16A34A' : '#EF4444') : active ? '#A855F7' : '#E5E7EB',
+                      backgroundColor: ans ? (ans.correct ? '#F97316' : '#EF4444') : active ? '#A855F7' : '#E5E7EB',
                       color: (ans || active) ? '#fff' : '#9CA3AF',
                     }}
                   >

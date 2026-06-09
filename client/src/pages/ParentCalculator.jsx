@@ -125,8 +125,8 @@ export default function ParentCalculator() {
   const getButtonStyle = (btn) => {
     const base = 'select-none rounded-2xl text-lg font-extrabold transition-all duration-100 active:scale-95 focus:outline-none'
     if (btn === 'C') return base + ' bg-red-100 text-red-600 hover:bg-red-200 active:bg-red-300 h-12'
-    if (btn === '=') return base + ' bg-[#16A34A] text-white hover:bg-[#15803D] active:bg-[#166534] h-12 shadow-[0_4px_12px_rgba(22,163,74,0.3)]'
-    if (['÷', '×', '−', '+'].includes(btn)) return base + ' bg-[#DCFCE7] text-[#2D7A4F] hover:bg-[#BBF7D0] active:bg-[#86EFAC] h-12'
+    if (btn === '=') return base + ' bg-[#F97316] text-white hover:bg-[#EA580C] active:bg-[#9A3412] h-12 shadow-[0_4px_12px_rgba(22,163,74,0.3)]'
+    if (['÷', '×', '−', '+'].includes(btn)) return base + ' bg-[#FFF7ED] text-[#2D7A4F] hover:bg-[#FED7AA] active:bg-[#FB923C] h-12'
     if (btn === '⌫') return base + ' bg-slate-100 text-slate-500 hover:bg-slate-200 active:bg-slate-300 h-12'
     return base + ' bg-white text-slate-800 hover:bg-slate-50 active:bg-slate-100 h-14 shadow-[0_1px_3px_rgba(0,0,0,0.06)]'
   }

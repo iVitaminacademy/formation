@@ -180,7 +180,7 @@ export default function AdminLoginPage() {
             type="submit"
             disabled={loading}
             className="mt-1 w-full rounded-xl py-3.5 text-sm font-extrabold text-white transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-            style={{ backgroundColor: '#16A34A', boxShadow: '0 10px 25px rgba(22,163,74,0.25)' }}
+            style={{ backgroundColor: '#F97316', boxShadow: '0 10px 25px rgba(22,163,74,0.25)' }}
           >
             {loading ? 'Authenticating…' : 'Enter Admin Dashboard →'}
           </button>

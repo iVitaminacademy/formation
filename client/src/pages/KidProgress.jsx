@@ -7,7 +7,7 @@ import { curriculum } from '../data/curriculum'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 function scoreColor(pct) {
-  if (pct >= 80) return '#16A34A'
+  if (pct >= 80) return '#F97316'
   if (pct >= 60) return '#F97316'
   return '#EF4444'
 }
@@ -28,7 +28,7 @@ const topicMeta = {
   5: { color: '#0891B2', bg: '#ECFEFF' },
   6: { color: '#EC4899', bg: '#FDF2F8' },
   7: { color: '#3B82F6', bg: '#EFF6FF' },
-  8: { color: '#16A34A', bg: '#F0FDF4' },
+  8: { color: '#F97316', bg: '#FFF7ED' },
 }
 
 function buildStats(progressMap, grade, profile) {
@@ -115,7 +115,7 @@ export default function KidProgress() {
     buildStats(progressMap, grade, profile)
 
   const statCards = [
-    { value: loading ? '…' : `${overall}%`,    label: `Overall Grade ${grade}`, color: '#16A34A', border: '#86EFAC' },
+    { value: loading ? '…' : `${overall}%`,    label: `Overall Grade ${grade}`, color: '#F97316', border: '#FB923C' },
     { value: loading ? '…' : totalDone,         label: 'Lessons completed',      color: '#3B82F6', border: '#93C5FD' },
     { value: `🔥 ${profile?.streak_days ?? 0}`, label: 'Day streak',             color: '#F97316', border: '#FED7AA' },
     { value: `🏅 ${badges.length}`,             label: 'Badges earned',          color: '#EC4899', border: '#F9A8D4' },
@@ -133,7 +133,7 @@ export default function KidProgress() {
       <div className="flex flex-col lg:flex-row gap-5">
 
         {/* Topic breakdown */}
-        <div className="flex-1 bg-white rounded-2xl border-2 p-6 shadow-sm" style={{ borderColor: '#86EFAC' }}>
+        <div className="flex-1 bg-white rounded-2xl border-2 p-6 shadow-sm" style={{ borderColor: '#FB923C' }}>
           <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-4">
             Topic Breakdown
           </h2>
@@ -172,7 +172,7 @@ export default function KidProgress() {
         </div>
 
         {/* Recent quizzes */}
-        <div className="w-full lg:w-80 bg-white rounded-2xl border-2 p-6 shadow-sm" style={{ borderColor: '#86EFAC' }}>
+        <div className="w-full lg:w-80 bg-white rounded-2xl border-2 p-6 shadow-sm" style={{ borderColor: '#FB923C' }}>
           <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-4">
             Recent Quizzes
           </h2>
@@ -193,8 +193,8 @@ export default function KidProgress() {
                   <div
                     key={quiz.id}
                     className="flex items-center gap-3 py-3 border-b last:border-0 rounded-xl px-2 transition-colors"
-                    style={{ borderColor: '#F0FDF4' }}
-                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F0FDF4')}
+                    style={{ borderColor: '#FFF7ED' }}
+                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#FFF7ED')}
                     onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
                     <div

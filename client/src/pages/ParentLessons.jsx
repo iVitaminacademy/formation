@@ -179,7 +179,7 @@ function LessonAnswersModal({ lesson, child, progress, accent = '#2D7A4F', topic
                       key={j}
                       className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm font-semibold"
                       style={isCorrect
-                        ? { backgroundColor: '#DCFCE7', color: '#15803D', border: '1px solid #86EFAC' }
+                        ? { backgroundColor: '#FFF7ED', color: '#EA580C', border: '1px solid #FB923C' }
                         : { backgroundColor: '#F8FAFC', color: '#94A3B8', border: '1px solid #E2E8F0' }}
                     >
                       <span>{opt}</span>

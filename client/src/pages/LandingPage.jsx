@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 
 const trustItems = [
-  { icon: '📚', label: 'Grades 4 & 5 curriculum', color: '#16A34A' },
+  { icon: '📚', label: 'Grades 4 & 5 curriculum', color: '#F97316' },
   { icon: '📊', label: 'Progress tracking',        color: '#3B82F6' },
   { icon: '👨‍👧', label: 'Parent & kid modes',       color: '#EC4899' },
   { icon: '🏆', label: 'Badges & rewards',         color: '#F97316' },
@@ -170,8 +170,8 @@ export default function LandingPage() {
               illustrationBg="linear-gradient(135deg, #ECFDF5 0%, #6EE7B7 50%, #34D399 100%)"
               isParent
               badge="Parent Mode"
-              badgeColor="#16A34A"
-              badgeBg="#F0FDF4"
+              badgeColor="#F97316"
+              badgeBg="#FFF7ED"
               title="I'm Helping"
               subtitle="Track progress, guide learning, and celebrate wins."
               features={[
@@ -179,8 +179,8 @@ export default function LandingPage() {
                 'Detailed quiz reports & insights',
                 'Link multiple children easily',
               ]}
-              btnColor="#16A34A"
-              btnHover="#15803D"
+              btnColor="#F97316"
+              btnHover="#EA580C"
               btnLabel="Enter parent mode →"
               onClick={() => navigate('/parent/dashboard')}
             />
@@ -201,7 +201,7 @@ export default function LandingPage() {
         {/* Footer */}
         <footer className="border-t border-slate-200 py-6 text-center">
           <p className="text-xs font-semibold text-slate-400">
-            © 2026 <span style={{ color: '#111827' }}>Frazzl</span><span style={{ color: '#16A34A' }}>.kid</span> — Built for kids, trusted by parents.
+            © 2026 <span style={{ color: '#111827' }}>Frazzl</span><span style={{ color: '#F97316' }}>.kid</span> — Built for kids, trusted by parents.
           </p>
         </footer>
       </div>

@@ -263,14 +263,14 @@ export default function SignInPage() {
         {/* Mode hint */}
         <div
           className="mt-5 flex items-center justify-center gap-4 rounded-2xl px-4 py-3"
-          style={{ backgroundColor: '#F0FDF4' }}
+          style={{ backgroundColor: '#FFF7ED' }}
         >
           <span className="text-xs font-medium" style={{ color: '#6B7280' }}>Sign in as:</span>
           <span className="flex items-center gap-1.5 text-xs font-bold" style={{ color: '#F97316' }}>
             <span>🧒</span> Kid
           </span>
           <span style={{ color: '#D1D5DB', fontSize: 10 }}>•</span>
-          <span className="flex items-center gap-1.5 text-xs font-bold" style={{ color: '#16A34A' }}>
+          <span className="flex items-center gap-1.5 text-xs font-bold" style={{ color: '#F97316' }}>
             <span>👨‍👧</span> Parent
           </span>
         </div>

@@ -13,7 +13,7 @@ const topicMeta = [
   { id: 5, color: '#0891B2', bg: '#ECFEFF', border: '#A5F3FC' },
   { id: 6, color: '#EC4899', bg: '#FDF2F8', border: '#FBCFE8' },
   { id: 7, color: '#3B82F6', bg: '#EFF6FF', border: '#BFDBFE' },
-  { id: 8, color: '#16A34A', bg: '#F0FDF4', border: '#86EFAC' },
+  { id: 8, color: '#F97316', bg: '#FFF7ED', border: '#FB923C' },
 ]
 
 function greeting() {
@@ -65,7 +65,7 @@ function computeBadges(progressMap, profile) {
     return lesson && r.score >= lesson.questions
   })
   if (perfectLesson)
-    earned.push({ icon: '🎯', name: 'Accurate', color: '#16A34A', bg: '#DCFCE7' })
+    earned.push({ icon: '🎯', name: 'Accurate', color: '#F97316', bg: '#FFF7ED' })
 
   return earned
 }
@@ -124,19 +124,19 @@ export default function KidDashboard() {
       </div>
 
       {/* Overall progress bar */}
-      <div className="bg-white rounded-2xl border-2 p-5 mb-6 shadow-sm" style={{ borderColor: '#86EFAC' }}>
+      <div className="bg-white rounded-2xl border-2 p-5 mb-6 shadow-sm" style={{ borderColor: '#FB923C' }}>
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-extrabold text-gray-700">
             Grade {activeGrade} overall progress
           </span>
-          <span className="text-sm font-extrabold" style={{ color: '#16A34A' }}>
+          <span className="text-sm font-extrabold" style={{ color: '#F97316' }}>
             {loading ? '…' : `${overall}%`}
           </span>
         </div>
-        <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: '#DCFCE7' }}>
+        <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: '#FFF7ED' }}>
           <div
             className="h-full rounded-full transition-all duration-700"
-            style={{ width: `${overall}%`, background: 'linear-gradient(90deg,#16A34A,#4ADE80)' }}
+            style={{ width: `${overall}%`, background: 'linear-gradient(90deg,#F97316,#4ADE80)' }}
           />
         </div>
         <div className="flex gap-2 mt-3">
@@ -147,7 +147,7 @@ export default function KidDashboard() {
               className="px-3 py-1 rounded-lg text-xs font-extrabold transition-colors"
               style={
                 activeGrade === g
-                  ? { backgroundColor: '#16A34A', color: '#fff' }
+                  ? { backgroundColor: '#F97316', color: '#fff' }
                   : { backgroundColor: '#F3F4F6', color: '#6B7280' }
               }
             >
@@ -202,7 +202,7 @@ export default function KidDashboard() {
       )}
 
       {/* Badges */}
-      <div className="bg-white rounded-2xl border-2 p-5 shadow-sm" style={{ borderColor: '#86EFAC' }}>
+      <div className="bg-white rounded-2xl border-2 p-5 shadow-sm" style={{ borderColor: '#FB923C' }}>
         <p className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">My Badges</p>
         {badges.length === 0 ? (
           <p className="text-sm text-gray-400 font-medium">
