@@ -5,6 +5,8 @@ import { getChildren } from '../services/family'
 import { getProgressMap } from '../services/progress'
 import { curriculum } from '../data/curriculum'
 
+const ALL_GRADES = [4, 5]
+
 function relativeDate(iso) {
   if (!iso) return '—'
   const diff = Math.floor((Date.now() - new Date(iso)) / 86400000)
@@ -162,9 +164,27 @@ export default function ParentReports() {
   const [activeChildId, setActiveChildId] = useState(null)
   const [progressMap, setProgressMap]     = useState({})
   const [loading, setLoading]             = useState(true)
+  const [selectedGrade, setSelectedGrade] = useState(null)
 
   const activeChild = children.find(c => c.id === activeChildId) || children[0] || null
-  const grade       = activeChild?.grade ?? 4
+
+  // Which grades have progress data for this child?
+  const activeGrades = (() => {
+    const proms = Object.keys(progressMap).map(Number).filter(n => !isNaN(n))
+    if (proms.length === 0) return ALL_GRADES
+    const found = new Set()
+    proms.forEach(lessonId => {
+      for (const g of ALL_GRADES) {
+        const topics = curriculum[g] || []
+        if (topics.some(t => (t.lessons || []).some(l => l.id === lessonId))) {
+          found.add(g)
+        }
+      }
+    })
+    return found.size > 0 ? [...found].sort((a, b) => a - b) : ALL_GRADES
+  })()
+
+  const grade = selectedGrade ?? (activeGrades.includes(activeChild?.grade) ? activeChild?.grade : activeGrades[0] ?? 4)
 
   useEffect(() => {
     if (!user?.id) { setLoading(false); return }
@@ -184,6 +204,8 @@ export default function ParentReports() {
       .catch(err => console.error('[ParentReports] progress', err))
   }, [activeChild?.id])
 
+  useEffect(() => { setSelectedGrade(null) }, [activeChild?.id])
+
   const stats       = computeReport(progressMap, grade)
   const topics      = stats.topics
   const quizHistory = stats.quizHistory
@@ -200,7 +222,7 @@ export default function ParentReports() {
     insights.push({ tone: 'info', text: `Overall accuracy ${stats.accuracy}% — ${stats.questionsCorrect} of ${stats.questionsAnswered} questions answered correctly.` })
     if (stats.mastered > 0) insights.push({ tone: 'good', text: `${stats.mastered} lesson${stats.mastered > 1 ? 's' : ''} mastered with 90%+ scores.` })
     if (stats.reviewList.length > 0) insights.push({ tone: 'warn', text: `${stats.reviewList.length} lesson${stats.reviewList.length > 1 ? 's' : ''} need review (low score or repeated attempts).` })
-    if (stats.daysSinceActive != null && stats.daysSinceActive >= 5) insights.push({ tone: 'warn', text: `No activity for ${stats.daysSinceActive} days — a short session would help keep the streak going.` })
+    if (stats.daysSinceActive != null && stats.daysSinceActive >= 5) insights.push({ tone: 'warn', text: `No activity for ${stats.daysSinceActive} days — a short session would help.` })
     else if (stats.lessonsThisWeek > 0) insights.push({ tone: 'good', text: `${stats.lessonsThisWeek} lesson${stats.lessonsThisWeek > 1 ? 's' : ''} completed in the last 7 days — nice momentum!` })
   }
 
@@ -225,6 +247,25 @@ export default function ParentReports() {
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
+          {/* Grade selector */}
+          {activeGrades.length > 1 && (
+            <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+              {activeGrades.map(g => (
+                <button
+                  key={g}
+                  onClick={() => setSelectedGrade(g)}
+                  className="px-4 py-1.5 rounded-lg text-xs font-extrabold transition-colors"
+                  style={
+                    grade === g
+                      ? { backgroundColor: '#2D7A4F', color: '#fff' }
+                      : { backgroundColor: 'transparent', color: '#6B7280' }
+                  }
+                >
+                  Grade {g}
+                </button>
+              ))}
+            </div>
+          )}
           {children.length > 1 && (
             <select
               value={activeChild?.id ?? ''}
@@ -346,7 +387,7 @@ export default function ParentReports() {
 
         {/* Left — Topic Breakdown */}
         <div className="flex-1 bg-white rounded-2xl border p-6 shadow-sm" style={{ borderColor: '#C8E6D4' }}>
-          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-4">Topic Breakdown</h2>
+          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-4">Topic Breakdown — Grade {grade}</h2>
           {topics.length === 0 ? (
             <p className="text-sm text-gray-400 font-medium">No lessons for this grade yet.</p>
           ) : (
@@ -396,19 +437,16 @@ export default function ParentReports() {
               const color = scoreColor(quiz.pct)
               return (
                 <div key={quiz.id} className="flex items-center gap-3 py-2.5 border-b last:border-0" style={{ borderColor: '#F0FAF4' }}>
-                  {/* Score badge */}
                   <div
                     className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-extrabold text-white shrink-0"
                     style={{ backgroundColor: color }}
                   >
                     {quiz.score}/{quiz.total}
                   </div>
-                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-bold text-gray-800 truncate">{quiz.name}</div>
                     <div className="text-xs text-gray-400 font-medium">{relativeDate(quiz.date)} · {quiz.pct}% · {quiz.attempts} attempt{quiz.attempts > 1 ? 's' : ''}</div>
                   </div>
-                  {/* Medal */}
                   {quiz.pct >= 90 && <span title="Top score">🏅</span>}
                 </div>
               )

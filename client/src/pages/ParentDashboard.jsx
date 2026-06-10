@@ -6,6 +6,8 @@ import { getChildren } from '../services/family'
 import { getProgressMap } from '../services/progress'
 import { curriculum } from '../data/curriculum'
 
+const ALL_GRADES = [4, 5]
+
 function relativeDate(iso) {
   if (!iso) return '—'
   const diff = Math.floor((Date.now() - new Date(iso)) / 86400000)
@@ -95,9 +97,28 @@ export default function ParentDashboard() {
   const [activeChildId, setActiveChildId] = useState(null)
   const [progressMap, setProgressMap]     = useState({})
   const [loading, setLoading]             = useState(true)
+  const [selectedGrade, setSelectedGrade] = useState(null) // null = show child's grade
 
   const activeChild = children.find(c => c.id === activeChildId) || children[0] || null
-  const grade       = activeChild?.grade ?? 4
+
+  // Determine which grades have progress data
+  const activeGrades = (() => {
+    const proms = Object.keys(progressMap).map(Number).filter(n => !isNaN(n))
+    if (proms.length === 0) return ALL_GRADES // show both if no progress yet
+    const found = new Set()
+    proms.forEach(lessonId => {
+      for (const g of ALL_GRADES) {
+        const topics = curriculum[g] || []
+        if (topics.some(t => (t.lessons || []).some(l => l.id === lessonId))) {
+          found.add(g)
+        }
+      }
+    })
+    return found.size > 0 ? [...found].sort((a, b) => a - b) : ALL_GRADES
+  })()
+
+  // Default selected grade: child's grade if it has progress, otherwise any available
+  const grade = selectedGrade ?? (activeGrades.includes(activeChild?.grade) ? activeChild?.grade : activeGrades[0] ?? 4)
 
   useEffect(() => {
     if (!user?.id) { setLoading(false); return }
@@ -115,6 +136,11 @@ export default function ParentDashboard() {
     getProgressMap(activeChild.id)
       .then(setProgressMap)
       .catch(err => console.error('[ParentDashboard] progress', err))
+  }, [activeChild?.id])
+
+  // Reset selected grade when child changes
+  useEffect(() => {
+    setSelectedGrade(null)
   }, [activeChild?.id])
 
   const { topics, overall, lessonsCompleted } = computeDashboard(progressMap, grade)
@@ -139,21 +165,42 @@ export default function ParentDashboard() {
 
   return (
     <ParentLayout>
-      {/* Title + child selector */}
+      {/* Title + child selector + grade selector */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-2xl font-extrabold" style={{ color: '#1a1a2e' }}>
           {name}'s Report — Grade {grade}
         </h1>
-        {children.length > 1 && (
-          <select
-            value={activeChild?.id ?? ''}
-            onChange={e => setActiveChildId(e.target.value)}
-            className="px-3 py-2 rounded-xl text-sm font-bold border-2 bg-white"
-            style={{ borderColor: '#C8E6D4', color: '#2D7A4F' }}
-          >
-            {children.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        )}
+        <div className="flex gap-2 flex-wrap">
+          {/* Grade selector — if child has progress in multiple grades */}
+          {activeGrades.length > 1 && (
+            <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+              {activeGrades.map(g => (
+                <button
+                  key={g}
+                  onClick={() => setSelectedGrade(g)}
+                  className="px-4 py-1.5 rounded-lg text-xs font-extrabold transition-colors"
+                  style={
+                    grade === g
+                      ? { backgroundColor: '#2D7A4F', color: '#fff' }
+                      : { backgroundColor: 'transparent', color: '#6B7280' }
+                  }
+                >
+                  Grade {g}
+                </button>
+              ))}
+            </div>
+          )}
+          {children.length > 1 && (
+            <select
+              value={activeChild?.id ?? ''}
+              onChange={e => setActiveChildId(e.target.value)}
+              className="px-3 py-2 rounded-xl text-sm font-bold border-2 bg-white"
+              style={{ borderColor: '#C8E6D4', color: '#2D7A4F' }}
+            >
+              {children.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          )}
+        </div>
       </div>
 
       {/* Stat Cards */}
@@ -169,7 +216,7 @@ export default function ParentDashboard() {
 
         {/* Topic Breakdown */}
         <div className="flex-1 bg-white rounded-2xl border p-6 shadow-sm" style={{ borderColor: '#C8E6D4' }}>
-          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">Topic Breakdown</h2>
+          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">Topic Breakdown — Grade {grade}</h2>
           {topics.length === 0 ? (
             <p className="text-sm text-gray-400 font-medium">No lessons for this grade yet.</p>
           ) : (
@@ -195,7 +242,9 @@ export default function ParentDashboard() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-extrabold text-gray-800 truncate">{name}</div>
-              <div className="text-xs text-gray-400 font-semibold">Grade {grade} · Active {lastActive}</div>
+              <div className="text-xs text-gray-400 font-semibold">
+                Grade {activeChild?.grade ?? 4} · Active {lastActive}
+              </div>
             </div>
             <button onClick={() => navigate('/parent/profile')} className="text-gray-300">›</button>
           </div>
