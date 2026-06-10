@@ -193,11 +193,7 @@ export default function PrivacyTerms() {
           </Section>
         </section>
 
-        <div className="mt-10 text-center">
-          <a href="/" className="inline-block rounded-full bg-[#8B5CF6] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#7C3AED]">
-            Back to home
-          </a>
-        </div>
+      
       </div>
     </div>
   )
