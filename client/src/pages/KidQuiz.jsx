@@ -24,6 +24,19 @@ const ACCENT = '#1E3A5F'
 const ACCENT_CORRECT = '#065F46'
 const ACCENT_WRONG   = '#EF4444'
 
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+function buildShuffled(questions) {
+  return questions.map(q => ({ ...q, options: shuffle(q.options) }))
+}
+
 function ScorePage({ score, total, topicColor, onRetry, onBack }) {
   const pct   = Math.round((score / total) * 100)
   const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : 1
@@ -70,14 +83,14 @@ export default function KidQuiz() {
   const { id }   = useParams()
   const lessonId = Number(id)
   const { user } = useAuth()
-  const quizData  = getQuizByLessonId(lessonId) || defaultQuiz
-  const questions = quizData.questions
+  const quizData = getQuizByLessonId(lessonId) || defaultQuiz
 
-  const [current,  setCurrent]  = useState(0)
-  const [selected, setSelected] = useState(null)
-  const [showHint, setShowHint] = useState(false)
-  const [answered, setAnswered] = useState({})
-  const [quizDone, setQuizDone] = useState(false)
+  const [questions, setQuestions] = useState(() => buildShuffled(quizData.questions))
+  const [current,   setCurrent]   = useState(0)
+  const [selected,  setSelected]  = useState(null)
+  const [showHint,  setShowHint]  = useState(false)
+  const [answered,  setAnswered]  = useState({})
+  const [quizDone,  setQuizDone]  = useState(false)
 
   const q          = questions[current]
   const isAnswered = selected !== null
@@ -119,6 +132,7 @@ export default function KidQuiz() {
   }
 
   function handleRetry() {
+    setQuestions(buildShuffled(quizData.questions))
     setCurrent(0); setSelected(null); setShowHint(false); setAnswered({}); setQuizDone(false)
   }
 

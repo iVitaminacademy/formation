@@ -258,13 +258,7 @@ export default function CertificatePage() {
           </div>
 
           {/* Disclaimer */}
-          <div
-            className="mt-6 p-3 rounded-xl text-[10px] leading-relaxed font-medium"
-            style={{ backgroundColor: '#FEF3C7', color: '#92400E' }}
-          >
-            ⚠️ Ce guide est basé sur l'usage courant. Les posologies doivent toujours être adaptées au patient,
-            au contexte clinique, aux antécédents et aux bilans biologiques.
-          </div>
+        
         </div>
 
         {/* Footer band */}
