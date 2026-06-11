@@ -5,18 +5,16 @@ import { getChildren } from '../services/family'
 import { getProgressMap } from '../services/progress'
 import { curriculum } from '../data/curriculum'
 
-const ALL_GRADES = [4, 5]
-
 function relativeDate(iso) {
   if (!iso) return '—'
   const diff = Math.floor((Date.now() - new Date(iso)) / 86400000)
-  if (diff <= 0) return 'Today'
-  if (diff === 1) return 'Yesterday'
-  return `${diff} days ago`
+  if (diff <= 0) return 'Aujourd\'hui'
+  if (diff === 1) return 'Hier'
+  return `Il y a ${diff} jours`
 }
 
-function computeReport(progressMap, grade) {
-  const topicsData = curriculum[grade] || []
+function computeReport(progressMap) {
+  const topicsData = curriculum[1] || []
   let totalLessons = 0, lessonsCompleted = 0
   let questionsCorrect = 0, questionsAnswered = 0
   let mastered = 0, proficient = 0, needsPractice = 0
@@ -51,7 +49,7 @@ function computeReport(progressMap, grade) {
         const attempts = r.attempts || 1
         qT++; tPcts.push(pct); allPcts.push(pct)
         attemptsT += attempts
-        questionsCorrect += score
+        questionsCorrect  += score
         questionsAnswered += total
         if (pct >= 90) mastered++
         else if (pct >= 70) proficient++
@@ -65,7 +63,7 @@ function computeReport(progressMap, grade) {
     const totalL   = lessons.length
     const progress = totalL > 0 ? Math.round((dT / totalL) * 100) : 0
     const avgScore = tPcts.length ? Math.round(tPcts.reduce((a, b) => a + b, 0) / tPcts.length) : null
-    return { name: t.name, icon: t.icon, progress, lessonsD: dT, totalL, quizzes: qT, avgScore, attempts: attemptsT }
+    return { name: t.name, icon: t.icon, color: t.color, bg: t.bg, progress, lessonsD: dT, totalL, quizzes: qT, avgScore, attempts: attemptsT }
   })
 
   quizHistory.sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -94,28 +92,28 @@ function computeReport(progressMap, grade) {
     strongest,
     weakest,
     topics,
-    quizHistory:      quizHistory.slice(0, 8),
-    reviewList:       reviewList.slice(0, 6),
+    quizHistory:  quizHistory.slice(0, 8),
+    reviewList:   reviewList.slice(0, 6),
     recommended,
   }
 }
 
 function progressColor(pct) {
-  if (pct >= 50) return '#2D7A4F'
-  if (pct >= 20) return '#E07B00'
-  return '#CC2222'
+  if (pct >= 50) return '#1E3A5F'
+  if (pct >= 20) return '#1D4ED8'
+  return '#EF4444'
 }
 
 function scoreColor(pct) {
-  if (pct >= 80) return '#2D7A4F'
-  if (pct >= 60) return '#E07B00'
-  return '#CC2222'
+  if (pct >= 80) return '#1E3A5F'
+  if (pct >= 60) return '#1D4ED8'
+  return '#EF4444'
 }
 
 const TONE_STYLES = {
-  good: { bg: '#F0FAF4', border: '#2D7A4F', color: '#2D7A4F' },
-  warn: { bg: '#FFF7ED', border: '#E07B00', color: '#9A6700' },
-  info: { bg: '#EFF6FF', border: '#3B82F6', color: '#1D4ED8' },
+  good: { bg: '#EFF6FF', border: '#1E3A5F', color: '#1E3A5F' },
+  warn: { bg: '#FFF7ED', border: '#F59E0B', color: '#92400E' },
+  info: { bg: '#F0FDF4', border: '#10B981', color: '#065F46' },
 }
 
 function MasteryStat({ label, sub, value, color }) {
@@ -132,7 +130,7 @@ function StatCard({ value, sub, label, color, highlight }) {
   return (
     <div
       className="flex-1 bg-white rounded-2xl border p-5 shadow-sm"
-      style={{ borderColor: highlight ? color : '#C8E6D4', borderWidth: highlight ? 2 : 1 }}
+      style={{ borderColor: highlight ? color : '#BFDBFE', borderWidth: highlight ? 2 : 1 }}
     >
       <div className="text-3xl font-extrabold" style={{ color: color || '#1a1a2e' }}>{value}</div>
       {sub && <div className="text-xs text-gray-400 font-semibold mt-0.5">{sub}</div>}
@@ -145,14 +143,14 @@ function WeakAlert({ topic }) {
   return (
     <div
       className="flex items-center gap-3 p-3 rounded-xl border-l-4 text-sm"
-      style={{ backgroundColor: '#FFF7ED', borderColor: '#E07B00' }}
+      style={{ backgroundColor: '#FFF7ED', borderColor: '#F59E0B' }}
     >
       <span className="text-lg">{topic.icon}</span>
       <div className="flex-1">
         <span className="font-bold text-orange-800">{topic.name}</span>
-        <span className="text-orange-600"> — {topic.progress}% complete, avg score {topic.avgScore ?? 'N/A'}%</span>
+        <span className="text-orange-600"> — {topic.progress}% complété, score moyen {topic.avgScore ?? 'N/A'}%</span>
       </div>
-      <span className="text-xs font-extrabold text-orange-500 uppercase tracking-wide">Needs work</span>
+      <span className="text-xs font-extrabold text-orange-500 uppercase tracking-wide">À renforcer</span>
     </div>
   )
 }
@@ -164,27 +162,8 @@ export default function ParentReports() {
   const [activeChildId, setActiveChildId] = useState(null)
   const [progressMap, setProgressMap]     = useState({})
   const [loading, setLoading]             = useState(true)
-  const [selectedGrade, setSelectedGrade] = useState(null)
 
   const activeChild = children.find(c => c.id === activeChildId) || children[0] || null
-
-  // Which grades have progress data for this child?
-  const activeGrades = (() => {
-    const proms = Object.keys(progressMap).map(Number).filter(n => !isNaN(n))
-    if (proms.length === 0) return ALL_GRADES
-    const found = new Set()
-    proms.forEach(lessonId => {
-      for (const g of ALL_GRADES) {
-        const topics = curriculum[g] || []
-        if (topics.some(t => (t.lessons || []).some(l => l.id === lessonId))) {
-          found.add(g)
-        }
-      }
-    })
-    return found.size > 0 ? [...found].sort((a, b) => a - b) : ALL_GRADES
-  })()
-
-  const grade = selectedGrade ?? (activeGrades.includes(activeChild?.grade) ? activeChild?.grade : activeGrades[0] ?? 4)
 
   useEffect(() => {
     if (!user?.id) { setLoading(false); return }
@@ -204,34 +183,32 @@ export default function ParentReports() {
       .catch(err => console.error('[ParentReports] progress', err))
   }, [activeChild?.id])
 
-  useEffect(() => { setSelectedGrade(null) }, [activeChild?.id])
-
-  const stats       = computeReport(progressMap, grade)
+  const stats       = computeReport(progressMap)
   const topics      = stats.topics
   const quizHistory = stats.quizHistory
   const weakTopics  = topics.filter(t => (t.avgScore != null && t.avgScore < 70) || (t.lessonsD > 0 && t.progress < 40))
   const streak      = activeChild?.streak_days ?? 0
-  const name        = activeChild?.name || 'Your child'
+  const name        = activeChild?.name || 'Votre médecin'
 
   const insights = []
   if (stats.lessonsCompleted === 0) {
-    insights.push({ tone: 'info', text: `${name} hasn't completed any lessons yet — start with the first lesson to begin tracking progress.` })
+    insights.push({ tone: 'info', text: `${name} n'a encore complété aucune leçon — commencez par la première leçon pour démarrer le suivi.` })
   } else {
-    if (stats.strongest) insights.push({ tone: 'good', text: `Strongest area: ${stats.strongest.name} (avg ${stats.strongest.avgScore}%).` })
-    if (stats.weakest && (!stats.strongest || stats.weakest.name !== stats.strongest.name)) insights.push({ tone: 'warn', text: `Needs the most help: ${stats.weakest.name} (avg ${stats.weakest.avgScore}%).` })
-    insights.push({ tone: 'info', text: `Overall accuracy ${stats.accuracy}% — ${stats.questionsCorrect} of ${stats.questionsAnswered} questions answered correctly.` })
-    if (stats.mastered > 0) insights.push({ tone: 'good', text: `${stats.mastered} lesson${stats.mastered > 1 ? 's' : ''} mastered with 90%+ scores.` })
-    if (stats.reviewList.length > 0) insights.push({ tone: 'warn', text: `${stats.reviewList.length} lesson${stats.reviewList.length > 1 ? 's' : ''} need review (low score or repeated attempts).` })
-    if (stats.daysSinceActive != null && stats.daysSinceActive >= 5) insights.push({ tone: 'warn', text: `No activity for ${stats.daysSinceActive} days — a short session would help.` })
-    else if (stats.lessonsThisWeek > 0) insights.push({ tone: 'good', text: `${stats.lessonsThisWeek} lesson${stats.lessonsThisWeek > 1 ? 's' : ''} completed in the last 7 days — nice momentum!` })
+    if (stats.strongest) insights.push({ tone: 'good', text: `Module le plus maîtrisé : ${stats.strongest.name} (moy. ${stats.strongest.avgScore}%).` })
+    if (stats.weakest && (!stats.strongest || stats.weakest.name !== stats.strongest.name)) insights.push({ tone: 'warn', text: `Module à renforcer en priorité : ${stats.weakest.name} (moy. ${stats.weakest.avgScore}%).` })
+    insights.push({ tone: 'info', text: `Précision globale ${stats.accuracy}% — ${stats.questionsCorrect} / ${stats.questionsAnswered} questions correctes.` })
+    if (stats.mastered > 0) insights.push({ tone: 'good', text: `${stats.mastered} leçon${stats.mastered > 1 ? 's' : ''} maîtrisée${stats.mastered > 1 ? 's' : ''} avec 90%+.` })
+    if (stats.reviewList.length > 0) insights.push({ tone: 'warn', text: `${stats.reviewList.length} leçon${stats.reviewList.length > 1 ? 's' : ''} à revoir (score faible ou tentatives multiples).` })
+    if (stats.daysSinceActive != null && stats.daysSinceActive >= 5) insights.push({ tone: 'warn', text: `Aucune activité depuis ${stats.daysSinceActive} jours — une session courte serait bénéfique.` })
+    else if (stats.lessonsThisWeek > 0) insights.push({ tone: 'good', text: `${stats.lessonsThisWeek} leçon${stats.lessonsThisWeek > 1 ? 's' : ''} complétée${stats.lessonsThisWeek > 1 ? 's' : ''} ces 7 derniers jours — bel élan !` })
   }
 
   if (!loading && !activeChild) {
     return (
       <ParentLayout>
-        <h1 className="text-2xl font-extrabold text-gray-900 mb-2">Reports</h1>
-        <div className="mt-4 px-4 py-3 rounded-xl text-sm font-medium" style={{ backgroundColor: '#FFF7ED', color: '#9A6700' }}>
-          No child linked yet — link one on your Profile to see their report.
+        <h1 className="text-2xl font-extrabold text-gray-900 mb-2">Rapports</h1>
+        <div className="mt-4 px-4 py-3 rounded-xl text-sm font-medium" style={{ backgroundColor: '#EFF6FF', color: '#1E3A5F' }}>
+          Aucun médecin lié — liez-en un dans votre Profil pour voir son rapport.
         </div>
       </ParentLayout>
     )
@@ -241,37 +218,18 @@ export default function ParentReports() {
     <ParentLayout>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-extrabold text-gray-900">Reports</h1>
+          <h1 className="text-2xl font-extrabold text-gray-900">📊 Rapports</h1>
           <p className="text-sm text-gray-500 font-medium mt-1">
-            {activeChild ? `${activeChild.name} — Grade ${grade}${stats.lastActivity ? ` · Last active ${relativeDate(stats.lastActivity)}` : ''}` : 'Loading…'}
+            {activeChild ? `${activeChild.name}${stats.lastActivity ? ` · Dernière activité ${relativeDate(stats.lastActivity)}` : ''}` : 'Chargement…'}
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          {/* Grade selector */}
-          {activeGrades.length > 1 && (
-            <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
-              {activeGrades.map(g => (
-                <button
-                  key={g}
-                  onClick={() => setSelectedGrade(g)}
-                  className="px-4 py-1.5 rounded-lg text-xs font-extrabold transition-colors"
-                  style={
-                    grade === g
-                      ? { backgroundColor: '#2D7A4F', color: '#fff' }
-                      : { backgroundColor: 'transparent', color: '#6B7280' }
-                  }
-                >
-                  Grade {g}
-                </button>
-              ))}
-            </div>
-          )}
           {children.length > 1 && (
             <select
               value={activeChild?.id ?? ''}
               onChange={e => setActiveChildId(e.target.value)}
               className="px-3 py-2 rounded-xl text-sm font-bold border-2 bg-white"
-              style={{ borderColor: '#C8E6D4', color: '#2D7A4F' }}
+              style={{ borderColor: '#BFDBFE', color: '#0F2847' }}
             >
               {children.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
@@ -279,26 +237,26 @@ export default function ParentReports() {
           <button
             onClick={() => window.print()}
             className="px-4 py-2 rounded-xl text-sm font-bold border-2 text-gray-500 bg-white transition-colors"
-            style={{ borderColor: '#C8E6D4' }}
+            style={{ borderColor: '#BFDBFE' }}
           >
-            ⬇ Export PDF
+            ⬇ Exporter PDF
           </button>
         </div>
       </div>
 
-      {/* ── Summary Stats ── */}
+      {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-        <StatCard value={`${stats.overall}%`} label="Overall progress" color="#2D7A4F" highlight />
-        <StatCard value={`${stats.lessonsCompleted}/${stats.totalLessons}`} label="Lessons completed" color="#1a1a2e" />
-        <StatCard value={`${stats.avgScore}%`} label="Avg quiz score" color={scoreColor(stats.avgScore)} />
-        <StatCard value={`${stats.accuracy}%`} sub={`${stats.questionsCorrect}/${stats.questionsAnswered} questions`} label="Accuracy" color={scoreColor(stats.accuracy)} />
-        <StatCard value={`🔥 ${streak}`} label="Day streak" color="#E07B00" />
+        <StatCard value={`${stats.overall}%`} label="Progression globale" color="#1E3A5F" highlight />
+        <StatCard value={`${stats.lessonsCompleted}/${stats.totalLessons}`} label="Leçons complétées" color="#1a1a2e" />
+        <StatCard value={`${stats.avgScore}%`} label="Score quiz moyen" color={scoreColor(stats.avgScore)} />
+        <StatCard value={`${stats.accuracy}%`} sub={`${stats.questionsCorrect}/${stats.questionsAnswered} questions`} label="Précision" color={scoreColor(stats.accuracy)} />
+        <StatCard value={`🎯 ${streak}`} label="Jours consécutifs" color="#1D4ED8" />
       </div>
 
-      {/* ── Key Insights ── */}
+      {/* Key Insights */}
       {insights.length > 0 && (
-        <div className="bg-white rounded-2xl border p-5 shadow-sm mb-5" style={{ borderColor: '#C8E6D4' }}>
-          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">📊 Key Insights</h2>
+        <div className="bg-white rounded-2xl border p-5 shadow-sm mb-5" style={{ borderColor: '#BFDBFE' }}>
+          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">📊 Observations clés</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {insights.map((it, i) => {
               const s = TONE_STYLES[it.tone]
@@ -312,28 +270,28 @@ export default function ParentReports() {
         </div>
       )}
 
-      {/* ── Quiz Mastery ── */}
+      {/* Quiz Mastery */}
       {stats.quizzesTaken > 0 && (
-        <div className="bg-white rounded-2xl border p-5 shadow-sm mb-5" style={{ borderColor: '#C8E6D4' }}>
-          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">Quiz Mastery — {stats.quizzesTaken} quiz{stats.quizzesTaken > 1 ? 'zes' : ''} taken</h2>
+        <div className="bg-white rounded-2xl border p-5 shadow-sm mb-5" style={{ borderColor: '#BFDBFE' }}>
+          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">Maîtrise des quiz — {stats.quizzesTaken} quiz complété{stats.quizzesTaken > 1 ? 's' : ''}</h2>
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <MasteryStat label="Mastered" sub="90%+ correct" value={stats.mastered} color="#2D7A4F" />
-            <MasteryStat label="Proficient" sub="70–89% correct" value={stats.proficient} color="#E07B00" />
-            <MasteryStat label="Needs practice" sub="below 70%" value={stats.needsPractice} color="#CC2222" />
+            <MasteryStat label="Maîtrisé"      sub="90%+ correct"       value={stats.mastered}      color="#1E3A5F" />
+            <MasteryStat label="Compétent"      sub="70–89% correct"     value={stats.proficient}    color="#1D4ED8" />
+            <MasteryStat label="À pratiquer"    sub="moins de 70%"       value={stats.needsPractice} color="#EF4444" />
           </div>
           <div className="flex h-3 rounded-full overflow-hidden bg-gray-100">
-            <div style={{ width: `${(stats.mastered / stats.quizzesTaken) * 100}%`, backgroundColor: '#2D7A4F' }} />
-            <div style={{ width: `${(stats.proficient / stats.quizzesTaken) * 100}%`, backgroundColor: '#E07B00' }} />
-            <div style={{ width: `${(stats.needsPractice / stats.quizzesTaken) * 100}%`, backgroundColor: '#CC2222' }} />
+            <div style={{ width: `${(stats.mastered / stats.quizzesTaken) * 100}%`, backgroundColor: '#1E3A5F' }} />
+            <div style={{ width: `${(stats.proficient / stats.quizzesTaken) * 100}%`, backgroundColor: '#1D4ED8' }} />
+            <div style={{ width: `${(stats.needsPractice / stats.quizzesTaken) * 100}%`, backgroundColor: '#EF4444' }} />
           </div>
         </div>
       )}
 
-      {/* ── Weak Area Alerts ── */}
+      {/* Weak Area Alerts */}
       {weakTopics.length > 0 && (
         <div className="bg-white rounded-2xl border p-5 shadow-sm mb-5" style={{ borderColor: '#FCD34D' }}>
           <h2 className="text-xs font-extrabold uppercase tracking-widest text-orange-400 mb-3">
-            ⚠ Weak Area Alerts — {weakTopics.length} topic{weakTopics.length > 1 ? 's' : ''} need attention
+            ⚠ Modules à renforcer — {weakTopics.length} module{weakTopics.length > 1 ? 's' : ''} nécessite{weakTopics.length > 1 ? 'nt' : ''} de l'attention
           </h2>
           <div className="flex flex-col gap-2">
             {weakTopics.map(t => <WeakAlert key={t.name} topic={t} />)}
@@ -341,10 +299,10 @@ export default function ParentReports() {
         </div>
       )}
 
-      {/* ── Lessons to Review ── */}
+      {/* Lessons to Review */}
       {stats.reviewList.length > 0 && (
         <div className="bg-white rounded-2xl border p-5 shadow-sm mb-5" style={{ borderColor: '#FCA5A5' }}>
-          <h2 className="text-xs font-extrabold uppercase tracking-widest text-red-400 mb-3">🔁 Lessons to Review — focus here</h2>
+          <h2 className="text-xs font-extrabold uppercase tracking-widest text-red-400 mb-3">🔁 Leçons à revoir — à travailler en priorité</h2>
           <div className="flex flex-col gap-2">
             {stats.reviewList.map(r => (
               <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#FEF2F2' }}>
@@ -355,22 +313,22 @@ export default function ParentReports() {
                 </div>
                 <div className="text-right shrink-0">
                   <div className="text-sm font-extrabold" style={{ color: scoreColor(r.pct) }}>{r.pct}%</div>
-                  <div className="text-[11px] text-gray-400 font-semibold">{r.score}/{r.total} · {r.attempts} attempt{r.attempts > 1 ? 's' : ''}</div>
+                  <div className="text-[11px] text-gray-400 font-semibold">{r.score}/{r.total} · {r.attempts} tentative{r.attempts > 1 ? 's' : ''}</div>
                 </div>
               </div>
             ))}
           </div>
-          <p className="text-xs text-gray-400 font-medium mt-3">Tip: open the lesson's 📖 Answer Key on the Lessons page to review the questions together.</p>
+          <p className="text-xs text-gray-400 font-medium mt-3">Conseil : ouvrez le 📖 Corrigé dans l'onglet Protocoles pour revoir les questions ensemble.</p>
         </div>
       )}
 
-      {/* ── Recommended Next ── */}
+      {/* Recommended Next */}
       {stats.recommended.length > 0 && (
-        <div className="bg-white rounded-2xl border p-5 shadow-sm mb-5" style={{ borderColor: '#C8E6D4' }}>
-          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">⏭ Recommended Next Lessons</h2>
+        <div className="bg-white rounded-2xl border p-5 shadow-sm mb-5" style={{ borderColor: '#BFDBFE' }}>
+          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">⏭ Prochaines leçons recommandées</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {stats.recommended.map(r => (
-              <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#F0FAF4' }}>
+              <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#EFF6FF' }}>
                 <span className="text-lg">{r.icon}</span>
                 <div className="min-w-0">
                   <div className="text-sm font-bold text-gray-800 truncate">{r.name}</div>
@@ -382,14 +340,14 @@ export default function ParentReports() {
         </div>
       )}
 
-      {/* ── Two column ── */}
+      {/* Two column */}
       <div className="flex flex-col lg:flex-row gap-5">
 
-        {/* Left — Topic Breakdown */}
-        <div className="flex-1 bg-white rounded-2xl border p-6 shadow-sm" style={{ borderColor: '#C8E6D4' }}>
-          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-4">Topic Breakdown — Grade {grade}</h2>
+        {/* Left — Module Breakdown */}
+        <div className="flex-1 bg-white rounded-2xl border p-6 shadow-sm" style={{ borderColor: '#BFDBFE' }}>
+          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-4">Modules — Formation IV</h2>
           {topics.length === 0 ? (
-            <p className="text-sm text-gray-400 font-medium">No lessons for this grade yet.</p>
+            <p className="text-sm text-gray-400 font-medium">Aucune leçon disponible.</p>
           ) : (
           <div className="flex flex-col gap-4">
             {topics.map(topic => {
@@ -402,10 +360,10 @@ export default function ParentReports() {
                       <span className="text-sm font-bold text-gray-800">{topic.name}</span>
                     </div>
                     <div className="flex items-center gap-3 text-xs font-bold text-gray-400">
-                      <span>{topic.lessonsD}/{topic.totalL} lessons</span>
-                      <span>{topic.quizzes} quizzes</span>
+                      <span>{topic.lessonsD}/{topic.totalL} leçons</span>
+                      <span>{topic.quizzes} quiz</span>
                       {topic.avgScore !== null && (
-                        <span style={{ color: scoreColor(topic.avgScore) }}>avg {topic.avgScore}%</span>
+                        <span style={{ color: scoreColor(topic.avgScore) }}>moy. {topic.avgScore}%</span>
                       )}
                       <span className="font-extrabold" style={{ color }}>{topic.progress}%</span>
                     </div>
@@ -424,19 +382,19 @@ export default function ParentReports() {
         </div>
 
         {/* Right — Quiz History */}
-        <div className="w-full lg:w-80 bg-white rounded-2xl border p-6 shadow-sm" style={{ borderColor: '#C8E6D4' }}>
-          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-4">Recent Quizzes</h2>
+        <div className="w-full lg:w-80 bg-white rounded-2xl border p-6 shadow-sm" style={{ borderColor: '#BFDBFE' }}>
+          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-4">Quiz récents</h2>
           {quizHistory.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-3xl mb-2">📝</p>
-              <p className="text-sm text-gray-400 font-semibold">No quizzes yet</p>
+              <p className="text-sm text-gray-400 font-semibold">Aucun quiz complété</p>
             </div>
           ) : (
           <div className="flex flex-col gap-3">
             {quizHistory.map(quiz => {
               const color = scoreColor(quiz.pct)
               return (
-                <div key={quiz.id} className="flex items-center gap-3 py-2.5 border-b last:border-0" style={{ borderColor: '#F0FAF4' }}>
+                <div key={quiz.id} className="flex items-center gap-3 py-2.5 border-b last:border-0" style={{ borderColor: '#EFF6FF' }}>
                   <div
                     className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-extrabold text-white shrink-0"
                     style={{ backgroundColor: color }}
@@ -445,9 +403,9 @@ export default function ParentReports() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-bold text-gray-800 truncate">{quiz.name}</div>
-                    <div className="text-xs text-gray-400 font-medium">{relativeDate(quiz.date)} · {quiz.pct}% · {quiz.attempts} attempt{quiz.attempts > 1 ? 's' : ''}</div>
+                    <div className="text-xs text-gray-400 font-medium">{relativeDate(quiz.date)} · {quiz.pct}% · {quiz.attempts} tentative{quiz.attempts > 1 ? 's' : ''}</div>
                   </div>
-                  {quiz.pct >= 90 && <span title="Top score">🏅</span>}
+                  {quiz.pct >= 90 && <span title="Score parfait">🏅</span>}
                 </div>
               )
             })}

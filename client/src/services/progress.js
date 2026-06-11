@@ -80,20 +80,6 @@ export async function saveProgress({ userId, lessonId, score, completed = true }
       // 3. Update streak after every completed lesson
       await updateStreak(userId)
 
-      // 4. Notify any linked parents (server-side RPC)
-      try {
-        await supabase.rpc('notify_parents_for_progress', {
-          p_child_id: userId,
-          p_lesson_ref: ref,
-          p_score: score,
-          p_completed: completed,
-          p_attempts: local[ref].attempts,
-          p_last_date: now,
-        })
-      } catch (e) {
-        console.warn('[progress] notify_parents RPC failed:', e.message || e)
-      }
-
       return data
     } catch (err) {
       console.error('[progress] DB save failed:', err.message)

@@ -6,25 +6,23 @@ import { getChildren } from '../services/family'
 import { getProgressMap } from '../services/progress'
 import { curriculum } from '../data/curriculum'
 
-const ALL_GRADES = [4, 5]
-
 function relativeDate(iso) {
   if (!iso) return '—'
   const diff = Math.floor((Date.now() - new Date(iso)) / 86400000)
-  if (diff <= 0) return 'today'
-  if (diff === 1) return 'yesterday'
-  return `${diff} days ago`
+  if (diff <= 0) return 'aujourd\'hui'
+  if (diff === 1) return 'hier'
+  return `il y a ${diff} jours`
 }
 
 function lastActiveLabel(progressMap) {
   const dates = Object.values(progressMap).map(r => r?.last_date).filter(Boolean)
-  if (!dates.length) return 'never'
+  if (!dates.length) return 'jamais'
   const latest = dates.reduce((a, b) => (new Date(a) > new Date(b) ? a : b))
   return relativeDate(latest)
 }
 
-function computeDashboard(progressMap, grade) {
-  const topicsData = curriculum[grade] || []
+function computeDashboard(progressMap) {
+  const topicsData = curriculum[1] || []
   let totalLessons = 0, lessonsCompleted = 0
   const topics = topicsData.map(t => {
     const lessons = t.lessons || []
@@ -34,25 +32,25 @@ function computeDashboard(progressMap, grade) {
       if (r?.completed) done++
       if (r?.completed && r.score != null) quizzes++
     })
-    totalLessons += lessons.length
+    totalLessons     += lessons.length
     lessonsCompleted += done
     const totalL   = lessons.length
     const progress = totalL > 0 ? Math.round((done / totalL) * 100) : 0
-    return { id: t.id, name: t.name, icon: t.icon, progress, lessons: done, totalLessons: totalL, quizzes }
+    return { id: t.id, name: t.name, icon: t.icon, color: t.color, bg: t.bg, border: t.border, progress, lessons: done, totalLessons: totalL, quizzes }
   })
   const overall = totalLessons > 0 ? Math.round((lessonsCompleted / totalLessons) * 100) : 0
   return { topics, overall, lessonsCompleted, totalLessons }
 }
 
 function progressColor(pct) {
-  if (pct >= 50) return '#2D7A4F'
-  if (pct >= 20) return '#E07B00'
-  return '#CC2222'
+  if (pct >= 50) return '#1E3A5F'
+  if (pct >= 20) return '#1D4ED8'
+  return '#EF4444'
 }
 
 function StatCard({ value, label, color, icon }) {
   return (
-    <div className="flex-1 bg-white rounded-2xl border p-5 text-center shadow-sm" style={{ borderColor: '#C8E6D4' }}>
+    <div className="flex-1 bg-white rounded-2xl border p-5 text-center shadow-sm" style={{ borderColor: '#BFDBFE' }}>
       <div className="text-3xl font-extrabold mb-1" style={{ color: color || '#1a1a2e' }}>
         {icon && <span className="mr-1">{icon}</span>}{value}
       </div>
@@ -65,8 +63,10 @@ function TopicRow({ topic, onGuideClick }) {
   const color = progressColor(topic.progress)
   return (
     <button
-      className="w-full flex items-center gap-3 py-3 px-2 hover:bg-green-50 rounded-xl transition-colors text-left group"
+      className="w-full flex items-center gap-3 py-3 px-2 rounded-xl transition-colors text-left group"
       onClick={() => onGuideClick(topic)}
+      onMouseEnter={e => (e.currentTarget.style.backgroundColor = topic.bg ?? '#EFF6FF')}
+      onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
     >
       <span className="text-xl w-6 text-center">{topic.icon}</span>
       <div className="flex-1 min-w-0">
@@ -81,10 +81,10 @@ function TopicRow({ topic, onGuideClick }) {
           />
         </div>
         <div className="text-xs text-gray-400 mt-1 font-medium">
-          {topic.lessons}/{topic.totalLessons} lessons · {topic.quizzes} quiz{topic.quizzes !== 1 ? 'zes' : ''} done
+          {topic.lessons}/{topic.totalLessons} leçons · {topic.quizzes} quiz complété{topic.quizzes > 1 ? 's' : ''}
         </div>
       </div>
-      <span className="text-gray-200 group-hover:text-green-400 transition-colors text-sm">›</span>
+      <span className="text-gray-200 group-hover:text-blue-400 transition-colors text-sm">›</span>
     </button>
   )
 }
@@ -97,28 +97,8 @@ export default function ParentDashboard() {
   const [activeChildId, setActiveChildId] = useState(null)
   const [progressMap, setProgressMap]     = useState({})
   const [loading, setLoading]             = useState(true)
-  const [selectedGrade, setSelectedGrade] = useState(null) // null = show child's grade
 
   const activeChild = children.find(c => c.id === activeChildId) || children[0] || null
-
-  // Determine which grades have progress data
-  const activeGrades = (() => {
-    const proms = Object.keys(progressMap).map(Number).filter(n => !isNaN(n))
-    if (proms.length === 0) return ALL_GRADES // show both if no progress yet
-    const found = new Set()
-    proms.forEach(lessonId => {
-      for (const g of ALL_GRADES) {
-        const topics = curriculum[g] || []
-        if (topics.some(t => (t.lessons || []).some(l => l.id === lessonId))) {
-          found.add(g)
-        }
-      }
-    })
-    return found.size > 0 ? [...found].sort((a, b) => a - b) : ALL_GRADES
-  })()
-
-  // Default selected grade: child's grade if it has progress, otherwise any available
-  const grade = selectedGrade ?? (activeGrades.includes(activeChild?.grade) ? activeChild?.grade : activeGrades[0] ?? 4)
 
   useEffect(() => {
     if (!user?.id) { setLoading(false); return }
@@ -138,26 +118,21 @@ export default function ParentDashboard() {
       .catch(err => console.error('[ParentDashboard] progress', err))
   }, [activeChild?.id])
 
-  // Reset selected grade when child changes
-  useEffect(() => {
-    setSelectedGrade(null)
-  }, [activeChild?.id])
-
-  const { topics, overall, lessonsCompleted } = computeDashboard(progressMap, grade)
+  const { topics, overall, lessonsCompleted } = computeDashboard(progressMap)
   const weakTopics = topics.filter(t => t.totalLessons > 0 && t.progress < 40)
   const weakest    = [...topics].filter(t => t.totalLessons > 0).sort((a, b) => a.progress - b.progress)[0] || null
   const streak     = activeChild?.streak_days ?? 0
-  const name       = activeChild?.name || 'Your child'
+  const name       = activeChild?.name || 'Votre médecin'
   const firstName  = name.split(' ')[0]
-  const avatar     = activeChild?.avatar || '🧒'
+  const avatar     = activeChild?.avatar || '👨‍⚕️'
   const lastActive = lastActiveLabel(progressMap)
 
   if (!loading && !activeChild) {
     return (
       <ParentLayout>
-        <h1 className="text-2xl font-extrabold mb-2" style={{ color: '#1a1a2e' }}>Parent Dashboard</h1>
-        <div className="mt-4 px-4 py-3 rounded-xl text-sm font-medium" style={{ backgroundColor: '#FFF7ED', color: '#9A6700' }}>
-          No child linked yet — go to your Profile and link your child with their code to see their dashboard.
+        <h1 className="text-2xl font-extrabold mb-2" style={{ color: '#1a1a2e' }}>Tableau de bord superviseur</h1>
+        <div className="mt-4 px-4 py-3 rounded-xl text-sm font-medium" style={{ backgroundColor: '#EFF6FF', color: '#1E3A5F' }}>
+          Aucun médecin lié — allez dans votre Profil et liez un médecin avec son code pour voir son tableau de bord.
         </div>
       </ParentLayout>
     )
@@ -165,60 +140,39 @@ export default function ParentDashboard() {
 
   return (
     <ParentLayout>
-      {/* Title + child selector + grade selector */}
+      {/* Title + child selector */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-2xl font-extrabold" style={{ color: '#1a1a2e' }}>
-          {name}'s Report — Grade {grade}
+          Rapport de {name}
         </h1>
-        <div className="flex gap-2 flex-wrap">
-          {/* Grade selector — if child has progress in multiple grades */}
-          {activeGrades.length > 1 && (
-            <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
-              {activeGrades.map(g => (
-                <button
-                  key={g}
-                  onClick={() => setSelectedGrade(g)}
-                  className="px-4 py-1.5 rounded-lg text-xs font-extrabold transition-colors"
-                  style={
-                    grade === g
-                      ? { backgroundColor: '#2D7A4F', color: '#fff' }
-                      : { backgroundColor: 'transparent', color: '#6B7280' }
-                  }
-                >
-                  Grade {g}
-                </button>
-              ))}
-            </div>
-          )}
-          {children.length > 1 && (
-            <select
-              value={activeChild?.id ?? ''}
-              onChange={e => setActiveChildId(e.target.value)}
-              className="px-3 py-2 rounded-xl text-sm font-bold border-2 bg-white"
-              style={{ borderColor: '#C8E6D4', color: '#2D7A4F' }}
-            >
-              {children.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          )}
-        </div>
+        {children.length > 1 && (
+          <select
+            value={activeChild?.id ?? ''}
+            onChange={e => setActiveChildId(e.target.value)}
+            className="px-3 py-2 rounded-xl text-sm font-bold border-2 bg-white"
+            style={{ borderColor: '#BFDBFE', color: '#1E3A5F' }}
+          >
+            {children.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        )}
       </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <StatCard value={`${overall}%`}     label="Overall progress" color="#2D7A4F" />
-        <StatCard value={lessonsCompleted}   label="Lessons done"     color="#1a1a2e" />
-        <StatCard value={streak}             label="Day streak"       color="#E07B00" icon="🔥" />
-        <StatCard value={weakTopics.length}  label="Weak topics"      color="#CC2222" />
+        <StatCard value={`${overall}%`}     label="Progression globale" color="#1E3A5F" />
+        <StatCard value={lessonsCompleted}   label="Leçons terminées"    color="#1a1a2e" />
+        <StatCard value={streak}             label="Jours consécutifs"   color="#1D4ED8" icon="🎯" />
+        <StatCard value={weakTopics.length}  label="Modules à renforcer" color="#EF4444" />
       </div>
 
       {/* Two-column grid */}
       <div className="flex flex-col lg:flex-row gap-5">
 
-        {/* Topic Breakdown */}
-        <div className="flex-1 bg-white rounded-2xl border p-6 shadow-sm" style={{ borderColor: '#C8E6D4' }}>
-          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">Topic Breakdown — Grade {grade}</h2>
+        {/* Module Breakdown */}
+        <div className="flex-1 bg-white rounded-2xl border p-6 shadow-sm" style={{ borderColor: '#BFDBFE' }}>
+          <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">Modules — Formation IV</h2>
           {topics.length === 0 ? (
-            <p className="text-sm text-gray-400 font-medium">No lessons for this grade yet.</p>
+            <p className="text-sm text-gray-400 font-medium">Aucune leçon disponible.</p>
           ) : (
             <div className="flex flex-col gap-0.5">
               {topics.map(topic => (
@@ -235,45 +189,44 @@ export default function ParentDashboard() {
         {/* Right panel */}
         <div className="w-full lg:w-72 flex flex-col gap-4">
 
-          {/* Child card */}
-          <div className="bg-white rounded-2xl border p-5 shadow-sm flex items-center gap-4" style={{ borderColor: '#C8E6D4' }}>
-            <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ backgroundColor: '#EDE4FF' }}>
+          {/* Médecin card */}
+          <div className="bg-white rounded-2xl border p-5 shadow-sm flex items-center gap-4" style={{ borderColor: '#BFDBFE' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ backgroundColor: '#EFF6FF' }}>
               {avatar}
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-extrabold text-gray-800 truncate">{name}</div>
               <div className="text-xs text-gray-400 font-semibold">
-                Grade {activeChild?.grade ?? 4} · Active {lastActive}
+                Actif {lastActive}
               </div>
             </div>
             <button onClick={() => navigate('/parent/profile')} className="text-gray-300">›</button>
           </div>
 
-          {/* Suggestion box */}
+          {/* Suggestion */}
           {weakest && (
-            <div className="bg-white rounded-2xl border p-5 shadow-sm flex flex-col gap-3" style={{ borderColor: '#C8E6D4' }}>
-              <div className="text-xs font-extrabold uppercase tracking-widest text-gray-400">Parent Suggestion</div>
+            <div className="bg-white rounded-2xl border p-5 shadow-sm flex flex-col gap-3" style={{ borderColor: '#BFDBFE' }}>
+              <div className="text-xs font-extrabold uppercase tracking-widest text-gray-400">Suggestion superviseur</div>
               <div
                 className="rounded-xl p-4 text-sm leading-relaxed"
-                style={{ backgroundColor: '#FFFBEB', borderLeft: '4px solid #E07B00' }}
+                style={{ backgroundColor: '#EFF6FF', borderLeft: '4px solid #1E3A5F' }}
               >
-                <div className="font-bold text-orange-700 mb-1">
-                  💡 Help {firstName} with {weakest.name}
+                <div className="font-bold mb-1" style={{ color: '#1E3A5F' }}>
+                  💡 Accompagnez {firstName} sur {weakest.name}
                 </div>
                 <div className="text-gray-600 text-xs leading-relaxed">
-                  {firstName} is at only {weakest.progress}% in {weakest.name}.
-                  Open the Teaching Guide for step-by-step instructions on how to explain{' '}
-                  {weakest.name.toLowerCase()} in a simple way.
+                  {firstName} est à seulement {weakest.progress}% sur le module {weakest.name}.
+                  Consultez le corrigé pour revoir les questions ensemble.
                 </div>
               </div>
               <button
                 className="w-full py-3 rounded-xl text-white font-extrabold text-sm transition-all duration-200"
-                style={{ backgroundColor: '#2D7A4F', boxShadow: '0 4px 12px rgba(45,122,79,0.3)' }}
+                style={{ backgroundColor: '#1E3A5F', boxShadow: '0 4px 12px rgba(30,58,95,0.3)' }}
                 onClick={() => navigate('/parent/lessons')}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#245f3e')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#2D7A4F')}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#162C48')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1E3A5F')}
               >
-                Open Teaching Guide →
+                Ouvrir le guide →
               </button>
             </div>
           )}

@@ -11,17 +11,13 @@ import SignUpPage from './pages/SignUpPage'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 
-import ParentDashboard from './pages/ParentDashboard'
-import ParentLessons from './pages/ParentLessons'
-import ParentReports from './pages/ParentReports'
-import ParentProfile from './pages/ParentProfile'
-import ParentCalculator from './pages/ParentCalculator'
-
 import KidDashboard from './pages/KidDashboard'
 import KidLessons from './pages/KidLessons'
+import KidLessonView from './pages/KidLessonView'
 import KidQuiz from './pages/KidQuiz'
 import KidProgress from './pages/KidProgress'
 import KidProfile from './pages/KidProfile'
+import CertificatePage from './pages/CertificatePage'
 
 export default function App() {
   return (
@@ -39,19 +35,14 @@ export default function App() {
         {/* Admin */}
         <Route path="/admin/dashboard" element={<ProtectedRoute role="admin"><AdminDashboardPage /></ProtectedRoute>} />
 
-        {/* Parent */}
-        <Route path="/parent/dashboard" element={<ProtectedRoute role="parent"><ParentDashboard /></ProtectedRoute>} />
-        <Route path="/parent/lessons" element={<ProtectedRoute role="parent"><ParentLessons /></ProtectedRoute>} />
-        <Route path="/parent/reports" element={<ProtectedRoute role="parent"><ParentReports /></ProtectedRoute>} />
-        <Route path="/parent/profile" element={<ProtectedRoute role="parent"><ParentProfile /></ProtectedRoute>} />
-        <Route path="/parent/calculator" element={<ProtectedRoute role="parent"><ParentCalculator /></ProtectedRoute>} />
-
-        {/* Kid */}
-        <Route path="/kid/dashboard" element={<ProtectedRoute role="kid"><KidDashboard /></ProtectedRoute>} />
-        <Route path="/kid/lessons" element={<ProtectedRoute role="kid"><KidLessons /></ProtectedRoute>} />
-        <Route path="/kid/quiz/:id" element={<ProtectedRoute role="kid"><KidQuiz /></ProtectedRoute>} />
-        <Route path="/kid/progress" element={<ProtectedRoute role="kid"><KidProgress /></ProtectedRoute>} />
-        <Route path="/kid/profile" element={<ProtectedRoute role="kid"><KidProfile /></ProtectedRoute>} />
+        {/* Médecin uniquement */}
+        <Route path="/medecin/dashboard" element={<ProtectedRoute role="medecin"><KidDashboard /></ProtectedRoute>} />
+        <Route path="/medecin/lessons" element={<ProtectedRoute role="medecin"><KidLessons /></ProtectedRoute>} />
+        <Route path="/medecin/lesson/:id" element={<ProtectedRoute role="medecin"><KidLessonView /></ProtectedRoute>} />
+        <Route path="/medecin/quiz/:id" element={<ProtectedRoute role="medecin"><KidQuiz /></ProtectedRoute>} />
+        <Route path="/medecin/progress" element={<ProtectedRoute role="medecin"><KidProgress /></ProtectedRoute>} />
+        <Route path="/medecin/profile" element={<ProtectedRoute role="medecin"><KidProfile /></ProtectedRoute>} />
+        <Route path="/medecin/certificate" element={<ProtectedRoute role="medecin"><CertificatePage /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   )

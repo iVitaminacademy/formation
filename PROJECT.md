@@ -1,377 +1,250 @@
-# Frazzl.kid — Project Tracker
-**Kid & Parent Math Learning Platform | Grades 4 & 5**
-Prepared by: Lahbabta Yousef | Started: May 2026
+# Ivitaminacademy — Project Reference
+**Plateforme de formation certifiante — Perfusions de vitamines IV**
+Préparé par : Lahbabta Youssef | Transformation : Juin 2026
 
 ---
 
-## Stack
+## Vue d'ensemble
 
-| Layer | Technology | Status |
+Ivitaminacademy est une plateforme de formation médicale certifiante en français, basée sur le booklet :
+**"BOOKLET DE MISE EN ROUTE — Perfusions de vitamines IV — Guide pratique médecin"**
+
+Les médecins suivent 4 modules (19 leçons, 75 QCM), obtiennent des badges et impriment un certificat.
+Un superviseur peut lier un ou plusieurs médecins et suivre leur progression en temps réel.
+
+---
+
+## Répertoires du projet
+
+| Répertoire | Rôle |
+|---|---|
+| `ProteinProjectYchmael/` | **Principal** — dépôt git, source de vérité |
+| `MathProject/` | Miroir — synchronisé via PowerShell `Copy-Item` |
+
+Toute modification doit être faite dans `ProteinProjectYchmael/` puis synchronisée vers `MathProject/`.
+
+---
+
+## Stack technique
+
+| Couche | Technologie |
+|---|---|
+| Frontend | React 18 + Vite + Tailwind CSS v4 |
+| Base de données / Auth | Supabase (PostgreSQL + Auth + Realtime) |
+| Routage | React Router v6 |
+| Contexte Auth | `src/context/AuthContext.jsx` |
+| Variables d'env | `client/.env.local` — `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` |
+| Hébergement | Vercel (frontend) + Supabase (DB + Auth) |
+
+---
+
+## Rôles
+
+| Valeur DB (enum) | Nom affiché | Description |
 |---|---|---|
-| Frontend | React.js (Vite) | ✅ Running |
-| Database + Auth | Supabase (PostgreSQL + Auth) | ✅ Running — user_progress saving live |
-| Hosting (frontend) | Vercel | 🔄 Deployed — production branch = `main`, root dir = `client`, env vars set. ⚠ Live site builds from `main`; latest responsive/DB work lives uncommitted on `dev` and must be merged to `main` to go live. |
-| Content | Admin JSON import via `src/services/admin.js` | ✅ Service written |
-| ~~Backend (Express)~~ | **Removed** — Supabase handles API + Auth directly | — |
+| `medecin` | Médecin | Apprenant — suit les modules, passe les QCM, obtient le certificat |
+| `superviseur` | Superviseur | Suit la progression des médecins liés |
+| `admin` | Admin | Accès complet à la plateforme |
 
-> **Architecture decision (2026-06-01):** Express backend dropped entirely. Supabase's auto-generated REST API + built-in Auth replaces all planned Express routes. Hosting simplified to 2 services: Vercel (frontend) + Supabase (DB + Auth).
+> **Important :** Les chemins URL (`/kid/*`, `/parent/*`) sont conservés tels quels (routage uniquement).
+> L'enum DB et toutes les comparaisons frontend utilisent `medecin` / `superviseur`.
 
 ---
 
-## Folder Structure
+## Routes
+
+| Chemin | Garde rôle | Page |
+|---|---|---|
+| `/` | public | LandingPage |
+| `/login` | public | SignInPage |
+| `/signup` | public | SignUpPage |
+| `/how` | public | HowItWorks |
+| `/faq` | public | FAQ |
+| `/privacy` | public | PrivacyTerms |
+| `/admin/login` | public | AdminLoginPage |
+| `/admin/dashboard` | admin | AdminDashboardPage |
+| `/parent/dashboard` | superviseur | ParentDashboard |
+| `/parent/lessons` | superviseur | ParentLessons |
+| `/parent/reports` | superviseur | ParentReports |
+| `/parent/profile` | superviseur | ParentProfile |
+| `/parent/calculator` | superviseur | ParentCalculator |
+| `/kid/dashboard` | medecin | KidDashboard |
+| `/kid/lessons` | medecin | KidLessons |
+| `/kid/quiz/:id` | medecin | KidQuiz |
+| `/kid/progress` | medecin | KidProgress |
+| `/kid/profile` | medecin | KidProfile |
+| `/kid/certificate` | medecin | CertificatePage |
+
+---
+
+## Palette de couleurs
+
+| Token | Hex | Usage |
+|---|---|---|
+| Navy primaire | `#1E3A5F` | Module 1, accent principal, navbar |
+| Bleu | `#1D4ED8` | Module 2, accent secondaire |
+| Navy sombre | `#0F2847` | Layout superviseur |
+| Vert | `#065F46` | Module 3, états de succès |
+| Rouge | `#991B1B` | Module 4, états d'erreur |
+| Fond bleu clair | `#EFF6FF` | Fond des cartes |
+| Bordure bleue | `#93C5FD` | Bordures des cartes |
+| Ambre | `#FEF3C7` / `#FFF7ED` | Avertissements médicaux (conservé intentionnellement) |
+
+---
+
+## Structure du curriculum (`client/src/data/curriculum.js`)
+
+Clé unique : `curriculum[1]` — pas de système de niveaux/grades.
 
 ```
-MathProject/
-├── client/                                    ← React (Vite) ✅
+4 modules × ~5 leçons × ~4 questions QCM = 19 leçons / 75 questions
+
+Module 1 — Fondamentaux & Indications   (color: #1E3A5F, bg: #EFF6FF, border: #93C5FD)
+Module 2 — Protocoles & Posologies      (color: #1D4ED8, bg: #DBEAFE, border: #93C5FD)
+Module 3 — Techniques & Matériel        (color: #065F46, bg: #ECFDF5, border: #6EE7B7)
+Module 4 — Sécurité & Complications     (color: #991B1B, bg: #FEF2F2, border: #FCA5A5)
+```
+
+Structure d'un objet topic :
+```js
+{
+  id: number,
+  title: string,
+  color: string,
+  bg: string,
+  border: string,
+  lessons: [{ id, title, questions: [{ q, options, correct, hint, explanation }] }]
+}
+```
+
+---
+
+## Schéma de base de données (`supabase/full_setup.sql`)
+
+| Table | Colonnes clés | Notes |
+|---|---|---|
+| `profiles` | `id, name, email, role, avatar, streak_days, link_code` | `grade` nullable/inutilisé |
+| `supervisor_medecin` | `superviseur_id, medecin_id` | Table de liaison superviseur ↔ médecin |
+| `topics` | `id, name, icon, sort_order` | `grade` nullable/inutilisé |
+| `lessons` | `id, topic_id, title, sort_order` | |
+| `questions` | `id, lesson_id, question_text, options, correct_answer, hint, explanation` | |
+| `progress` | `user_id, lesson_id, ...` | Legacy — conservé pour compatibilité |
+| `user_progress` | `user_id, lesson_ref, score, completed, attempts, last_date` | Actif — `lesson_ref` = `"topicIndex:lessonIndex"` |
+| `badges` | `id, name, icon, condition_type, condition_value` | 6 badges seedés |
+| `user_badges` | `user_id, badge_id, earned_at` | |
+| `notifications` | `superviseur_id, medecin_id, type, payload, read` | Realtime activé |
+
+### RPCs
+- `link_medecin_by_code(p_code text)` — un superviseur lie un médecin par son code à 6 caractères
+- `notify_superviseur_for_progress(p_medecin_id, p_lesson_ref, p_score, p_completed, p_attempts, p_last_date)` — déclenché à chaque sauvegarde de leçon
+
+---
+
+## Services (`client/src/services/`)
+
+| Fichier | Exports | Notes |
+|---|---|---|
+| `auth.js` | `signUp, signIn, signOut, getProfile, updateProfile, changePassword` | Wrapper Supabase Auth |
+| `progress.js` | `saveProgress, getProgressMap, getProgress` | localStorage + upsert Supabase ; appelle `notify_superviseur_for_progress` |
+| `family.js` | `getChildren, linkChildByCode, linkChild, unlinkChild` | Requête `supervisor_medecin` ; appelle `link_medecin_by_code` |
+| `admin.js` | `importContent, getAdminDashboardData, linkParentChild, unlinkParentChild, getParentChildLinksForAdmin` | Requête `supervisor_medecin` |
+
+---
+
+## Badges (seedés en DB + calculés en frontend)
+
+| Icône | Nom | Condition |
+|---|---|---|
+| ⭐ | Apprenant rapide | 5 leçons complétées |
+| 🔥 | En feu | 5 jours consécutifs |
+| 🎯 | Précis | Score 100% à un quiz |
+| 🚀 | Module complet | Terminer un module entier |
+| 💎 | Diamant | 10 jours consécutifs |
+| 🏆 | Certifié | Toute la formation complétée |
+
+---
+
+## Certificat (`/kid/certificate`)
+
+- Débloqué quand les 4 modules sont complétés à 100%
+- Affiche le nom du médecin, la date, la grille 2×2 des modules, deux lignes de signature, avertissement ambre
+- Impression PDF via `window.print()` — classe `.no-print` masque la navigation et les boutons
+- Date du certificat = `last_date` la plus récente de `user_progress`
+
+---
+
+## Avatars
+
+**Médecin (défauts) :** `'👨‍⚕️', '👩‍⚕️', '🩺', '💉', '🧬'` + options génériques (20 total, grid-cols-5)
+**Superviseur (défauts) :** `'🩺', '👩‍⚕️', '👨‍⚕️', '👩‍🔬', '👨‍🔬'` + options génériques
+
+---
+
+## ProtectedRoute
+
+- État de chargement : fond `#EFF6FF`, texte `#1E3A5F`, "Chargement…"
+- Mauvais rôle : `superviseur` → `/parent/dashboard`, `medecin` → `/kid/dashboard`
+- Non authentifié : redirigé vers `/login`
+
+---
+
+## Structure des fichiers
+
+```
+ProteinProjectYchmael/
+├── client/
 │   ├── src/
 │   │   ├── pages/
-│   │   │   ├── LandingPage.jsx                ✅ Done — responsive
-│   │   │   ├── SignInPage.jsx                 ✅ Done — Supabase auth wired
-│   │   │   ├── SignUpPage.jsx                 ✅ Done — role + grade, Supabase auth wired
-│   │   │   ├── FAQ.jsx                        ✅ Done
-│   │   │   ├── KidDashboard.jsx               ✅ Done — responsive, real DB data
-│   │   │   ├── KidLessons.jsx                 ✅ Done — responsive, real progress unlock
-│   │   │   ├── KidQuiz.jsx                    ✅ Done — responsive, saves to DB
-│   │   │   ├── KidProgress.jsx                ✅ Done — responsive, real DB data + streak
-│   │   │   ├── KidProfile.jsx                 ✅ Done — responsive, real DB badges + profile
-│   │   │   ├── ParentDashboard.jsx            ✅ Done — real child stats, topics, suggestion
-│   │   │   ├── ParentLessons.jsx              ✅ Done — curriculum + linked child progress, grade switcher, Answer Key modal
-│   │   │   ├── ParentReports.jsx              ✅ Done — real child report (stats, topics, quizzes, weak alerts)
-│   │   │   ├── ParentProfile.jsx              ✅ Done — real linked children + link-by-code + child badges
-│   │   │   └── ParentTeachingGuide.jsx        ✅ Done — implemented as Answer Key modal inside ParentLessons.jsx
+│   │   │   ├── LandingPage.jsx           ✅ Ivitaminacademy — navy, français
+│   │   │   ├── SignInPage.jsx            ✅ Ivitaminacademy — navy, français
+│   │   │   ├── SignUpPage.jsx            ✅ rôles medecin/superviseur
+│   │   │   ├── HowItWorks.jsx            ✅ Ivitaminacademy — 4 modules
+│   │   │   ├── FAQ.jsx                   ✅ Ivitaminacademy — français
+│   │   │   ├── PrivacyTerms.jsx          ✅ (à mettre à jour si nécessaire)
+│   │   │   ├── KidDashboard.jsx          ✅ curriculum[1], navy, français
+│   │   │   ├── KidLessons.jsx            ✅ curriculum[1], navy, français
+│   │   │   ├── KidQuiz.jsx              ✅ QCM IV, navy, français
+│   │   │   ├── KidProgress.jsx           ✅ curriculum[1], navy, français
+│   │   │   ├── KidProfile.jsx            ✅ badges IV, avatars médicaux
+│   │   │   ├── CertificatePage.jsx       ✅ nouveau — certificat PDF
+│   │   │   ├── ParentDashboard.jsx       ✅ curriculum[1], navy, français
+│   │   │   ├── ParentLessons.jsx         ✅ curriculum[1], navy, français
+│   │   │   ├── ParentReports.jsx         ✅ curriculum[1], navy, français
+│   │   │   ├── ParentProfile.jsx         ✅ avatars médicaux, français
+│   │   │   ├── ParentCalculator.jsx      ✅ conservé
+│   │   │   ├── AdminLoginPage.jsx        ✅ conservé
+│   │   │   └── AdminDashboardPage.jsx    ✅ rôles medecin/superviseur, français
 │   │   ├── components/
-│   │   │   ├── KidLayout.jsx                  ✅ Done — mobile bottom nav
-│   │   │   ├── ParentLayout.jsx               ✅ Done — mobile bottom nav
-│   │   │   └── ProtectedRoute.jsx             ✅ Done — auth + role guard
+│   │   │   ├── KidLayout.jsx             ✅ nav Ivitaminacademy + Certificat
+│   │   │   ├── ParentLayout.jsx          ✅ nav Ivitaminacademy
+│   │   │   └── ProtectedRoute.jsx        ✅ rôles medecin/superviseur, français
 │   │   ├── context/
-│   │   │   └── AuthContext.jsx                ✅ Done — session + profile + role
+│   │   │   └── AuthContext.jsx           ✅ inchangé
 │   │   ├── services/
-│   │   │   ├── supabaseClient.js              ✅ Done
-│   │   │   ├── auth.js                        ✅ Done — signUp/signIn/signOut/Google/profile
-│   │   │   ├── lessons.js                     ✅ Done — topics, lessons, questions
-│   │   │   ├── progress.js                    ✅ Done — dual-mode save (localStorage + Supabase), streak update
-│   │   │   ├── badges.js                      ✅ Done — catalog, earned, award
-│   │   │   ├── family.js                      ✅ Done — parent ↔ child linking
-│   │   │   └── admin.js                       ✅ Done — JSON bulk import
-│   │   ├── data/
-│   │   │   └── curriculum.js                  ✅ Done — 17 lessons / 122 questions (Grade 4 & 5) with hints & explanations
-│   │   └── hooks/                             ⬜ Not started
-│   ├── index.html                             ✅ Updated
-│   ├── index.css                              ✅ Updated — CSS reset cleaned
-│   ├── vite.config.js                         ✅ Updated
-│   ├── .env.example                           ✅ Added
-│   └── package.json
-├── supabase/
-│   ├── schema.sql                             ✅ Done — 8 tables, RLS, indexes, triggers
-│   ├── seed.sql                               ✅ Done — badges, Grade 4 topics, sample data
-│   ├── full_setup.sql                         ✅ Done — all 9 tables in one file (run once in SQL Editor)
-│   ├── create_user_progress.sql               ✅ Done — user_progress table (TEXT lesson_ref, no FK)
-│   ├── add_streak_column.sql                  ✅ Done — adds last_quiz_date to profiles
-│   ├── link_child_code.sql                    ✅ Done — kid link_code + link_child_by_code RPC + parent-read RLS
-│   └── migration_progress_text_id.sql         ✅ Done — legacy migration (superseded by full_setup.sql)
-├── UPDATES.md                                 ✅ Chronological change log
-├── PROJECT.md                                 ✅ This file
-└── README.md
+│   │   │   ├── supabaseClient.js         ✅ inchangé
+│   │   │   ├── auth.js                   ✅ inchangé
+│   │   │   ├── progress.js               ✅ notify_superviseur_for_progress
+│   │   │   ├── family.js                 ✅ supervisor_medecin, link_medecin_by_code
+│   │   │   └── admin.js                  ✅ supervisor_medecin, superviseur_id/medecin_id
+│   │   └── data/
+│   │       └── curriculum.js             ✅ 4 modules IV / 19 leçons / 75 QCM
+│   ├── index.html                        ✅ lang="fr", titre "Ivitaminacademy"
+│   └── .env.local                        ✅ clés Supabase (ne pas committer)
+└── supabase/
+    └── full_setup.sql                    ✅ schéma complet Ivitaminacademy
 ```
 
 ---
 
-## Dependencies Installed (client)
+## Checklist de déploiement
 
-| Package | Purpose |
-|---|---|
-| vite + @vitejs/plugin-react | Build tool & React plugin |
-| react + react-dom | UI framework |
-| tailwindcss + @tailwindcss/vite | Styling (v4) |
-| react-router-dom | Client-side routing |
-| @supabase/supabase-js | Supabase client (DB + Auth) |
-
----
-
-## Routes (client)
-
-| Path | Component | Auth | Status |
-|---|---|---|---|
-| `/` | LandingPage | Public | ✅ Done |
-| `/login` | SignInPage | Public | ✅ Done |
-| `/signup` | SignUpPage | Public | ✅ Done |
-| `/faq` | FAQ | Public | ✅ Done |
-| `/kid/dashboard` | KidDashboard | 🔒 Kid only | ✅ Done |
-| `/kid/lessons` | KidLessons | 🔒 Kid only | ✅ Done |
-| `/kid/quiz/:id` | KidQuiz | 🔒 Kid only | ✅ Done |
-| `/kid/progress` | KidProgress | 🔒 Kid only | ✅ Done |
-| `/kid/profile` | KidProfile | 🔒 Kid only | ✅ Done |
-| `/parent/dashboard` | ParentDashboard | 🔒 Parent only | ✅ Done |
-| `/parent/lessons` | ParentLessons | 🔒 Parent only | ✅ Done |
-| `/parent/reports` | ParentReports | 🔒 Parent only | ✅ Done |
-| `/parent/profile` | ParentProfile | 🔒 Parent only | ✅ Done |
-| Answer Key modal (in ParentLessons) | ParentLessons | 🔒 Parent only | ✅ Done — replaces planned `/parent/teaching-guide/:lessonId` route |
-
----
-
-## Auth Flow
-
-```
-Landing page
-  ├── "Start learning" (Kid card)  → /signup?role=kid
-  ├── "Enter Parent Mode" (Parent) → /signup?role=parent
-  └── "Sign In" (navbar)           → /login
-
-SignUpPage
-  - Role picker (Kid / Parent)
-  - Kid: Full name + email + password + grade selector
-  - Parent: Full name + email + password
-  - Supabase signUp() → stores role + grade in profiles table
-  - On success → redirect to /kid/dashboard or /parent/dashboard
-
-SignInPage
-  - Email + password (or Google OAuth)
-  - Supabase signInWithPassword()
-  - Role read from profiles table → redirect to correct dashboard
-
-ProtectedRoute
-  - Wraps all /kid/* and /parent/* routes
-  - Checks session + role → redirects to /login if not authenticated
-  - Redirects wrong role to correct dashboard
-```
-
----
-
-## Database Entities (Supabase / PostgreSQL)
-
-| Table | Key Fields | Notes |
-|---|---|---|
-| profiles | id (= auth.users.id), name, email, role, grade, avatar | Auto-created on signup via trigger |
-| parent_child | parent_id, child_id | Links parent to one or more children |
-| topics | id, name, grade, icon, order | Math topics per grade |
-| lessons | id, topic_id, title, content_text, order, unlock_after_id | Sequential unlock |
-| questions | id, lesson_id, question_text, options (JSON), correct_answer, hint, explanation, teaching_steps (JSON) | All content fields |
-| progress | id, user_id, lesson_id, completed, score, attempts, last_date | One row per user/lesson (upsert) |
-| badges | id, name, icon, condition_type, condition_value | Badge definitions |
-| user_badges | user_id, badge_id, earned_at | Earned badges per child |
-
-> **No `password_hash` column** — passwords handled entirely by Supabase Auth (`auth.users`), never stored in `profiles`.
-
----
-
-## Supabase API — replaces Express endpoints
-
-| Old Express route | Supabase equivalent | Service file |
-|---|---|---|
-| `POST /auth/register` | `supabase.auth.signUp()` | `auth.js` |
-| `POST /auth/login` | `supabase.auth.signInWithPassword()` | `auth.js` |
-| `GET /lessons?grade=4` | `supabase.from('lessons').select().eq('grade',4)` | `lessons.js` |
-| `GET /lessons/:id/questions` | `supabase.from('questions').select().eq('lesson_id',id)` | `lessons.js` |
-| `POST /progress` | `supabase.from('progress').upsert()` | `progress.js` |
-| `GET /progress/:childId` | `supabase.from('progress').select().eq('user_id',id)` | `progress.js` |
-| `GET /badges/:userId` | `supabase.from('user_badges').select()` | `badges.js` |
-| `POST /admin/import` | bulk insert via service function | `admin.js` |
-
----
-
-## Screens
-
-| # | Screen | Mode | File | Status |
-|---|---|---|---|---|
-| 1 | Landing — Mode Selection | Public | LandingPage.jsx | ✅ Done |
-| — | Sign In | Public | SignInPage.jsx | ✅ Done |
-| — | Sign Up | Public | SignUpPage.jsx | ✅ Done |
-| — | FAQ | Public | FAQ.jsx | ✅ Done |
-| 2 | Kid Dashboard | Kid | KidDashboard.jsx | ✅ Done |
-| 3 | Lessons Page | Kid | KidLessons.jsx | ✅ Done |
-| 4 | Quiz / Practice Screen | Kid | KidQuiz.jsx | ✅ Done |
-| 5 | Progress Page | Kid | KidProgress.jsx | ✅ Done |
-| 6 | Parent Dashboard | Parent | ParentDashboard.jsx | ✅ Done |
-| 6b | Lessons & Guides | Parent | ParentLessons.jsx | ✅ Done |
-| 6c | Reports | Parent | ParentReports.jsx | ✅ Done |
-| 7 | Parent Teaching Guide (Answer Key) | Parent | ParentLessons.jsx (modal) | ✅ Done |
-| 8 | Profile & Settings (Kid) | Kid | KidProfile.jsx | ✅ Done |
-| 8b | Profile & Settings (Parent) | Parent | ParentProfile.jsx | ✅ Done |
-
----
-
-## Project Phases
-
-### Phase 1 — Foundation ✅ Done
-- [x] Init `/client` (Vite + React)
-- [x] Install Tailwind CSS v4 + React Router
-- [x] Landing page (Screen 1) — responsive
-- [x] Design system: Nunito font, color tokens, shared layouts
-
-### Phase 2 — Kid Side ✅ Done
-- [x] KidLayout — mobile bottom nav + desktop sidebar
-- [x] Kid Dashboard (Screen 2)
-- [x] Lessons Page (Screen 3) — sequential unlock, grade switcher
-- [x] Quiz / Practice Screen (Screen 4) — hint, feedback, progress dots, score page
-- [x] Progress Page (Screen 5) — stats, topic bars, quiz history
-- [x] Kid Profile (Screen 8) — badges grid, mode toggle, settings
-- [x] Full responsive pass — all kid pages
-
-### Phase 3 — Parent Side 🔄 In Progress
-- [x] ParentLayout — mobile bottom nav + desktop sidebar
-- [x] Parent Dashboard (Screen 6)
-- [x] Lessons & Guides page
-- [x] Reports page
-- [x] Parent Profile & Settings (Screen 8b)
-- [x] Full responsive pass — all parent pages
-- [x] Teaching Guide (Screen 7) — implemented as Answer Key modal in ParentLessons.jsx
-
-### Phase 4 — Auth ✅ Done
-- [x] SignInPage — email/password + Google UI, Supabase wired
-- [x] SignUpPage — role picker, grade selector, Supabase wired
-- [x] AuthContext — session + profile + role exposed
-- [x] ProtectedRoute — auth + role-based guard on all /kid/* and /parent/*
-- [x] Routes `/login` and `/signup` added to App.jsx
-
-### Phase 5 — Supabase Backend ✅ Schema done / 🔄 Integration pending
-- [x] `supabase/schema.sql` — 8 tables, RLS policies, indexes, triggers
-- [x] `supabase/seed.sql` — badges, Grade 4 topics, sample lesson
-- [x] All service files written (`auth`, `lessons`, `progress`, `badges`, `family`, `admin`)
-- [ ] Connect Supabase project → add `.env.local` with real keys
-- [ ] Replace mock data in all pages with real service calls
-- [ ] Test RLS policies end-to-end
-
-### Phase 6 — QA & Launch ⬜ Not started
-- [ ] End-to-end testing (kid + parent flows)
-- [ ] Bug fixes
-- [ ] Deploy frontend → Vercel
-- [ ] Client review + content upload (JSON import)
-
----
-
-## Design System
-
-### Brand (Frazzl.kid)
-- Logo: `Frazzl` in dark `#111827` + `.kid` in lime green `#16A34A`
-
-### Kid Mode
-- Navbar: `#16A34A` (lime green)
-- Background: `#F0FDF4`
-- Sidebar bg: `#DCFCE7`
-- Active nav: `#EC4899` (hot pink)
-- Topics: Orange `#F97316` / Blue `#3B82F6` / Pink `#EC4899` / Purple `#A855F7`
-
-### Parent Mode
-- Navbar: `#2D7A4F` (dark green)
-- Background: `#F0FAF4`
-- Sidebar bg: `#E8F7EE`
-- Border accent: `#C8E6D4`
-
-### Shared
-- Font: Nunito (Google Fonts)
-- Breakpoints: `sm` 640px / `md` 768px / `lg` 1024px
-- Responsive pattern: `flex-col lg:flex-row` for two-column layouts
-- Mobile nav: bottom bar (`md:hidden`) + desktop sidebar (`hidden md:flex`)
-- Progress colors: green ≥50%, orange 20–49%, red <20%
-- Score colors: green ≥80%, orange 60–79%, red <60%
-
----
-
-## Shared Components
-
-| Component | File | Used by |
-|---|---|---|
-| KidLayout | components/KidLayout.jsx | All `/kid/*` pages |
-| ParentLayout | components/ParentLayout.jsx | All `/parent/*` pages |
-| ProtectedRoute | components/ProtectedRoute.jsx | All authenticated routes in App.jsx |
-
----
-
-## Badge Conditions
-
-| Badge | Icon | Condition |
-|---|---|---|
-| Quick Learner | ⭐ | Complete 5 lessons |
-| On Fire | 🔥 | 5-day streak |
-| Accurate | 🎯 | Score 100% on a quiz |
-| Rocket Start | 🚀 | Complete a full topic |
-| Diamond | 💎 | 10-day streak |
-| Champion | 🏆 | Complete full Grade 4 |
-
----
-
-## Key Decisions Log
-
-| Date | Decision | Reason |
-|---|---|---|
-| 2026-05-31 | Vite + React | Faster builds, modern tooling |
-| 2026-05-31 | Tailwind CSS v4 | No config file, Vite plugin |
-| 2026-05-31 | Nunito font | Kid-friendly, matches brand |
-| 2026-05-31 | KidLayout + ParentLayout components | Avoid repeating navbar/sidebar per page |
-| 2026-06-01 | Express backend dropped → Supabase only | Eliminates Railway/Render hosting, reduces to 2 services |
-| 2026-06-01 | Supabase Auth replaces manual JWT | Built-in session, Google OAuth, RLS ties to auth.uid() |
-| 2026-06-01 | `profiles` table auto-created via trigger | Keeps role/grade in sync with Supabase auth.users |
-| 2026-06-01 | Rebranded MathMates → Frazzl.kid | Client decision |
-| 2026-06-01 | Full responsive pass — all pages | Mobile-first delivery requirement |
-| 2026-06-01 | Quiz state local (useState) | No backend needed to demo; will POST on lesson complete |
-
----
-
-## Setup Checklist (for deployment)
-
-- [ ] Create Supabase project at supabase.com
-- [ ] Run `supabase/schema.sql` in SQL Editor
-- [ ] Run `supabase/seed.sql` in SQL Editor
-- [ ] Create `client/.env.local`:
+- [ ] Créer un projet Supabase sur supabase.com
+- [ ] Coller et exécuter `supabase/full_setup.sql` dans le SQL Editor
+- [ ] Créer `client/.env.local` :
   ```
   VITE_SUPABASE_URL=https://xxxx.supabase.co
   VITE_SUPABASE_ANON_KEY=your-anon-key
   ```
-- [ ] (Optional) Enable Google provider in Supabase Auth dashboard
+- [ ] Désactiver "Confirm email" dans Supabase Auth → Providers → Email (pour les tests)
 - [ ] `cd client && npm install && npm run dev`
-- [ ] Deploy to Vercel → add env vars in Vercel dashboard
-
----
-
-## Progress Tracking Legend
-- ⬜ Not started
-- 🔄 In progress
-- ✅ Done
-- ❌ Blocked
-
----
-
-## [2026-06-06] — Parent calculator added
-
-- `client/src/pages/ParentCalculator.jsx`: new page — full calculator for parents to help kids with math during quizzes. Supports +, −, ×, ÷, %, ±, decimals, backspace, clear, with history display and formatted output.
-- `client/src/App.jsx`: registered `/parent/calculator` route (protected, parent-only).
-- `client/src/components/ParentLayout.jsx`: added Calculator nav item with 🧮 icon.
-
-## [2026-06-06] — Landing page redesign
-
-- `client/src/pages/LandingPage.jsx`: polished redesign — kept the `/favicon.svg` logo at proper sizes (40px header, 80px hero), background changed to `#F4F6FA`, ModeCard component upgraded with decorative circles, emoji glow, colored mode badges, feature bullet lists, enhanced gradient illustrations, hover lift animation, shadow button effects, footer added.
-
-## [2026-06-06] — Admin dashboard change password
-
-- `client/src/pages/AdminDashboardPage.jsx`: added a "Change admin password" section in the right sidebar (above Database overview). Form with new password + confirm, client-side validation, calls `changePassword()` from `services/auth.js` (uses `supabase.auth.updateUser()`). Success/error inline messages, fields clear on success, respects dark/light theme.
-
-## [2026-06-03] — Parent header avatar fix
-
-- `client/src/components/ParentLayout.jsx`: now reads `profile.avatar` from `AuthContext` and displays it in the parent top navbar so changes made on `/parent/profile` update the header immediately.
-
----
-
-## [2026-06-03] — Admin dashboard system added
-
-### Files added / updated
-- `client/src/pages/AdminLoginPage.jsx`
-- `client/src/pages/AdminDashboardPage.jsx`
-- `client/src/services/admin.js`
-- `client/src/components/ProtectedRoute.jsx`
-- `client/src/App.jsx`
-- `supabase/full_setup.sql`
-
-### Changes
-- Added a dedicated admin-only login path at `/admin/login`.
-- Added a protected admin dashboard at `/admin/dashboard`.
-- Added Supabase-only admin role gating for `role = admin`.
-- Added admin KPI cards, parent/child management, profile editing, progress editing, and theme persistence.
-- Added search inside the “Parents with children” section.
-- Restored the per-child **Unlink** action on linked child cards.
-- Updated progress editor display to show lesson titles, readable score labels, and human-readable dates.
-- Updated Supabase RLS so admins can read and manage the data required by the dashboard.
-- Kept the project Supabase-only; no Express backend was added.
-
-### Validation
-- `npm run build` passes successfully after the admin updates.
-- Remaining build output is the existing Vite chunk-size warning only.
+- [ ] Déployer sur Vercel → ajouter les variables d'env dans le dashboard Vercel

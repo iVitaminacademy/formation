@@ -25,8 +25,8 @@ const EyeClosedIcon = () => (
   </svg>
 )
 
-const ACCENT = '#5E17EB'
-const ACCENT_HOVER = '#4C0FC4'
+const ACCENT = '#1E3A5F'
+const ACCENT_HOVER = '#162C48'
 
 function friendlyError(err) {
   const msg = (err?.message || String(err || '')).toLowerCase()
@@ -277,7 +277,7 @@ export default function SignInPage() {
     try {
       const { user } = await signIn({ email: form.email, password: form.password })
       const profile = await getProfile(user.id)
-      navigate(profile.role === 'parent' ? '/parent/dashboard' : '/kid/dashboard')
+      navigate(profile.role === 'admin' ? '/admin/dashboard' : '/medecin/dashboard')
     } catch (err) {
       setError(friendlyError(err))
     } finally { setSubmitting(false) }
@@ -287,20 +287,21 @@ export default function SignInPage() {
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-4 py-12"
-      style={{ background: 'linear-gradient(160deg, #F5F0FF 0%, #EDE4FF 25%, #F3E8FF 50%, #F8F4FF 75%, #FDFBFF 100%)' }}>
-      <div className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full opacity-20 blur-3xl" style={{ backgroundColor: '#743290' }} />
-      <div className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full opacity-15 blur-3xl" style={{ backgroundColor: '#5E17EB' }} />
+      style={{ background: 'linear-gradient(160deg, #EFF6FF 0%, #DBEAFE 25%, #EFF6FF 50%, #F8FAFC 75%, #FFFFFF 100%)' }}>
+      <div className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full opacity-15 blur-3xl" style={{ backgroundColor: '#1E3A5F' }} />
+      <div className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full opacity-10 blur-3xl" style={{ backgroundColor: '#1D4ED8' }} />
 
-      <div className="relative w-full max-w-md rounded-3xl bg-white px-8 py-10" style={{ boxShadow: '0 20px 60px rgba(94,23,235,0.10)' }}>
+      <div className="relative w-full max-w-md rounded-3xl bg-white px-8 py-10" style={{ boxShadow: '0 20px 60px rgba(30,58,95,0.12)' }}>
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-3">
-            <img src="/favicon.svg" alt="logo" className="h-10 w-10 rounded-xl shadow-sm" />
-            <div className="text-3xl font-extrabold tracking-tight">
-              <span style={{ color: '#743290' }}>Frazzl</span><span style={{ color: '#5E17EB' }}>.kid</span>
+            <div className="h-11 w-11 rounded-xl flex items-center justify-center text-2xl" style={{ backgroundColor: '#1E3A5F' }}>💉</div>
+            <div className="leading-tight text-left">
+              <div className="text-xl font-extrabold tracking-tight" style={{ color: '#1E3A5F' }}>Ivitaminacademy</div>
+              <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#64748B' }}>Guide pratique médecin</div>
             </div>
           </div>
-          <h1 className="mt-5 text-2xl font-extrabold" style={{ color: '#1A1A2E' }}>Welcome back! 👋</h1>
-          <p className="mt-1.5 text-sm" style={{ color: '#94A3B8' }}>Sign in to continue</p>
+          <h1 className="mt-5 text-2xl font-extrabold" style={{ color: '#1A1A2E' }}>Bienvenue 👋</h1>
+          <p className="mt-1.5 text-sm" style={{ color: '#94A3B8' }}>Connexion à votre espace</p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -335,18 +336,16 @@ export default function SignInPage() {
           </label>
           <button type="submit" disabled={submitting} className="mt-1 w-full rounded-xl py-3.5 text-sm font-extrabold text-white transition-all active:scale-[0.98] disabled:opacity-60"
             style={{ backgroundColor: ACCENT, boxShadow: '0 4px 20px rgba(94,23,235,0.35)' }}>
-            {submitting ? 'Signing in…' : 'Sign In →'}
+            {submitting ? 'Connexion…' : 'Se connecter →'}
           </button>
         </form>
 
         <p className="mt-8 text-center text-sm" style={{ color: '#94A3B8' }}>
-          Don't have an account? <Link to="/signup" className="font-bold" style={{ color: ACCENT }}>Create one →</Link>
+          Pas encore de compte ? <Link to="/signup" className="font-bold" style={{ color: ACCENT }}>S'inscrire →</Link>
         </p>
-        <div className="mt-5 flex items-center justify-center gap-4 rounded-2xl px-4 py-3" style={{ backgroundColor: '#FFF7ED' }}>
-          <span className="text-xs font-medium" style={{ color: '#6B7280' }}>Sign in as:</span>
-          <span className="flex items-center gap-1.5 text-xs font-bold" style={{ color: '#F97316' }}><span>🧒</span> Kid</span>
-          <span style={{ color: '#D1D5DB', fontSize: 10 }}>•</span>
-          <span className="flex items-center gap-1.5 text-xs font-bold" style={{ color: '#F97316' }}><span>👨‍👧</span> Parent</span>
+        <div className="mt-5 flex items-center justify-center gap-4 rounded-2xl px-4 py-3" style={{ backgroundColor: '#EFF6FF' }}>
+          <span className="text-xs font-medium" style={{ color: '#6B7280' }}>Connexion :</span>
+          <span className="flex items-center gap-1.5 text-xs font-bold" style={{ color: '#1E3A5F' }}><span>👨‍⚕️</span> Médecin</span>
         </div>
       </div>
 

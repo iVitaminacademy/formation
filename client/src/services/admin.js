@@ -76,24 +76,13 @@ export async function importContent(payload) {
 export async function getAdminDashboardData() {
   const [
     profilesRes,
-    linksRes,
     progressRes,
     badgesRes,
     userBadgesRes,
   ] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, name, email, role, grade, avatar, streak_days, link_code, created_at, updated_at')
-      .order('created_at', { ascending: false }),
-    supabase
-      .from('parent_child')
-      .select(`
-        parent_id,
-        child_id,
-        created_at,
-        parent:parent_id(id, name, email, role, grade, avatar, streak_days, link_code),
-        child:child_id(id, name, email, role, grade, avatar, streak_days, link_code)
-      `)
+      .select('id, name, email, role, grade, avatar, streak_days, status, created_at, updated_at')
       .order('created_at', { ascending: false }),
     supabase
       .from('user_progress')
@@ -109,12 +98,11 @@ export async function getAdminDashboardData() {
       .order('earned_at', { ascending: false }),
   ])
 
-  const firstError = profilesRes.error || linksRes.error || progressRes.error || badgesRes.error || userBadgesRes.error
+  const firstError = profilesRes.error || progressRes.error || badgesRes.error || userBadgesRes.error
   if (firstError) throw firstError
 
   return {
     profiles: profilesRes.data ?? [],
-    links: linksRes.data ?? [],
     progress: progressRes.data ?? [],
     badges: badgesRes.data ?? [],
     userBadges: userBadgesRes.data ?? [],
@@ -130,6 +118,22 @@ export async function updateProfileByAdmin(userId, updates) {
     .single()
   if (error) throw error
   return data
+}
+
+export async function activateMedecin(medecinId) {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ status: 'active' })
+    .eq('id', medecinId)
+  if (error) throw error
+}
+
+export async function setMedecinStatus(medecinId, status) {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ status })
+    .eq('id', medecinId)
+  if (error) throw error
 }
 
 export async function upsertProgressByAdmin({ userId, lessonRef, score, completed, attempts, lastDate }) {
@@ -153,48 +157,3 @@ export async function upsertProgressByAdmin({ userId, lessonRef, score, complete
   return data
 }
 
-export async function linkParentChild(parentId, childId) {
-  const { data, error } = await supabase
-    .from('parent_child')
-    .upsert(
-      { parent_id: parentId, child_id: childId },
-      { onConflict: 'parent_id,child_id' },
-    )
-    .select()
-  if (error) throw error
-  return data
-}
-
-export async function unlinkParentChild(parentId, childId) {
-  const { error } = await supabase
-    .from('parent_child')
-    .delete()
-    .eq('parent_id', parentId)
-    .eq('child_id', childId)
-  if (error) throw error
-}
-
-export async function getProfilesForAdmin() {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, name, email, role, grade, avatar, streak_days, link_code, created_at, updated_at')
-    .order('role', { ascending: true })
-    .order('name', { ascending: true })
-  if (error) throw error
-  return data ?? []
-}
-
-export async function getParentChildLinksForAdmin() {
-  const { data, error } = await supabase
-    .from('parent_child')
-    .select(`
-      parent_id,
-      child_id,
-      created_at,
-      parent:parent_id(id, name, email, role, grade, avatar, streak_days, link_code),
-      child:child_id(id, name, email, role, grade, avatar, streak_days, link_code)
-    `)
-    .order('created_at', { ascending: false })
-  if (error) throw error
-  return data ?? []
-}

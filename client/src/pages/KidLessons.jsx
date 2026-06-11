@@ -7,9 +7,9 @@ import { getProgressMap } from '../services/progress'
 
 function StatusBadge({ status }) {
   if (status === 'done')
-    return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#FFF7ED', color: '#F97316' }}>✓ Done</span>
+    return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#DBEAFE', color: '#1E3A5F' }}>✓ Terminé</span>
   if (status === 'start')
-    return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#FFF7ED', color: '#F97316' }}>▶ Start</span>
+    return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#DBEAFE', color: '#1D4ED8' }}>▶ Commencer</span>
   return <span className="text-lg">🔒</span>
 }
 
@@ -42,12 +42,12 @@ function TopicPanel({ topic, onStart }) {
             onClick={() => lesson.status !== 'locked' && onStart(lesson)}
             onMouseEnter={e => { if (lesson.status !== 'locked') e.currentTarget.style.backgroundColor = topic.bg }}
             onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
-            title={lesson.status === 'locked' ? 'Complete the previous lesson first' : ''}
+            title={lesson.status === 'locked' ? 'Complétez la leçon précédente pour déverrouiller' : ''}
           >
             <div className="flex items-center gap-3">
               <div
                 className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-extrabold shrink-0 text-white"
-                style={{ backgroundColor: lesson.status === 'done' ? '#F97316' : lesson.status === 'start' ? topic.color : '#D1D5DB' }}
+                style={{ backgroundColor: lesson.status === 'done' ? '#1E3A5F' : lesson.status === 'start' ? topic.color : '#D1D5DB' }}
               >
                 {lesson.status === 'done' ? '✓' : idx + 1}
               </div>
@@ -66,8 +66,7 @@ function TopicPanel({ topic, onStart }) {
 
 export default function KidLessons() {
   const navigate     = useNavigate()
-  const [grade, setGrade] = useState(4)
-  const topics       = curriculum[grade] || []
+  const topics       = curriculum[1] || []
   const { user }     = useAuth()
   const [progressMap, setProgressMap] = useState({})
   const [roundStart, setRoundStart]   = useState(0)
@@ -76,17 +75,12 @@ export default function KidLessons() {
   useEffect(() => {
     let mounted = true
     async function load() {
-      if (!user?.id) {
-        setProgressMap({})
-        return
-      }
+      if (!user?.id) { setProgressMap({}); return }
       try {
         const map = await getProgressMap(user.id)
         if (!mounted) return
-        console.log('[KidLessons] loaded progress map', map)
-        // Merge any locally-saved demo progress (localStorage) so demo lessons show completed
         try {
-          const localKey = `local_progress:${user.id}`
+          const localKey  = `local_progress:${user.id}`
           const localJson = localStorage.getItem(localKey)
           if (localJson) {
             const localMap = JSON.parse(localJson)
@@ -95,9 +89,7 @@ export default function KidLessons() {
               if (!Number.isNaN(num)) map[num] = { ...map[num], ...localMap[k] }
             }
           }
-        } catch (e) {
-          console.warn('[KidLessons] failed to merge local progress', e)
-        }
+        } catch { /* ignore */ }
         setProgressMap(map)
       } catch (err) {
         console.error('Failed to load progress map', err.message)
@@ -107,12 +99,11 @@ export default function KidLessons() {
     return () => { mounted = false }
   }, [user])
 
-  // Listen for saved progress events so the lessons UI updates immediately
   useEffect(() => {
     function onProgressUpdated(e) {
-      const detail = e?.detail || {}
+      const detail   = e?.detail || {}
       const lessonId = typeof detail.lessonId === 'string' ? Number(detail.lessonId) : detail.lessonId
-      const row = detail.row
+      const row      = detail.row
       if (!lessonId) return
       setProgressMap(prev => ({ ...prev, [lessonId]: row }))
     }
@@ -120,15 +111,13 @@ export default function KidLessons() {
     return () => window.removeEventListener('progressUpdated', onProgressUpdated)
   }, [])
 
-  // Load the current practice-round start time for this kid + grade
   useEffect(() => {
     setJustReset(false)
     if (!user?.id) { setRoundStart(0); return }
-    const stored = localStorage.getItem(`practiceRound:${user.id}:${grade}`)
+    const stored = localStorage.getItem(`practiceRound:${user.id}:1`)
     setRoundStart(stored ? new Date(stored).getTime() : 0)
-  }, [user?.id, grade])
+  }, [user?.id])
 
-  // A lesson counts as done only if it was completed during the current round
   const doneThisRound = (lesson) => {
     const r = progressMap[lesson.id]
     if (!r?.completed) return false
@@ -139,74 +128,49 @@ export default function KidLessons() {
   const allLessons = topics.flatMap(t => t.lessons)
   const allDone    = allLessons.length > 0 && allLessons.every(doneThisRound)
 
-  // When every lesson in the grade is finished, start a fresh round (re-locks all)
   useEffect(() => {
     if (!user?.id || !allDone) return
     const now = new Date().toISOString()
-    localStorage.setItem(`practiceRound:${user.id}:${grade}`, now)
+    localStorage.setItem(`practiceRound:${user.id}:1`, now)
     setRoundStart(new Date(now).getTime())
     setJustReset(true)
-  }, [allDone, user?.id, grade])
+  }, [allDone, user?.id])
 
   return (
     <KidLayout>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-extrabold text-gray-900">📚 Lessons</h1>
-          <p className="text-xs text-gray-400 font-semibold mt-1">Click any lesson to start the quiz</p>
-        </div>
-        <div className="flex gap-2">
-          {[4, 5].map(g => (
-            <button
-              key={g}
-              onClick={() => setGrade(g)}
-              className="px-5 py-2 rounded-xl text-sm font-extrabold border-2 transition-all duration-150"
-              style={
-                grade === g
-                  ? { backgroundColor: '#F97316', color: '#fff', borderColor: '#F97316' }
-                  : { backgroundColor: '#fff', color: '#F97316', borderColor: '#FB923C' }
-              }
-            >
-              Grade {g}
-            </button>
-          ))}
+          <h1 className="text-2xl font-extrabold text-gray-900">💉 Protocoles</h1>
+          <p className="text-xs text-gray-400 font-semibold mt-1">Cliquez sur une leçon pour lire le contenu puis passer le QCM</p>
         </div>
       </div>
 
       {justReset && (
-        <div className="mb-5 rounded-2xl p-4 text-center" style={{ backgroundColor: '#FFF7ED', border: '2px solid #FB923C' }}>
-          <p className="text-lg font-extrabold" style={{ color: '#F97316' }}>🎉 Awesome! You finished every lesson!</p>
-          <p className="text-sm font-semibold text-green-700 mt-1">All lessons are locked again so you can practice from the beginning. Let's go! 🚀</p>
+        <div className="mb-5 rounded-2xl p-4 text-center" style={{ backgroundColor: '#EFF6FF', border: '2px solid #93C5FD' }}>
+          <p className="text-lg font-extrabold" style={{ color: '#1E3A5F' }}>🎉 Félicitations ! Vous avez terminé toutes les leçons !</p>
+          <p className="text-sm font-semibold text-blue-700 mt-1">Toutes les leçons sont réinitialisées pour que vous puissiez pratiquer à nouveau. 🚀</p>
         </div>
       )}
 
-      {topics.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-gray-400">
-          <span className="text-5xl mb-4">🚀</span>
-          <p className="font-bold text-lg">Grade 5 content coming soon!</p>
-          <p className="text-sm mt-1">Complete Grade 4 to unlock.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {topics.map(topic => {
-            const lessonsWithStatus = topic.lessons.map((lesson, idx) => {
-              const isDone   = doneThisRound(lesson)
-              const prevDone = idx === 0 || doneThisRound(topic.lessons[idx - 1])
-              return {
-                ...lesson,
-                status: isDone ? 'done' : prevDone ? 'start' : 'locked',
-              }
-            })
-            return (
-              <TopicPanel
-                key={topic.id}
-                topic={{ ...topic, lessons: lessonsWithStatus }}
-                onStart={lesson => navigate(`/kid/quiz/${lesson.id}`)}
-              />
-            )
-          })}
-        </div>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {topics.map(topic => {
+          const lessonsWithStatus = topic.lessons.map((lesson, idx) => {
+            const isDone   = doneThisRound(lesson)
+            const prevDone = idx === 0 || doneThisRound(topic.lessons[idx - 1])
+            return {
+              ...lesson,
+              status: isDone ? 'done' : prevDone ? 'start' : 'locked',
+            }
+          })
+          return (
+            <TopicPanel
+              key={topic.id}
+              topic={{ ...topic, lessons: lessonsWithStatus }}
+              onStart={lesson => navigate(`/medecin/lesson/${lesson.id}`)}
+            />
+          )
+        })}
+      </div>
     </KidLayout>
   )
 }

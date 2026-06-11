@@ -48,33 +48,21 @@ const GoogleIcon = () => (
 
 const ROLES = [
   {
-    id: 'kid',
-    emoji: '🧒',
-    label: "I'm a Kid",
-    sub: 'Grade 4 & 5 · Learn at your own pace',
-    accent: '#F97316',
-    accentHover: '#EA580C',
-    bg: '#FFF7ED',
-    bgSelected: '#FFEDD5',
-    border: '#FB923C',
-    shadow: 'rgba(249,115,22,0.18)',
-  },
-  {
-    id: 'parent',
-    emoji: '👨‍👧',
-    label: "I'm a Parent",
-    sub: "Track your child's progress",
-    accent: '#F97316',
-    accentHover: '#EA580C',
-    bg: '#FFF7ED',
-    bgSelected: '#FFF7ED',
-    border: '#FB923C',
-    shadow: 'rgba(22,163,74,0.18)',
+    id: 'medecin',
+    emoji: '👨‍⚕️',
+    label: 'Médecin',
+    sub: 'Formation aux protocoles IV',
+    accent: '#1E3A5F',
+    accentHover: '#162C48',
+    bg: '#EFF6FF',
+    bgSelected: '#DBEAFE',
+    border: '#93C5FD',
+    shadow: 'rgba(30,58,95,0.18)',
   },
 ]
 
-const STRENGTH_LABELS = ['', 'Weak', 'Fair', 'Strong']
-const STRENGTH_COLORS = ['', '#EF4444', '#F59E0B', '#F97316']
+const STRENGTH_LABELS = ['', 'Faible', 'Moyen', 'Fort']
+const STRENGTH_COLORS = ['', '#EF4444', '#F59E0B', '#16A34A']
 
 function getStrength(password) {
   if (!password) return 0
@@ -86,7 +74,7 @@ function getStrength(password) {
 export default function SignUpPage() {
   const navigate = useNavigate()
   const { signUp } = useAuth()
-  const [role, setRole] = useState('kid')
+  const [role, setRole] = useState('medecin')
   const [showPass, setShowPass] = useState(false)
   const [focused, setFocused] = useState('')
   const [form, setForm] = useState({ name: '', email: '', password: '', grade: 4, terms: false })
@@ -107,11 +95,11 @@ export default function SignUpPage() {
     setError('')
     setInfo('')
     if (!form.email.trim()) {
-      setError('Please enter your email address.')
+      setError('Veuillez saisir votre adresse email.')
       return
     }
     if (!form.terms) {
-      setError('Please accept the Terms of Service and Privacy Policy.')
+      setError('Veuillez accepter les conditions d\'utilisation et la politique de confidentialité.')
       return
     }
     setSubmitting(true)
@@ -121,23 +109,22 @@ export default function SignUpPage() {
         password: form.password,
         name: form.name,
         role,
-        grade: role === 'kid' ? Number(form.grade) : null,
+        grade: role === 'medecin' ? Number(form.grade) : null,
       })
-      // If email confirmation is required, there is no session yet.
       if (!session) {
-        setInfo('Account created! Please check your email to confirm, then sign in.')
+        setInfo('Compte créé ! Vérifiez votre email pour confirmer votre inscription, puis connectez-vous.')
         return
       }
-      navigate(role === 'kid' ? '/kid/dashboard' : '/parent/dashboard')
+      navigate('/medecin/dashboard')
     } catch (err) {
       const status = err?.status ?? err?.code
       const m = (err?.message || '').toLowerCase()
       if (status === 429 || m.includes('too many requests') || m.includes('rate limit') || m.includes('over_email_send_rate_limit')) {
-        setError('Too many attempts. Please wait a minute before trying again.')
+        setError('Trop de tentatives. Veuillez patienter une minute avant de réessayer.')
       } else if (m.includes('already registered') || m.includes('already exists') || m.includes('user already')) {
-        setError('An account with this email already exists. Try signing in instead.')
+        setError('Un compte avec cet email existe déjà. Essayez de vous connecter.')
       } else {
-        setError(err.message || 'Sign up failed. Please try again.')
+        setError(err.message || 'Inscription échouée. Veuillez réessayer.')
       }
     } finally {
       setSubmitting(false)
@@ -163,50 +150,42 @@ export default function SignUpPage() {
   return (
     <div
       className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-4 py-12"
-      style={{ backgroundColor: '#FFF7ED' }}
+      style={{ background: 'linear-gradient(160deg, #EFF6FF 0%, #DBEAFE 25%, #EFF6FF 50%, #F8FAFC 100%)' }}
     >
       {/* Background blobs */}
       <div
-        className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full opacity-25 blur-3xl"
-        style={{ backgroundColor: '#FB923C' }}
+        className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full opacity-15 blur-3xl"
+        style={{ backgroundColor: '#1E3A5F' }}
       />
       <div
-        className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full opacity-20 blur-3xl"
-        style={{ backgroundColor: '#FB923C' }}
-      />
-      <div
-        className="pointer-events-none absolute left-16 top-1/3 h-52 w-52 rounded-full opacity-15 blur-3xl"
-        style={{ backgroundColor: '#EC4899' }}
+        className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full opacity-10 blur-3xl"
+        style={{ backgroundColor: '#1D4ED8' }}
       />
 
       {/* Card */}
       <div
         className="relative w-full max-w-md rounded-3xl bg-white px-8 py-10"
-        style={{ boxShadow: '0 20px 60px rgba(22,163,74,0.12)' }}
+        style={{ boxShadow: '0 20px 60px rgba(30,58,95,0.12)' }}
       >
         {/* Logo */}
           <div className="mb-6 text-center">
             <div className="flex items-center justify-center gap-3">
-              <img
-                src="/favicon.svg"
-                alt="Frazzl.kid logo"
-                className="h-10 w-10 rounded-xl shadow-sm"
-              />
-              <div className="text-3xl font-extrabold tracking-tight">
-                <span style={{ color: '#111827' }}>Frazzl</span>
-                <span style={{ color: '#F97316' }}>.kid</span>
+              <div className="h-11 w-11 rounded-xl flex items-center justify-center text-2xl" style={{ backgroundColor: '#1E3A5F' }}>💉</div>
+              <div className="leading-tight text-left">
+                <div className="text-xl font-extrabold tracking-tight" style={{ color: '#1E3A5F' }}>Ivitaminacademy</div>
+                <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#64748B' }}>Guide pratique médecin</div>
               </div>
             </div>
             <h1 className="mt-4 text-2xl font-extrabold" style={{ color: '#1A1A2E' }}>
-              Create your account
+              Créer votre compte
             </h1>
             <p className="mt-1.5 text-sm" style={{ color: '#94A3B8' }}>
-              Join thousands of learners today ✨
+              Commencez votre formation IV 💉
             </p>
           </div>
 
-        {/* Role selector */}
-        <div className="mb-5 grid grid-cols-2 gap-3">
+        {/* Role selector — Médecin uniquement */}
+        <div className="mb-5 grid grid-cols-1 gap-3">
           {ROLES.map(r => {
             const isSelected = role === r.id
             return (
@@ -255,43 +234,13 @@ export default function SignUpPage() {
             </div>
           )}
 
-          {/* Grade (kids only) */}
-          {role === 'kid' && (
-            <div>
-              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide" style={{ color: '#64748B' }}>
-                Grade
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                {[4, 5].map(g => {
-                  const isSel = Number(form.grade) === g
-                  return (
-                    <button
-                      key={g}
-                      type="button"
-                      onClick={() => setForm(f => ({ ...f, grade: g }))}
-                      className="rounded-xl py-3 text-sm font-extrabold transition-all"
-                      style={{
-                        border: `2px solid ${isSel ? accent : '#E2E8F0'}`,
-                        backgroundColor: isSel ? accent + '15' : '#FAFAFA',
-                        color: isSel ? accent : '#64748B',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Grade {g}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
           {/* Full name */}
           <div>
             <label
               className="mb-1.5 block text-xs font-bold uppercase tracking-wide"
               style={{ color: '#64748B' }}
             >
-              Full Name
+              Nom complet
             </label>
             <div className="relative">
               <span
@@ -307,7 +256,7 @@ export default function SignUpPage() {
                 onChange={handleChange}
                 onFocus={() => setFocused('name')}
                 onBlur={() => setFocused('')}
-                placeholder="Your full name"
+                placeholder="Votre nom complet"
                 style={{ ...fieldStyle('name'), padding: '11px 16px 11px 40px' }}
               />
             </div>
@@ -348,7 +297,7 @@ export default function SignUpPage() {
               className="mb-1.5 block text-xs font-bold uppercase tracking-wide"
               style={{ color: '#64748B' }}
             >
-              Password
+              Mot de passe
             </label>
             <div className="relative">
               <span
@@ -364,7 +313,7 @@ export default function SignUpPage() {
                 onChange={handleChange}
                 onFocus={() => setFocused('password')}
                 onBlur={() => setFocused('')}
-                placeholder="Min. 8 characters"
+                placeholder="Min. 8 caractères"
                 style={{ ...fieldStyle('password'), padding: '11px 44px 11px 40px' }}
               />
               <button
@@ -426,13 +375,13 @@ export default function SignUpPage() {
               style={{ accentColor: accent, width: 16, height: 16, marginTop: 2, borderRadius: 4, cursor: 'pointer', flexShrink: 0 }}
             />
             <span>
-              I agree to the{' '}
+              J'accepte les{' '}
               <a href="/privacy" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="font-semibold hover:underline" style={{ color: accent }}>
-                Terms of Service
+                Conditions d'utilisation
               </a>{' '}
-              and{' '}
+              et la{' '}
               <a href="/privacy" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="font-semibold hover:underline" style={{ color: accent }}>
-                Privacy Policy
+                Politique de confidentialité
               </a>
             </span>
           </label>
@@ -449,7 +398,7 @@ export default function SignUpPage() {
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = accentHover)}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = accent)}
           >
-            {submitting ? 'Creating account…' : role === 'kid' ? '🧒 Start Learning →' : '👨‍👧 Join as Parent →'}
+            {submitting ? 'Création du compte…' : '👨‍⚕️ Commencer ma formation →'}
           </button>
 
       
@@ -459,13 +408,13 @@ export default function SignUpPage() {
 
         {/* Footer link */}
         <p className="mt-7 text-center text-sm" style={{ color: '#94A3B8' }}>
-          Already have an account?{' '}
+          Déjà inscrit ?{' '}
           <Link
             to="/login"
             className="font-bold transition hover:underline"
             style={{ color: accent }}
           >
-            Sign In →
+            Se connecter →
           </Link>
         </p>
       </div>

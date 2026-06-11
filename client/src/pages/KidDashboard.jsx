@@ -5,26 +5,15 @@ import { useAuth } from '../context/AuthContext'
 import { getProgressMap } from '../services/progress'
 import { curriculum } from '../data/curriculum'
 
-const topicMeta = [
-  { id: 1, color: '#F97316', bg: '#FFF7ED', border: '#FB923C' },
-  { id: 2, color: '#3B82F6', bg: '#EFF6FF', border: '#93C5FD' },
-  { id: 3, color: '#EC4899', bg: '#FDF2F8', border: '#F9A8D4' },
-  { id: 4, color: '#A855F7', bg: '#FAF5FF', border: '#D8B4FE' },
-  { id: 5, color: '#0891B2', bg: '#ECFEFF', border: '#A5F3FC' },
-  { id: 6, color: '#EC4899', bg: '#FDF2F8', border: '#FBCFE8' },
-  { id: 7, color: '#3B82F6', bg: '#EFF6FF', border: '#BFDBFE' },
-  { id: 8, color: '#F97316', bg: '#FFF7ED', border: '#FB923C' },
-]
-
 function greeting() {
   const h = new Date().getHours()
-  if (h < 12) return 'Good morning'
-  if (h < 17) return 'Good afternoon'
-  return 'Good evening'
+  if (h < 12) return 'Bonjour'
+  if (h < 17) return 'Bon après-midi'
+  return 'Bonsoir'
 }
 
-function computeStats(progressMap, grade) {
-  const topics = curriculum[grade] || []
+function computeStats(progressMap) {
+  const topics = curriculum[1] || []
   let totalLessons = 0
   let totalDone    = 0
 
@@ -34,8 +23,7 @@ function computeStats(progressMap, grade) {
     totalLessons += total
     totalDone    += doneLessons
     const pct = total > 0 ? Math.round((doneLessons / total) * 100) : 0
-    const meta = topicMeta.find(m => m.id === topic.id) || topicMeta[0]
-    return { ...topic, ...meta, done: doneLessons, total, progress: pct }
+    return { ...topic, done: doneLessons, total, progress: pct }
   })
 
   const overall = totalLessons > 0 ? Math.round((totalDone / totalLessons) * 100) : 0
@@ -45,27 +33,20 @@ function computeStats(progressMap, grade) {
 function computeBadges(progressMap, profile) {
   const allRows   = Object.values(progressMap)
   const completed = allRows.filter(r => r?.completed).length
-  const hasHundred = allRows.some(r => r?.score !== null && r?.score !== undefined &&
-    r?.score >= (curriculum[4].flatMap(t => t.lessons).find(l => String(l.id) === String(r.lesson_ref))?.quiz?.length ?? 1) * 1)
+
+  const allLessons = (curriculum[1] || []).flatMap(t => t.lessons)
+  const perfectLesson = allLessons.some(l => {
+    const r = progressMap[l.id]
+    return r?.completed && r?.score != null && r.score >= l.questions
+  })
 
   const earned = []
-
   if (completed >= 5)
-    earned.push({ icon: '⭐', name: 'Quick Learner', color: '#F97316', bg: '#FFF7ED' })
+    earned.push({ icon: '⭐', name: 'Apprenant rapide', color: '#1E3A5F', bg: '#EFF6FF' })
   if ((profile?.streak_days ?? 0) >= 5)
-    earned.push({ icon: '🔥', name: 'On Fire',       color: '#EF4444', bg: '#FEF2F2' })
-
-  // Accurate: scored full marks on any lesson
-  const perfectLesson = allRows.find(r => {
-    if (!r?.completed || r?.score == null) return false
-    const lessonId = Number(r.lesson_ref ?? r.lesson_id)
-    const lesson = [...(curriculum[4] ?? []), ...(curriculum[5] ?? [])]
-      .flatMap(t => t.lessons)
-      .find(l => l.id === lessonId)
-    return lesson && r.score >= lesson.questions
-  })
+    earned.push({ icon: '🔥', name: 'En feu',           color: '#EF4444', bg: '#FEF2F2' })
   if (perfectLesson)
-    earned.push({ icon: '🎯', name: 'Accurate', color: '#F97316', bg: '#FFF7ED' })
+    earned.push({ icon: '🎯', name: 'Précis',           color: '#065F46', bg: '#ECFDF5' })
 
   return earned
 }
@@ -73,11 +54,8 @@ function computeBadges(progressMap, profile) {
 export default function KidDashboard() {
   const navigate          = useNavigate()
   const { user, profile } = useAuth()
-  const [grade, setGrade] = useState(null)
   const [progressMap, setProgressMap] = useState({})
   const [loading, setLoading] = useState(true)
-
-  const activeGrade = grade ?? profile?.grade ?? 4
 
   useEffect(() => {
     if (!user?.id) { setLoading(false); return }
@@ -87,7 +65,6 @@ export default function KidDashboard() {
       .finally(() => setLoading(false))
   }, [user?.id])
 
-  // Re-sync when a quiz is finished
   useEffect(() => {
     function onUpdate() {
       if (user?.id) getProgressMap(user.id).then(setProgressMap)
@@ -96,9 +73,9 @@ export default function KidDashboard() {
     return () => window.removeEventListener('progressUpdated', onUpdate)
   }, [user?.id])
 
-  const { topicsWithProgress, overall, totalDone } = computeStats(progressMap, activeGrade)
-  const badges   = computeBadges(progressMap, profile)
-  const name     = profile?.name || 'there'
+  const { topicsWithProgress, overall, totalDone } = computeStats(progressMap)
+  const badges = computeBadges(progressMap, profile)
+  const name   = profile?.name || 'Docteur'
 
   return (
     <KidLayout>
@@ -106,63 +83,49 @@ export default function KidDashboard() {
       {/* Welcome banner */}
       <div
         className="rounded-3xl p-5 sm:p-6 mb-6 flex items-center justify-between"
-        style={{ background: 'linear-gradient(135deg,#F97316,#FB923C)', boxShadow: '0 4px 20px rgba(249,115,22,.30)' }}
+        style={{ background: 'linear-gradient(135deg,#1E3A5F,#1D4ED8)', boxShadow: '0 4px 20px rgba(30,58,95,.35)' }}
       >
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-white mb-1">
-            {greeting()}, {name}! 👋
+            {greeting()}, {name} ! 👋
           </h1>
-          <p className="text-orange-100 text-sm font-semibold">
+          <p className="text-blue-200 text-sm font-semibold">
             {loading
-              ? 'Loading your progress…'
+              ? 'Chargement de votre progression…'
               : overall > 0
-                ? `You're ${overall}% through Grade ${activeGrade} — keep going!`
-                : `Let's start Grade ${activeGrade}!`}
+                ? `Vous avez complété ${overall}% de la formation — continuez !`
+                : 'Commencez votre formation en perfectusion IV !'}
           </p>
         </div>
-        <span className="text-5xl sm:text-6xl select-none">{profile?.avatar ?? '🧒'}</span>
+        <span className="text-5xl sm:text-6xl select-none">{profile?.avatar ?? '👨‍⚕️'}</span>
       </div>
 
       {/* Overall progress bar */}
-      <div className="bg-white rounded-2xl border-2 p-5 mb-6 shadow-sm" style={{ borderColor: '#FB923C' }}>
+      <div className="bg-white rounded-2xl border-2 p-5 mb-6 shadow-sm" style={{ borderColor: '#93C5FD' }}>
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-extrabold text-gray-700">
-            Grade {activeGrade} overall progress
+            Progression globale — Formation IV
           </span>
-          <span className="text-sm font-extrabold" style={{ color: '#F97316' }}>
+          <span className="text-sm font-extrabold" style={{ color: '#1E3A5F' }}>
             {loading ? '…' : `${overall}%`}
           </span>
         </div>
-        <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: '#FFF7ED' }}>
+        <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: '#EFF6FF' }}>
           <div
             className="h-full rounded-full transition-all duration-700"
-            style={{ width: `${overall}%`, background: 'linear-gradient(90deg,#F97316,#4ADE80)' }}
+            style={{ width: `${overall}%`, background: 'linear-gradient(90deg,#1E3A5F,#1D4ED8)' }}
           />
         </div>
-        <div className="flex gap-2 mt-3">
-          {[4, 5].map(g => (
-            <button
-              key={g}
-              onClick={() => setGrade(g)}
-              className="px-3 py-1 rounded-lg text-xs font-extrabold transition-colors"
-              style={
-                activeGrade === g
-                  ? { backgroundColor: '#F97316', color: '#fff' }
-                  : { backgroundColor: '#F3F4F6', color: '#6B7280' }
-              }
-            >
-              Grade {g}
-            </button>
-          ))}
-          <span className="ml-auto text-xs text-gray-400 font-semibold self-center">
-            {loading ? '' : `${totalDone} lessons done`}
+        <div className="flex justify-end mt-2">
+          <span className="text-xs text-gray-400 font-semibold">
+            {loading ? '' : `${totalDone} leçons terminées`}
           </span>
         </div>
       </div>
 
       {/* Topic grid */}
       <p className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">
-        Pick a topic to practice
+        Choisir un module
       </p>
 
       {loading ? (
@@ -176,7 +139,7 @@ export default function KidDashboard() {
           {topicsWithProgress.map(topic => (
             <button
               key={topic.id}
-              onClick={() => navigate(`/kid/lessons`)}
+              onClick={() => navigate('/medecin/lessons')}
               className="bg-white rounded-2xl p-4 sm:p-5 text-left border-2 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
               style={{ borderColor: topic.progress > 0 ? topic.border : '#E5E7EB' }}
             >
@@ -188,7 +151,7 @@ export default function KidDashboard() {
               </div>
               <div className="text-sm font-extrabold text-gray-800 mb-1">{topic.name}</div>
               <div className="text-xs text-gray-400 font-semibold mb-2">
-                {topic.done} / {topic.total} done
+                {topic.done} / {topic.total} terminé{topic.done > 1 ? 'es' : 'e'}
               </div>
               <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: topic.bg }}>
                 <div
@@ -202,11 +165,11 @@ export default function KidDashboard() {
       )}
 
       {/* Badges */}
-      <div className="bg-white rounded-2xl border-2 p-5 shadow-sm" style={{ borderColor: '#FB923C' }}>
-        <p className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">My Badges</p>
+      <div className="bg-white rounded-2xl border-2 p-5 shadow-sm" style={{ borderColor: '#93C5FD' }}>
+        <p className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">Mes badges</p>
         {badges.length === 0 ? (
           <p className="text-sm text-gray-400 font-medium">
-            Complete lessons to earn badges! 🏅
+            Complétez des leçons pour débloquer des badges ! 🏅
           </p>
         ) : (
           <div className="flex flex-wrap gap-3">

@@ -1,130 +1,53 @@
 import { useNavigate } from 'react-router-dom'
 
 const trustItems = [
-  { icon: '📚', label: 'Grades 4 & 5 curriculum', color: '#F97316' },
-  { icon: '📊', label: 'Progress tracking',        color: '#3B82F6' },
-  { icon: '👨‍👧', label: 'Parent & kid modes',       color: '#EC4899' },
-  { icon: '🏆', label: 'Badges & rewards',         color: '#F97316' },
+  { icon: '💉', label: '13 protocoles de perfusion IV',  color: '#1E3A5F' },
+  { icon: '📋', label: '4 modules de formation',         color: '#1D4ED8' },
+  { icon: '🛡️', label: 'Sécurité & gestion des urgences', color: '#065F46' },
+  { icon: '🎓', label: 'Certificat de mise en route',     color: '#991B1B' },
 ]
-
-function ModeCard({ illustrationBg, emoji, isParent, title, subtitle, features, btnColor, btnHover, btnLabel, badge, badgeColor, badgeBg, onClick }) {
-  return (
-    <div
-      className="group flex cursor-pointer flex-col overflow-hidden rounded-[28px] border border-transparent bg-white shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1.5 hover:border-current hover:shadow-[0_20px_48px_rgba(0,0,0,0.12)]"
-      style={{ '--tw-border-opacity': 1, '--hover-border-color': btnColor }}
-      onClick={onClick}
-    >
-      {/* Top illustration area */}
-      <div
-        className="relative flex items-center justify-center overflow-hidden"
-        style={{ height: 200, background: illustrationBg }}
-      >
-        {/* Decorative circles */}
-        <div className="absolute -top-8 -right-8 h-28 w-28 rounded-full bg-white/15" />
-        <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-white/10" />
-        <div className="absolute top-4 right-12 h-10 w-10 rounded-full bg-white/15" />
-
-        {isParent ? (
-          <div className="relative flex items-center justify-center gap-4 drop-shadow-lg">
-            <span role="img" aria-label="woman parent" style={{ fontSize: 64, filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.12))' }}>
-              👩‍🦰
-            </span>
-            <span role="img" aria-label="man parent" style={{ fontSize: 64, filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.12))' }}>
-              👨‍🦰
-            </span>
-          </div>
-        ) : (
-          <div className="relative drop-shadow-lg">
-            <span role="img" aria-label="kid avatar" style={{ fontSize: 80, filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.12))' }}>
-              👱‍♀️
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="flex flex-1 flex-col p-6">
-        {/* Badge */}
-        {badge && (
-          <div className="mb-3 inline-flex self-start rounded-lg px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide" style={{ backgroundColor: badgeBg, color: badgeColor }}>
-            {badge}
-          </div>
-        )}
-
-        <h2 className="text-[22px] font-extrabold leading-tight text-gray-900">{title}</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-500">{subtitle}</p>
-
-        {/* Feature bullets */}
-        {features && features.length > 0 && (
-          <ul className="mt-4 space-y-2 border-t border-slate-100 pt-4">
-            {features.map((f, i) => (
-              <li key={i} className="flex items-start gap-2 text-xs font-semibold text-slate-500">
-                <span className="mt-0.5 shrink-0 text-sm" style={{ color: btnColor }}>✓</span>
-                <span>{f}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {/* Spacer pushes button to bottom */}
-        <div className="mt-auto pt-5">
-          <button
-            className="w-full rounded-2xl py-3.5 text-sm font-extrabold text-white shadow-[0_4px_14px_rgba(0,0,0,0.15)] transition-all duration-200 active:scale-[0.98]"
-            style={{ backgroundColor: btnColor }}
-            onMouseEnter={e => {
-              e.currentTarget.style.backgroundColor = btnHover
-              e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.20)'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.backgroundColor = btnColor
-              e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.15)'
-            }}
-          >
-            {btnLabel}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 export default function LandingPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #F5F0FF 0%, #EDE4FF 25%, #F3E8FF 50%, #F8F4FF 75%, #FDFBFF 100%)' }}>
-      {/* Subtle decorative blobs */}
-      <div className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-[#743290]/15 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-[#5E17EB]/10 blur-3xl" />
-      <div className="pointer-events-none absolute top-1/3 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-[#743290]/8 blur-3xl" />
+    <div className="min-h-screen w-full relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #EFF6FF 0%, #DBEAFE 25%, #EFF6FF 50%, #F8FAFC 75%, #FFFFFF 100%)' }}>
+      {/* Decorative blobs */}
+      <div className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-[#1E3A5F]/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-[#1D4ED8]/08 blur-3xl" />
+
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-6">
 
         {/* Header */}
         <header className="flex items-center justify-between py-5">
           <div className="flex items-center gap-3">
-            <img
-              src="/favicon.svg"
-              alt="Frazzl.kid logo"
-              className="h-16 w-16 rounded-xl shadow-sm"
-            />
-            <div className="text-2xl font-extrabold tracking-tight">
-              <span style={{ color: '#743290' }}>Frazzl</span>
-              <span style={{ color: '#5E17EB' }}>.kid</span>
+            <div
+              className="h-11 w-11 rounded-xl flex items-center justify-center text-2xl shadow-sm"
+              style={{ backgroundColor: '#1E3A5F' }}
+            >
+              💉
+            </div>
+            <div className="leading-tight">
+              <div className="text-xl font-extrabold tracking-tight" style={{ color: '#1E3A5F' }}>
+                Ivitaminacademy
+              </div>
+              <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#64748B' }}>
+                Guide pratique médecin
+              </div>
             </div>
           </div>
 
           <nav className="hidden gap-8 md:flex">
-            <button type="button" onClick={() => navigate('/how')} className="text-sm font-semibold text-slate-600 transition hover:text-slate-900">How it works</button>
             <a href="/faq" className="text-sm font-semibold text-slate-600 transition hover:text-slate-900">FAQ</a>
-            <a href="/privacy" className="text-sm font-semibold text-slate-600 transition hover:text-slate-900">Privacy &amp; Terms</a>
+            <a href="/privacy" className="text-sm font-semibold text-slate-600 transition hover:text-slate-900">Conditions</a>
           </nav>
 
           <button
             onClick={() => navigate('/login')}
             className="rounded-lg px-5 py-2.5 text-sm font-bold text-white transition hover:opacity-90"
-            style={{ backgroundColor: '#5E17EB' }}
+            style={{ backgroundColor: '#1E3A5F' }}
           >
-            Sign In
+            Connexion
           </button>
         </header>
 
@@ -132,58 +55,89 @@ export default function LandingPage() {
         <main className="flex flex-1 flex-col items-center pb-14 pt-10">
 
           {/* Hero */}
-          <section className="flex flex-col items-center text-center">           
+          <section className="flex flex-col items-center text-center">
+            {/* Important badge */}
+         
+
             <h1 className="text-4xl font-extrabold leading-tight text-gray-900 sm:text-5xl">
-              Math learning made{' '}
-              <span className="whitespace-nowrap" style={{ color: '#5E17EB' }}>fun &  </span>
-              <span className="whitespace-nowrap" style={{ color: '#743290' }}> simple</span>
+              Perfusions de{' '}
+              <span style={{ color: '#1E3A5F' }}>vitamines IV</span>
               <br />
-              for Grades 4 & 5
+              <span style={{ color: '#1D4ED8' }}>Guide pratique médecin</span>
             </h1>
             <p className="mx-auto mt-5 max-w-lg text-base font-medium leading-7 text-slate-500">
-              Choose how you want to join today — as a kid learning independently,
-              or as a parent helping your child succeed.
+              Accédez aux protocoles de mise en route, formez-vous sur les 13 produits,
+              et obtenez votre certificat de qualification.
             </p>
           </section>
 
-          {/* Mode cards */}
-          <section className="mt-12 grid w-full max-w-2xl grid-cols-1 gap-6 sm:grid-cols-2">
-            <ModeCard
-              illustrationBg="linear-gradient(135deg, #FFF4E6 0%, #FDBB7C 50%, #FB923C 100%)"
-              emoji="🧒"
-              badge="Kid Mode"
-              badgeColor="#F97316"
-              badgeBg="#FFF7ED"
-              title="I'm Learning"
-              subtitle="Dive into fun math challenges designed just for you."
-              features={[
-                'Interactive lessons for Grade 4 & 5',
-                'Earn badges & build streaks',
-                'Learn at your own pace',
-              ]}
-              btnColor="#F97316"
-              btnHover="#EA580C"
-              btnLabel="Start learning →"
-              onClick={() => navigate('/kid/dashboard')}
-            />
-            <ModeCard
-              illustrationBg="linear-gradient(135deg, #ECFDF5 0%, #6EE7B7 50%, #34D399 100%)"
-              isParent
-              badge="Parent Mode"
-              badgeColor="#F97316"
-              badgeBg="#FFF7ED"
-              title="I'm Helping"
-              subtitle="Track progress, guide learning, and celebrate wins."
-              features={[
-                'Real-time progress dashboard',
-                'Detailed quiz reports & insights',
-                'Link multiple children easily',
-              ]}
-              btnColor="#F97316"
-              btnHover="#EA580C"
-              btnLabel="Enter parent mode →"
-              onClick={() => navigate('/parent/dashboard')}
-            />
+          {/* Mode card — Médecin uniquement */}
+          <section className="mt-12 w-full max-w-md">
+            <div
+              className="group flex cursor-pointer flex-col overflow-hidden rounded-[28px] border border-transparent bg-white shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_48px_rgba(0,0,0,0.12)]"
+              onClick={() => navigate('/medecin/dashboard')}
+            >
+              {/* Top illustration */}
+              <div
+                className="relative flex items-center justify-center overflow-hidden"
+                style={{ height: 200, background: 'linear-gradient(135deg, #EFF6FF 0%, #93C5FD 50%, #2563EB 100%)' }}
+              >
+                <div className="absolute -top-8 -right-8 h-28 w-28 rounded-full bg-white/15" />
+                <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-white/10" />
+                <div className="absolute top-4 right-12 h-10 w-10 rounded-full bg-white/15" />
+                <div className="relative drop-shadow-lg">
+                  <span role="img" style={{ fontSize: 80, filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.12))' }}>
+                    👨‍⚕️
+                  </span>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex flex-1 flex-col p-6">
+                <div
+                  className="mb-3 inline-flex self-start rounded-lg px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide"
+                  style={{ backgroundColor: '#DBEAFE', color: '#1E3A5F' }}
+                >
+                  Espace Médecin
+                </div>
+                <h2 className="text-[22px] font-extrabold leading-tight text-gray-900">Je me forme aux protocoles IV</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                  Apprenez les protocoles de perfusion de vitamines IV et validez vos connaissances module par module.
+                </p>
+
+                <ul className="mt-4 space-y-2 border-t border-slate-100 pt-4">
+                  <li className="flex items-start gap-2 text-xs font-semibold text-slate-500">
+                    <span className="mt-0.5 shrink-0 text-sm" style={{ color: '#1E3A5F' }}>✓</span>
+                    <span>4 modules + 19 leçons de protocoles</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-xs font-semibold text-slate-500">
+                    <span className="mt-0.5 shrink-0 text-sm" style={{ color: '#1E3A5F' }}>✓</span>
+                    <span>QCM de validation par leçon</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-xs font-semibold text-slate-500">
+                    <span className="mt-0.5 shrink-0 text-sm" style={{ color: '#1E3A5F' }}>✓</span>
+                    <span>Certificat de mise en route obtenu à la fin</span>
+                  </li>
+                </ul>
+
+                <div className="mt-auto pt-5">
+                  <button
+                    className="w-full rounded-2xl py-3.5 text-sm font-extrabold text-white shadow-[0_4px_14px_rgba(0,0,0,0.15)] transition-all duration-200 active:scale-[0.98]"
+                    style={{ backgroundColor: '#1E3A5F' }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.backgroundColor = '#162C48'
+                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.20)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.backgroundColor = '#1E3A5F'
+                      e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.15)'
+                    }}
+                  >
+                    Accéder à ma formation →
+                  </button>
+                </div>
+              </div>
+            </div>
           </section>
 
           {/* Trust bar */}
@@ -196,13 +150,97 @@ export default function LandingPage() {
             ))}
           </section>
 
+          {/* ── About Section ── */}
+          <section className="mt-16 w-full max-w-3xl">
+            <div className="rounded-3xl border-2 p-6 sm:p-8 shadow-sm" style={{ backgroundColor: '#fff', borderColor: '#BFDBFE' }}>
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ backgroundColor: '#EFF6FF' }}>💡</div>
+                <h2 className="text-xl font-extrabold text-gray-900">Qu'est-ce qu'Ivitaminacademy ?</h2>
+              </div>
+              
+              <div className="space-y-4 text-sm leading-relaxed text-slate-600 font-medium">
+                <p>
+                  <strong>Ivitaminacademy</strong> est une plateforme de formation en ligne destinée aux médecins souhaitant maîtriser les protocoles de perfusions de vitamines par voie intraveineuse (IV).
+                </p>
+                <p>
+                  La formation couvre <strong>l'ensemble des 13 produits</strong> utilisés en cabinet IV, organisés en <strong>4 modules</strong> : des fondamentaux de la perfusion jusqu'à la gestion des urgences et complications.
+                </p>
+                <p>
+                  Chaque leçon comprend un <strong>contenu pédagogique détaillé</strong> suivi d'un <strong>QCM de validation</strong>. Le médecin doit d'abord lire la leçon, puis passer le quiz pour valider ses connaissances.
+                </p>
+                <p>
+                  En fin de parcours, un <strong>certificat de mise en route</strong> est délivré, attestant de la maîtrise des protocoles de perfusion de vitamines IV.
+                </p>
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { icon: '📖', label: 'Lire la leçon', sub: 'Contenu structuré' },
+                  { icon: '📝', label: 'Passer le QCM', sub: 'Valider ses acquis' },
+                  { icon: '📊', label: 'Suivre sa progression', sub: 'Tableau de bord' },
+                  { icon: '🎓', label: 'Obtenir le certificat', sub: 'Validation finale' },
+                ].map(item => (
+                  <div key={item.label} className="flex flex-col items-center rounded-2xl p-3 text-center" style={{ backgroundColor: '#F8FAFC' }}>
+                    <span className="text-2xl mb-1">{item.icon}</span>
+                    <span className="text-xs font-extrabold text-gray-700">{item.label}</span>
+                    <span className="text-[10px] text-gray-400 font-medium">{item.sub}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ── Medical Disclaimer ── */}
+          <section className="mt-10 w-full max-w-3xl">
+            <div className="rounded-3xl p-6 sm:p-8 border-2 shadow-sm" style={{ backgroundColor: '#FFFBEB', borderColor: '#FCD34D' }}>
+              <div className="flex items-start gap-3">
+                <span className="text-2xl shrink-0 mt-0.5">⚖️</span>
+                <div>
+                  <h3 className="text-base font-extrabold text-gray-800 mb-2">Avertissement médical</h3>
+                  <p className="text-sm font-medium text-slate-600 leading-relaxed mb-4">
+                    Ce document est un guide pratique basé sur l'usage courant.
+                  </p>
+                  <p className="text-sm font-semibold text-slate-700 mb-2">Les posologies doivent toujours être adaptées :</p>
+                  <ul className="space-y-1.5 text-sm text-slate-600">
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-0.5">•</span>
+                      <span>au patient</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-0.5">•</span>
+                      <span>au contexte clinique</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-0.5">•</span>
+                      <span>aux antécédents</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-0.5">•</span>
+                      <span>aux bilans biologiques</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </section>
+
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-slate-200 py-6 text-center">
-          <p className="text-xs font-semibold text-slate-400">
-            © 2026 <span style={{ color: '#111827' }}>Frazzl</span><span style={{ color: '#F97316' }}>.kid</span> — Built for kids, trusted by parents.
-          </p>
+        <footer className="border-t border-slate-200 py-8 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg flex items-center justify-center text-base" style={{ backgroundColor: '#1E3A5F' }}>💉</div>
+              <span className="text-sm font-extrabold" style={{ color: '#1E3A5F' }}>Ivitaminacademy</span>
+            </div>
+            <p className="text-xs font-semibold text-slate-400 max-w-md mx-auto leading-relaxed">
+              Guide pratique de perfusions de vitamines IV — Formation destinée aux médecins.
+              Ce document est un guide basé sur l'usage courant. Les posologies doivent toujours être adaptées au patient et au contexte clinique.
+            </p>
+            <p className="text-[10px] text-slate-300">
+              © 2026 Ivitaminacademy. Tous droits réservés.
+            </p>
+          </div>
         </footer>
       </div>
     </div>

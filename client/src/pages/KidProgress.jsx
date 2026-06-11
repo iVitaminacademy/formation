@@ -5,36 +5,31 @@ import { useAuth } from '../context/AuthContext'
 import { getProgressMap } from '../services/progress'
 import { curriculum } from '../data/curriculum'
 
-// ── helpers ───────────────────────────────────────────────────────────────────
 function scoreColor(pct) {
-  if (pct >= 80) return '#F97316'
-  if (pct >= 60) return '#F97316'
+  if (pct >= 80) return '#1E3A5F'
+  if (pct >= 60) return '#1D4ED8'
   return '#EF4444'
 }
 
 function relativeDate(iso) {
   if (!iso) return '—'
   const diff = Math.floor((Date.now() - new Date(iso)) / 86400000)
-  if (diff === 0) return 'Today'
-  if (diff === 1) return 'Yesterday'
-  return `${diff} days ago`
+  if (diff === 0) return 'Aujourd\'hui'
+  if (diff === 1) return 'Hier'
+  return `Il y a ${diff} jours`
 }
 
+// Colors matching the 4 curriculum modules
 const topicMeta = {
-  1: { color: '#F97316', bg: '#FFF7ED' },
-  2: { color: '#3B82F6', bg: '#EFF6FF' },
-  3: { color: '#EC4899', bg: '#FDF2F8' },
-  4: { color: '#A855F7', bg: '#FAF5FF' },
-  5: { color: '#0891B2', bg: '#ECFEFF' },
-  6: { color: '#EC4899', bg: '#FDF2F8' },
-  7: { color: '#3B82F6', bg: '#EFF6FF' },
-  8: { color: '#F97316', bg: '#FFF7ED' },
+  1: { color: '#1E3A5F', bg: '#EFF6FF' },
+  2: { color: '#1D4ED8', bg: '#DBEAFE' },
+  3: { color: '#065F46', bg: '#ECFDF5' },
+  4: { color: '#991B1B', bg: '#FEF2F2' },
 }
 
-function buildStats(progressMap, grade, profile) {
-  const topics = curriculum[grade] || []
+function buildStats(progressMap, profile) {
+  const topics = curriculum[1] || []
 
-  // Per-topic breakdown
   let totalLessons = 0, totalDone = 0
   const topicsWithProgress = topics.map(t => {
     const done  = t.lessons.filter(l => progressMap[l.id]?.completed).length
@@ -47,7 +42,6 @@ function buildStats(progressMap, grade, profile) {
 
   const overall = totalLessons > 0 ? Math.round((totalDone / totalLessons) * 100) : 0
 
-  // Quiz history — every completed lesson row, sorted newest first
   const allLessons = topics.flatMap(t => t.lessons)
   const quizHistory = allLessons
     .filter(l => progressMap[l.id]?.completed)
@@ -61,16 +55,14 @@ function buildStats(progressMap, grade, profile) {
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .slice(0, 6)
 
-  // Badges
   const badges = []
-  if (totalDone >= 5)                     badges.push({ icon: '⭐', name: 'Quick Learner' })
-  if ((profile?.streak_days ?? 0) >= 5)  badges.push({ icon: '🔥', name: 'On Fire'       })
-  if (quizHistory.some(q => q.pct === 100)) badges.push({ icon: '🎯', name: 'Accurate'    })
+  if (totalDone >= 5)                         badges.push({ icon: '⭐', name: 'Apprenant rapide' })
+  if ((profile?.streak_days ?? 0) >= 5)       badges.push({ icon: '🔥', name: 'En feu'           })
+  if (quizHistory.some(q => q.pct === 100))   badges.push({ icon: '🎯', name: 'Précis'            })
 
   return { topicsWithProgress, overall, totalDone, quizHistory, badges }
 }
 
-// ── sub-components ────────────────────────────────────────────────────────────
 function StatCard({ value, label, color, border }) {
   return (
     <div className="flex-1 bg-white rounded-2xl border-2 p-5 text-center shadow-sm" style={{ borderColor: border }}>
@@ -84,13 +76,11 @@ function SkeletonRow() {
   return <div className="h-10 bg-gray-100 rounded-xl animate-pulse mb-3" />
 }
 
-// ── page ──────────────────────────────────────────────────────────────────────
 export default function KidProgress() {
   const navigate          = useNavigate()
   const { user, profile, refreshProfile } = useAuth()
   const [progressMap, setProgressMap] = useState({})
   const [loading, setLoading]         = useState(true)
-  const grade = profile?.grade ?? 4
 
   useEffect(() => {
     if (!user?.id) { setLoading(false); return }
@@ -112,18 +102,18 @@ export default function KidProgress() {
   }, [user?.id, refreshProfile])
 
   const { topicsWithProgress, overall, totalDone, quizHistory, badges } =
-    buildStats(progressMap, grade, profile)
+    buildStats(progressMap, profile)
 
   const statCards = [
-    { value: loading ? '…' : `${overall}%`,    label: `Overall Grade ${grade}`, color: '#F97316', border: '#FB923C' },
-    { value: loading ? '…' : totalDone,         label: 'Lessons completed',      color: '#3B82F6', border: '#93C5FD' },
-    { value: `🔥 ${profile?.streak_days ?? 0}`, label: 'Day streak',             color: '#F97316', border: '#FED7AA' },
-    { value: `🏅 ${badges.length}`,             label: 'Badges earned',          color: '#EC4899', border: '#F9A8D4' },
+    { value: loading ? '…' : `${overall}%`,    label: 'Progression globale',     color: '#1E3A5F', border: '#93C5FD' },
+    { value: loading ? '…' : totalDone,         label: 'Leçons complétées',       color: '#1D4ED8', border: '#BFDBFE' },
+    { value: `🎯 ${profile?.streak_days ?? 0}`, label: 'Modules consécutifs',     color: '#065F46', border: '#6EE7B7' },
+    { value: `🏅 ${badges.length}`,             label: 'Badges obtenus',          color: '#991B1B', border: '#FECACA' },
   ]
 
   return (
     <KidLayout>
-      <h1 className="text-2xl font-extrabold text-gray-900 mb-6">📊 My Progress</h1>
+      <h1 className="text-2xl font-extrabold text-gray-900 mb-6">📊 Ma Progression</h1>
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -132,10 +122,10 @@ export default function KidProgress() {
 
       <div className="flex flex-col lg:flex-row gap-5">
 
-        {/* Topic breakdown */}
-        <div className="flex-1 bg-white rounded-2xl border-2 p-6 shadow-sm" style={{ borderColor: '#FB923C' }}>
+        {/* Module breakdown */}
+        <div className="flex-1 bg-white rounded-2xl border-2 p-6 shadow-sm" style={{ borderColor: '#93C5FD' }}>
           <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-4">
-            Topic Breakdown
+            Modules
           </h2>
           <div className="flex flex-col gap-5">
             {loading
@@ -144,7 +134,7 @@ export default function KidProgress() {
                 <button
                   key={topic.id}
                   className="w-full text-left rounded-xl px-2 py-1 transition-colors"
-                  onClick={() => navigate('/kid/lessons')}
+                  onClick={() => navigate('/medecin/lessons')}
                   onMouseEnter={e => (e.currentTarget.style.backgroundColor = topic.bg)}
                   onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                 >
@@ -172,9 +162,9 @@ export default function KidProgress() {
         </div>
 
         {/* Recent quizzes */}
-        <div className="w-full lg:w-80 bg-white rounded-2xl border-2 p-6 shadow-sm" style={{ borderColor: '#FB923C' }}>
+        <div className="w-full lg:w-80 bg-white rounded-2xl border-2 p-6 shadow-sm" style={{ borderColor: '#93C5FD' }}>
           <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-4">
-            Recent Quizzes
+            Quiz récents
           </h2>
 
           {loading ? (
@@ -182,8 +172,8 @@ export default function KidProgress() {
           ) : quizHistory.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-3xl mb-2">📝</p>
-              <p className="text-sm text-gray-400 font-semibold">No quizzes yet</p>
-              <p className="text-xs text-gray-300 mt-1">Complete a lesson to see your results here</p>
+              <p className="text-sm text-gray-400 font-semibold">Aucun quiz complété</p>
+              <p className="text-xs text-gray-300 mt-1">Complétez une leçon pour voir vos résultats ici</p>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
@@ -193,8 +183,8 @@ export default function KidProgress() {
                   <div
                     key={quiz.id}
                     className="flex items-center gap-3 py-3 border-b last:border-0 rounded-xl px-2 transition-colors"
-                    style={{ borderColor: '#FFF7ED' }}
-                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#FFF7ED')}
+                    style={{ borderColor: '#EFF6FF' }}
+                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#EFF6FF')}
                     onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
                     <div
@@ -209,7 +199,7 @@ export default function KidProgress() {
                         {relativeDate(quiz.date)} · {quiz.pct}% correct
                       </div>
                     </div>
-                    {quiz.pct >= 90 && <span title="Top score!">🏅</span>}
+                    {quiz.pct >= 90 && <span title="Score parfait !">🏅</span>}
                   </div>
                 )
               })}

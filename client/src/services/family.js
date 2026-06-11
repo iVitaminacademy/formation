@@ -1,40 +1,41 @@
 import { supabase } from './supabaseClient'
 
-// Children linked to a parent (with their profiles).
-export async function getChildren(parentId) {
+// Médecins liés à un superviseur (avec leurs profils).
+export async function getChildren(superviseurId) {
   const { data, error } = await supabase
-    .from('parent_child')
-    .select('child_id, profiles:child_id(id, name, grade, avatar, streak_days)')
-    .eq('parent_id', parentId)
+    .from('supervisor_medecin')
+    .select('medecin_id, profiles:medecin_id(id, name, grade, avatar, streak_days)')
+    .eq('superviseur_id', superviseurId)
   if (error) throw error
   return data.map(r => r.profiles)
 }
 
-// Link a child to the current parent using the kid's short link code.
-// Uses a SECURITY DEFINER RPC so RLS doesn't hide the kid's profile.
+// Lier un médecin au superviseur courant via son code.
 export async function linkChildByCode(code) {
-  const { data, error } = await supabase.rpc('link_child_by_code', {
+  const { data, error } = await supabase.rpc('link_medecin_by_code', {
     p_code: (code || '').trim(),
   })
   if (error) throw error
-  // RPC returns a table → take the first row
   return Array.isArray(data) ? data[0] : data
 }
 
-export async function linkChild(parentId, childId) {
+export async function linkChild(superviseurId, medecinId) {
   const { data, error } = await supabase
-    .from('parent_child')
-    .upsert({ parent_id: parentId, child_id: childId }, { onConflict: 'parent_id,child_id' })
+    .from('supervisor_medecin')
+    .upsert(
+      { superviseur_id: superviseurId, medecin_id: medecinId },
+      { onConflict: 'superviseur_id,medecin_id' }
+    )
     .select()
   if (error) throw error
   return data
 }
 
-export async function unlinkChild(parentId, childId) {
+export async function unlinkChild(superviseurId, medecinId) {
   const { error } = await supabase
-    .from('parent_child')
+    .from('supervisor_medecin')
     .delete()
-    .eq('parent_id', parentId)
-    .eq('child_id', childId)
+    .eq('superviseur_id', superviseurId)
+    .eq('medecin_id', medecinId)
   if (error) throw error
 }
