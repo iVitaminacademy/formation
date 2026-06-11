@@ -1,6 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import KidLayout from '../components/KidLayout'
 import { useAuth } from '../context/AuthContext'
 import { saveProgress } from '../services/progress'
 import { getQuizByLessonId } from '../data/curriculum'
@@ -23,6 +22,7 @@ const defaultQuiz = {
 const ACCENT = '#1E3A5F'
 const ACCENT_CORRECT = '#065F46'
 const ACCENT_WRONG   = '#EF4444'
+const MAX_VIOLATIONS = 3
 
 function shuffle(arr) {
   const a = [...arr]
@@ -35,6 +35,85 @@ function shuffle(arr) {
 
 function buildShuffled(questions) {
   return questions.map(q => ({ ...q, options: shuffle(q.options) }))
+}
+
+function CheatWarningOverlay({ violations, onResume, autoSubmitted }) {
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        backgroundColor: 'rgba(10,20,40,0.92)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        backdropFilter: 'blur(6px)',
+      }}
+    >
+      <div
+        className="rounded-3xl p-10 text-center max-w-sm w-full mx-4"
+        style={{ backgroundColor: '#fff', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}
+      >
+        <div className="text-5xl mb-4">{autoSubmitted ? '🚫' : '⚠️'}</div>
+        <h2 className="text-xl font-extrabold mb-2" style={{ color: '#1E3A5F' }}>
+          {autoSubmitted ? 'Quiz terminé' : 'Changement d\'onglet détecté'}
+        </h2>
+        <p className="text-sm mb-1" style={{ color: '#64748B' }}>
+          {autoSubmitted
+            ? 'Vous avez changé d\'onglet trop de fois. Le quiz a été soumis automatiquement.'
+            : 'Vous avez quitté la page du quiz.'}
+        </p>
+        {!autoSubmitted && (
+          <p className="text-xs font-bold mb-6" style={{ color: violations >= MAX_VIOLATIONS - 1 ? '#EF4444' : '#F59E0B' }}>
+            Avertissement {violations} / {MAX_VIOLATIONS} — encore {MAX_VIOLATIONS - violations} avant soumission automatique
+          </p>
+        )}
+        <button
+          onClick={onResume}
+          className="w-full py-3 rounded-2xl text-white font-extrabold"
+          style={{ backgroundColor: autoSubmitted ? '#EF4444' : '#1E3A5F' }}
+        >
+          {autoSubmitted ? 'Voir mon score' : 'Reprendre le quiz'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function QuizShell({ children, onQuit, quizDone }) {
+  useEffect(() => {
+    if (quizDone) return
+    const handler = e => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [quizDone])
+
+  return (
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F0F4F8' }}>
+      <nav
+        className="flex items-center justify-between px-4 sm:px-8 py-3 sticky top-0 z-20 shrink-0"
+        style={{ backgroundColor: '#1E3A5F', boxShadow: '0 2px 12px rgba(30,58,95,0.35)' }}
+      >
+        <span className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+          Ivitaminacademy
+          <span className="hidden sm:inline-block text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full ml-2 align-middle">
+            Quiz
+          </span>
+        </span>
+        {!quizDone && (
+          <button
+            onClick={onQuit}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold border-2 transition-all duration-200"
+            style={{ borderColor: 'rgba(255,255,255,0.30)', color: '#fff', backgroundColor: 'transparent' }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.10)')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+          >
+            ✕ Quitter le quiz
+          </button>
+        )}
+      </nav>
+      <main className="flex-1 overflow-y-auto px-4 sm:px-8 py-5 sm:py-7 max-w-4xl mx-auto w-full">
+        {children}
+      </main>
+    </div>
+  )
 }
 
 function ScorePage({ score, total, topicColor, onRetry, onBack }) {
@@ -85,12 +164,28 @@ export default function KidQuiz() {
   const { user } = useAuth()
   const quizData = getQuizByLessonId(lessonId) || defaultQuiz
 
-  const [questions, setQuestions] = useState(() => buildShuffled(quizData.questions))
-  const [current,   setCurrent]   = useState(0)
-  const [selected,  setSelected]  = useState(null)
-  const [showHint,  setShowHint]  = useState(false)
-  const [answered,  setAnswered]  = useState({})
-  const [quizDone,  setQuizDone]  = useState(false)
+  const [questions,      setQuestions]      = useState(() => buildShuffled(quizData.questions))
+  const [current,        setCurrent]        = useState(0)
+  const [selected,       setSelected]       = useState(null)
+  const [showHint,       setShowHint]       = useState(false)
+  const [answered,       setAnswered]       = useState({})
+  const [quizDone,       setQuizDone]       = useState(false)
+  const [tabViolations,  setTabViolations]  = useState(0)
+  const [cheatOverlay,   setCheatOverlay]   = useState(false)   // 'warn' | 'submitted' | false
+
+  useEffect(() => {
+    if (quizDone) return
+    const handler = () => {
+      if (!document.hidden) return
+      setTabViolations(prev => {
+        const next = prev + 1
+        setCheatOverlay(next >= MAX_VIOLATIONS ? 'submitted' : 'warn')
+        return next
+      })
+    }
+    document.addEventListener('visibilitychange', handler)
+    return () => document.removeEventListener('visibilitychange', handler)
+  }, [quizDone])
 
   const q          = questions[current]
   const isAnswered = selected !== null
@@ -134,6 +229,12 @@ export default function KidQuiz() {
   function handleRetry() {
     setQuestions(buildShuffled(quizData.questions))
     setCurrent(0); setSelected(null); setShowHint(false); setAnswered({}); setQuizDone(false)
+    setTabViolations(0); setCheatOverlay(false)
+  }
+
+  function handleQuit() {
+    const ok = window.confirm('Êtes-vous sûr de vouloir quitter le quiz ? Votre progression sera perdue.')
+    if (ok) navigate('/medecin/lessons')
   }
 
   function optionStyle(opt) {
@@ -145,9 +246,22 @@ export default function KidQuiz() {
 
   const finalScore = Object.values(answered).filter(a => a.correct).length
 
+  // Auto-submit when MAX_VIOLATIONS reached: save progress then show score
+  useEffect(() => {
+    if (cheatOverlay !== 'submitted') return
+    const submit = async () => {
+      try {
+        const saved = await saveProgress({ userId: user?.id || 'demo', lessonId, score: finalScore, completed: true })
+        window.dispatchEvent(new CustomEvent('progressUpdated', { detail: { lessonId, row: saved } }))
+      } catch {}
+      setQuizDone(true)
+    }
+    submit()
+  }, [cheatOverlay]) // eslint-disable-line
+
   if (quizDone) {
     return (
-      <KidLayout>
+      <QuizShell quizDone={true} onQuit={handleQuit}>
         <ScorePage
           score={finalScore}
           total={questions.length}
@@ -155,12 +269,19 @@ export default function KidQuiz() {
           onRetry={handleRetry}
           onBack={() => navigate('/medecin/lessons')}
         />
-      </KidLayout>
+      </QuizShell>
     )
   }
 
   return (
-    <KidLayout>
+    <QuizShell quizDone={false} onQuit={handleQuit}>
+      {cheatOverlay && (
+        <CheatWarningOverlay
+          violations={tabViolations}
+          autoSubmitted={cheatOverlay === 'submitted'}
+          onResume={() => { if (cheatOverlay !== 'submitted') setCheatOverlay(false) }}
+        />
+      )}
       {/* Top bar */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -307,6 +428,6 @@ export default function KidQuiz() {
           </div>
         </div>
       </div>
-    </KidLayout>
+    </QuizShell>
   )
 }
