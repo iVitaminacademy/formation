@@ -5,6 +5,23 @@ import { curriculum } from '../data/curriculum'
 import { useAuth } from '../context/AuthContext'
 import { getProgressMap } from '../services/progress'
 
+function BannedFromLessonsScreen() {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="text-6xl mb-4">🚫</div>
+      <h1 className="text-2xl font-extrabold mb-3" style={{ color: '#EF4444' }}>
+        Accès aux cours révoqué
+      </h1>
+      <p className="text-sm text-gray-500 max-w-md mb-2">
+        Tu ne peux pas accéder aux cours car tu as consommé ton crédit de tests.
+      </p>
+      <p className="text-sm font-bold" style={{ color: '#EF4444' }}>
+        Contacte l'administrateur pour débloquer ton accès.
+      </p>
+    </div>
+  )
+}
+
 function StatusBadge({ status }) {
   if (status === 'done')
     return <span className="text-xs font-extrabold px-3 py-1 rounded-full" style={{ backgroundColor: '#DBEAFE', color: '#1E3A5F' }}>✓ Terminé</span>
@@ -67,10 +84,8 @@ function TopicPanel({ topic, onStart }) {
 export default function KidLessons() {
   const navigate     = useNavigate()
   const topics       = curriculum[1] || []
-  const { user }     = useAuth()
+  const { user, profile } = useAuth()
   const [progressMap, setProgressMap] = useState({})
-  const [roundStart, setRoundStart]   = useState(0)
-  const [justReset, setJustReset]     = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -111,30 +126,20 @@ export default function KidLessons() {
     return () => window.removeEventListener('progressUpdated', onProgressUpdated)
   }, [])
 
-  useEffect(() => {
-    setJustReset(false)
-    if (!user?.id) { setRoundStart(0); return }
-    const stored = localStorage.getItem(`practiceRound:${user.id}:1`)
-    setRoundStart(stored ? new Date(stored).getTime() : 0)
-  }, [user?.id])
-
+  // A lesson is "done" when it has been completed with enough attempts for the current cycle
+  const currentCycle = profile?.quiz_cycle ?? 1
   const doneThisRound = (lesson) => {
     const r = progressMap[lesson.id]
-    if (!r?.completed) return false
-    if (!roundStart) return true
-    return r.last_date ? new Date(r.last_date).getTime() >= roundStart : false
+    return r?.completed && (r.attempts ?? 0) >= currentCycle
   }
 
-  const allLessons = topics.flatMap(t => t.lessons)
-  const allDone    = allLessons.length > 0 && allLessons.every(doneThisRound)
-
-  useEffect(() => {
-    if (!user?.id || !allDone) return
-    const now = new Date().toISOString()
-    localStorage.setItem(`practiceRound:${user.id}:1`, now)
-    setRoundStart(new Date(now).getTime())
-    setJustReset(true)
-  }, [allDone, user?.id])
+  if (profile?.banned_from_quiz) {
+    return (
+      <KidLayout>
+        <BannedFromLessonsScreen />
+      </KidLayout>
+    )
+  }
 
   return (
     <KidLayout>
@@ -142,15 +147,13 @@ export default function KidLessons() {
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900">💉 Protocoles</h1>
           <p className="text-xs text-gray-400 font-semibold mt-1">Cliquez sur une leçon pour lire le contenu puis passer le QCM</p>
+          {currentCycle === 2 && (
+            <p className="text-xs font-bold mt-1" style={{ color: '#EF4444' }}>
+              ⚠️ Deuxième tentative — dernière chance d'atteindre {80}%
+            </p>
+          )}
         </div>
       </div>
-
-      {justReset && (
-        <div className="mb-5 rounded-2xl p-4 text-center" style={{ backgroundColor: '#EFF6FF', border: '2px solid #93C5FD' }}>
-          <p className="text-lg font-extrabold" style={{ color: '#1E3A5F' }}>🎉 Félicitations ! Vous avez terminé toutes les leçons !</p>
-          <p className="text-sm font-semibold text-blue-700 mt-1">Toutes les leçons sont réinitialisées pour que vous puissiez pratiquer à nouveau. 🚀</p>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {topics.map(topic => {

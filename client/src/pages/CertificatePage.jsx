@@ -3,14 +3,43 @@ import { useNavigate } from 'react-router-dom'
 import KidLayout from '../components/KidLayout'
 import { useAuth } from '../context/AuthContext'
 import { getProgressMap } from '../services/progress'
-import { curriculum } from '../data/curriculum'
+import { curriculum, getAllLessons } from '../data/curriculum'
 
-function computeModuleProgress(progressMap) {
-  const topics = curriculum[1] || []
-  return topics.map(topic => {
-    const done  = topic.lessons.filter(l => progressMap[l.id]?.completed).length
-    const total = topic.lessons.length
-    const pct   = total > 0 ? Math.round((done / total) * 100) : 0
+const PASS_SCORE  = 80
+const ALL_LESSONS = getAllLessons(1)
+
+// Global score across all lessons: sum(correct) / sum(total questions)
+function calcGlobalScore(progressMap) {
+  let totalCorrect = 0
+  let totalQuestions = 0
+  for (const mod of curriculum[1]) {
+    for (const lesson of mod.lessons) {
+      const p = progressMap[lesson.id]
+      totalCorrect  += p?.score ?? 0
+      totalQuestions += lesson.quiz.length
+    }
+  }
+  const pct = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0
+  return { totalCorrect, totalQuestions, pct }
+}
+
+// All lessons completed for the current attempt cycle
+function isAllDoneForCycle(progressMap, cycle) {
+  return ALL_LESSONS.every(l => {
+    const p = progressMap[l.id]
+    return p && p.completed && (p.attempts ?? 0) >= cycle
+  })
+}
+
+// Per-module progress for the progress tracker display
+function computeModuleProgress(progressMap, cycle) {
+  return (curriculum[1] || []).map(topic => {
+    const done  = topic.lessons.filter(l => {
+      const p = progressMap[l.id]
+      return p && p.completed && (p.attempts ?? 0) >= cycle
+    }).length
+    const total    = topic.lessons.length
+    const pct      = total > 0 ? Math.round((done / total) * 100) : 0
     const complete = done === total && total > 0
     return { ...topic, done, total, pct, complete }
   })
@@ -28,15 +57,14 @@ export default function CertificatePage() {
   const printRef = useRef(null)
 
   const [progressMap, setProgressMap] = useState({})
-  const [loading, setLoading] = useState(true)
-  const [certDate, setCertDate] = useState(null)
+  const [loading,     setLoading]     = useState(true)
+  const [certDate,    setCertDate]    = useState(null)
 
   useEffect(() => {
     if (!user?.id) { setLoading(false); return }
     getProgressMap(user.id)
       .then(map => {
         setProgressMap(map)
-        // Use the most recent completion date as the certificate date
         const dates = Object.values(map).map(r => r?.last_date).filter(Boolean)
         if (dates.length) {
           const latest = dates.reduce((a, b) => (new Date(a) > new Date(b) ? a : b))
@@ -55,15 +83,15 @@ export default function CertificatePage() {
     return () => window.removeEventListener('progressUpdated', onUpdate)
   }, [user?.id])
 
-  const modules   = computeModuleProgress(progressMap)
-  const allDone   = modules.length > 0 && modules.every(m => m.complete)
-  const doneCount = modules.filter(m => m.complete).length
-  const name      = profile?.name || 'Médecin'
+  const currentCycle  = profile?.quiz_cycle ?? 1
+  const allDone       = isAllDoneForCycle(progressMap, currentCycle)
+  const { totalCorrect, totalQuestions, pct: globalPct } = calcGlobalScore(progressMap)
+  const hasPassed     = allDone && globalPct >= PASS_SCORE
+  const modules       = computeModuleProgress(progressMap, currentCycle)
+  const doneCount     = modules.filter(m => m.complete).length
+  const name          = profile?.name || 'Médecin'
 
-  function handlePrint() {
-    window.print()
-  }
-
+  // ── Loading ──────────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <KidLayout>
@@ -77,34 +105,43 @@ export default function CertificatePage() {
     )
   }
 
+  // ── Not all quizzes done yet — show progress tracker ─────────────────────────
   if (!allDone) {
+    const doneLessons = ALL_LESSONS.filter(l => {
+      const p = progressMap[l.id]
+      return p && p.completed && (p.attempts ?? 0) >= currentCycle
+    }).length
+
     return (
       <KidLayout>
         <div className="max-w-2xl mx-auto">
-          {/* Header */}
           <div className="mb-8 text-center">
             <div className="text-5xl mb-3">🎓</div>
             <h1 className="text-2xl font-extrabold text-gray-900">Certificat de mise en route</h1>
             <p className="text-gray-500 font-medium mt-2">
               Complétez les {modules.length} modules pour obtenir votre certificat.
             </p>
+            {currentCycle === 2 && (
+              <p className="text-xs font-bold mt-1" style={{ color: '#EF4444' }}>
+                ⚠️ Deuxième tentative en cours — dernière chance d'atteindre {PASS_SCORE}%
+              </p>
+            )}
           </div>
 
-          {/* Progress tracker */}
+          {/* Overall progress bar */}
           <div className="bg-white rounded-3xl border-2 p-6 shadow-sm mb-6" style={{ borderColor: '#93C5FD' }}>
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-sm font-extrabold uppercase tracking-widest text-gray-400">Votre progression</h2>
               <span className="text-sm font-extrabold" style={{ color: '#1E3A5F' }}>
-                {doneCount} / {modules.length} modules
+                {doneLessons} / {ALL_LESSONS.length} leçons
               </span>
             </div>
 
-            {/* Overall bar */}
             <div className="mb-6">
               <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: '#EFF6FF' }}>
                 <div
                   className="h-full rounded-full transition-all duration-700"
-                  style={{ width: `${(doneCount / modules.length) * 100}%`, background: 'linear-gradient(90deg,#1E3A5F,#1D4ED8)' }}
+                  style={{ width: `${(doneLessons / ALL_LESSONS.length) * 100}%`, background: 'linear-gradient(90deg,#1E3A5F,#1D4ED8)' }}
                 />
               </div>
             </div>
@@ -163,17 +200,62 @@ export default function CertificatePage() {
     )
   }
 
-  // All modules complete — show the certificate
+  // ── All quizzes done but score < 80% — not eligible ──────────────────────────
+  if (!hasPassed) {
+    return (
+      <KidLayout>
+        <div className="max-w-lg mx-auto flex flex-col items-center justify-center py-16 text-center">
+          <div className="text-6xl mb-4">❌</div>
+          <h1 className="text-2xl font-extrabold mb-2" style={{ color: '#EF4444' }}>
+            Certificat non disponible
+          </h1>
+          <p className="text-sm text-gray-500 mb-1 max-w-sm">
+            Vous avez complété tous les modules, mais votre score global est insuffisant.
+          </p>
+          <div className="text-4xl font-extrabold my-4" style={{ color: '#EF4444' }}>
+            {totalCorrect}/{totalQuestions} — {globalPct}%
+          </div>
+          <p className="text-sm font-bold mb-2" style={{ color: '#EF4444' }}>
+            La note de passage est de {PASS_SCORE}%.
+          </p>
+          {currentCycle === 1 && (
+            <p className="text-sm text-gray-500 mb-6 max-w-sm">
+              Vous pouvez repasser l'ensemble des quiz une dernière fois.
+              Retournez aux protocoles pour commencer votre 2ème tentative.
+            </p>
+          )}
+          {currentCycle === 2 && (
+            <p className="text-sm text-gray-500 mb-6 max-w-sm">
+              Vous avez utilisé vos 2 tentatives. Contactez l'administrateur pour
+              débloquer votre accès.
+            </p>
+          )}
+          <button
+            onClick={() => navigate('/medecin/lessons')}
+            className="px-8 py-3 rounded-2xl text-white font-extrabold"
+            style={{ backgroundColor: '#1E3A5F' }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#162C48')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1E3A5F')}
+          >
+            Retour aux protocoles
+          </button>
+        </div>
+      </KidLayout>
+    )
+  }
+
+  // ── Passed ≥ 80% — show the certificate ──────────────────────────────────────
   return (
     <KidLayout>
-      {/* Print action bar (hidden during print) */}
       <div className="no-print flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900">🎓 Votre certificat</h1>
-          <p className="text-sm text-gray-500 font-medium mt-1">Tous les modules complétés — félicitations !</p>
+          <p className="text-sm text-gray-500 font-medium mt-1">
+            Score global : {totalCorrect}/{totalQuestions} ({globalPct}%) — Félicitations !
+          </p>
         </div>
         <button
-          onClick={handlePrint}
+          onClick={() => window.print()}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-bold text-sm transition-all"
           style={{ backgroundColor: '#1E3A5F' }}
           onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#162C48')}
@@ -221,6 +303,12 @@ export default function CertificatePage() {
             </span>
           </p>
 
+          {/* Score badge */}
+          <div className="mt-4 inline-flex items-center gap-2 px-5 py-2 rounded-full font-extrabold text-white text-sm"
+            style={{ background: 'linear-gradient(90deg, #065F46, #059669)' }}>
+            Score global : {totalCorrect}/{totalQuestions} — {globalPct}%
+          </div>
+
           {certDate && (
             <p className="mt-4 text-sm text-gray-400 font-semibold">
               Le {formatDate(certDate)}
@@ -245,7 +333,7 @@ export default function CertificatePage() {
             ))}
           </div>
 
-          {/* Signature line */}
+          {/* Signature lines */}
           <div className="mt-8 flex justify-center gap-16">
             <div className="text-center">
               <div className="w-32 border-b-2 border-gray-300 mb-1" />
@@ -256,9 +344,6 @@ export default function CertificatePage() {
               <div className="text-xs text-gray-400 font-semibold">Superviseur</div>
             </div>
           </div>
-
-          {/* Disclaimer */}
-        
         </div>
 
         {/* Footer band */}

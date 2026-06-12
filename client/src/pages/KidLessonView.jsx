@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import KidLayout from '../components/KidLayout'
 import { curriculum, getQuizByLessonId } from '../data/curriculum'
+import { useAuth } from '../context/AuthContext'
 
 const lessonContent = {
   101: {
@@ -154,7 +155,34 @@ export default function KidLessonView() {
   const navigate = useNavigate()
   const { id } = useParams()
   const lessonId = Number(id)
-  
+  const { profile } = useAuth()
+
+  if (profile?.banned_from_quiz) {
+    return (
+      <KidLayout>
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="text-6xl mb-4">🚫</div>
+          <h1 className="text-2xl font-extrabold mb-3" style={{ color: '#EF4444' }}>
+            Accès aux cours révoqué
+          </h1>
+          <p className="text-sm text-gray-500 max-w-md mb-2">
+            Tu ne peux pas accéder aux cours car tu as consommé ton crédit de tests.
+          </p>
+          <p className="text-sm font-bold mb-6" style={{ color: '#EF4444' }}>
+            Contacte l'administrateur pour débloquer ton accès.
+          </p>
+          <button
+            onClick={() => navigate('/medecin/lessons')}
+            className="px-6 py-3 rounded-2xl text-white font-extrabold"
+            style={{ backgroundColor: '#1E3A5F' }}
+          >
+            Retour
+          </button>
+        </div>
+      </KidLayout>
+    )
+  }
+
   const modules = curriculum[1] || []
   let lesson = null
   let topic = null

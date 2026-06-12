@@ -24,20 +24,19 @@ alter table if exists public.profiles drop column if exists link_code;
 drop table if exists public.supervisor_medecin cascade;
 drop table if exists public.notifications       cascade;
 
--- Remove the old superviseur value from the enum if it exists
+-- Safely migrate the user_role enum.
+-- Convert role column to text first so there are no type dependencies,
+-- then drop both old type names and recreate clean — no CASCADE needed.
 do $$ begin
-  alter type user_role rename to user_role_old;
-exception when undefined_object then null; end $$;
-
-do $$ begin
-  create type user_role as enum ('medecin', 'admin');
-exception when duplicate_object then null; end $$;
-
-do $$ begin
-  alter table public.profiles
-    alter column role type user_role using role::text::user_role;
-  drop type if exists user_role_old;
+  -- Drop the column default first — it may reference the old enum type
+  -- (e.g. 'medecin'::user_role_old), which would block the DROP TYPE below.
+  alter table public.profiles alter column role drop default;
+  alter table public.profiles alter column role type text using role::text;
 exception when others then null; end $$;
+
+drop type if exists user_role_old;
+drop type if exists user_role;
+create type user_role as enum ('medecin', 'admin');
 
 
 -- =============================================================
@@ -47,12 +46,8 @@ create extension if not exists "pgcrypto";
 
 
 -- =============================================================
--- 2. Enums
+-- 2. Enums  (user_role already created in section 0)
 -- =============================================================
-do $$ begin
-  create type user_role as enum ('medecin', 'admin');
-exception when duplicate_object then null; end $$;
-
 do $$ begin
   create type badge_condition as enum (
     'lessons_completed',
@@ -68,18 +63,26 @@ exception when duplicate_object then null; end $$;
 -- 3. profiles
 -- =============================================================
 create table if not exists public.profiles (
-  id             uuid        primary key references auth.users(id) on delete cascade,
-  name           text        not null default '',
-  email          text,
-  role           user_role   not null default 'medecin',
-  status         text        not null default 'pending',
-  avatar         text,
-  streak_days    integer     not null default 0,
-  last_quiz_date timestamptz,
-  created_at     timestamptz not null default now(),
-  updated_at     timestamptz not null default now(),
+  id               uuid        primary key references auth.users(id) on delete cascade,
+  name             text        not null default '',
+  email            text,
+  role             user_role   not null default 'medecin',
+  status           text        not null default 'pending',
+  avatar           text,
+  streak_days      integer     not null default 0,
+  last_quiz_date   timestamptz,
+  banned_from_quiz boolean     not null default false,
+  quiz_cycle       smallint    not null default 1,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now(),
   constraint profiles_status_check check (status in ('pending', 'active'))
 );
+
+-- Convert role column back to enum type and restore its default
+do $$ begin
+  alter table public.profiles alter column role type user_role using role::text::user_role;
+  alter table public.profiles alter column role set default 'medecin';
+exception when others then null; end $$;
 
 create index if not exists idx_profiles_role   on public.profiles(role);
 create index if not exists idx_profiles_status on public.profiles(status);
@@ -89,6 +92,10 @@ alter table public.profiles add column if not exists avatar         text;
 alter table public.profiles add column if not exists streak_days    integer     not null default 0;
 alter table public.profiles add column if not exists last_quiz_date timestamptz;
 alter table public.profiles add column if not exists status         text        not null default 'pending';
+
+-- Add quiz-ban and quiz-cycle columns (safe to run on existing installs)
+alter table public.profiles add column if not exists banned_from_quiz boolean  not null default false;
+alter table public.profiles add column if not exists quiz_cycle       smallint not null default 1;
 
 -- Re-apply the check constraint safely
 alter table public.profiles drop constraint if exists profiles_status_check;

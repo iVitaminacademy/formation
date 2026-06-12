@@ -82,7 +82,7 @@ export async function getAdminDashboardData() {
   ] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, name, email, role, grade, avatar, streak_days, status, created_at, updated_at')
+      .select('id, name, email, role, avatar, streak_days, status, banned_from_quiz, created_at, updated_at')
       .order('created_at', { ascending: false }),
     supabase
       .from('user_progress')
@@ -132,6 +132,14 @@ export async function setMedecinStatus(medecinId, status) {
   const { error } = await supabase
     .from('profiles')
     .update({ status })
+    .eq('id', medecinId)
+  if (error) throw error
+}
+
+export async function unbanMedecinFromQuiz(medecinId) {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ banned_from_quiz: false })
     .eq('id', medecinId)
   if (error) throw error
 }

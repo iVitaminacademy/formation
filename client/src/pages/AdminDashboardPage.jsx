@@ -9,6 +9,7 @@ import {
   setMedecinStatus,
   updateProfileByAdmin,
   upsertProgressByAdmin,
+  unbanMedecinFromQuiz,
 } from '../services/admin'
 
 const THEME_KEY = 'admin_dashboard_theme'
@@ -211,10 +212,22 @@ export default function AdminDashboardPage() {
     [profiles]
   )
 
+  const bannedMedecins = useMemo(
+    () => profiles.filter(p => p.role === 'medecin' && p.banned_from_quiz),
+    [profiles]
+  )
+
   const handleActivate = async (medecinId) => {
     setSaving(true); setError('')
     try { await activateMedecin(medecinId); setRefreshTick(t => t + 1) }
     catch (err) { setError(err.message || 'Impossible d\'activer ce compte.') }
+    finally { setSaving(false) }
+  }
+
+  const handleUnbanQuiz = async (medecinId) => {
+    setSaving(true); setError('')
+    try { await unbanMedecinFromQuiz(medecinId); setRefreshTick(t => t + 1) }
+    catch (err) { setError(err.message || 'Impossible de débloquer cet utilisateur.') }
     finally { setSaving(false) }
   }
 
@@ -362,7 +375,7 @@ export default function AdminDashboardPage() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Total utilisateurs" value={kpis.totalUsers} helper={`${kpis.medecins} médecins · ${kpis.admins} admins`} theme={theme} />
           <StatCard label="En attente" value={pendingMedecins.length} helper="Médecins en attente d'activation" color={pendingMedecins.length > 0 ? '#D97706' : theme.primary} theme={theme} />
-          <StatCard label="Taux de complétion" value={`${kpis.completionRate}%`} helper={`${kpis.completedProgress} / ${kpis.totalProgress} leçons`} color={theme.warning} theme={theme} />
+          <StatCard label="Bannis des quiz" value={bannedMedecins.length} helper="Tricherie détectée" color={bannedMedecins.length > 0 ? '#DC2626' : theme.primary} theme={theme} />
           <StatCard label="Score moyen" value={`${kpis.avgScore}%`} helper={`Série moyenne : ${kpis.averageStreak}j`} color={theme.accent} theme={theme} />
         </div>
 
@@ -402,6 +415,49 @@ export default function AdminDashboardPage() {
                               style={{ backgroundColor: '#065F46' }}
                             >
                               ✓ Activer
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </SectionCard>
+            )}
+
+            {/* Médecins bannis des quiz */}
+            {bannedMedecins.length > 0 && (
+              <SectionCard
+                title={`🚫 Bannis des quiz (${bannedMedecins.length})`}
+                theme={theme}
+              >
+                <div className="overflow-x-auto rounded-2xl border" style={{ borderColor: theme.border }}>
+                  <table className="min-w-[480px] w-full text-left text-sm">
+                    <thead style={{ backgroundColor: theme.surfaceSoft }}>
+                      <tr>
+                        <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Médecin</th>
+                        <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Inscrit le</th>
+                        <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bannedMedecins.map(med => (
+                        <tr key={med.id} className="border-t" style={{ borderColor: theme.border }}>
+                          <td className="px-4 py-3">
+                            <div className="font-bold truncate max-w-[180px]">{med.name || '—'}</div>
+                            <div className="text-xs truncate max-w-[180px]" style={{ color: theme.subtext }}>{med.email || '—'}</div>
+                          </td>
+                          <td className="px-4 py-3 text-xs" style={{ color: theme.subtext }}>
+                            {formatDate(med.created_at)}
+                          </td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={() => handleUnbanQuiz(med.id)}
+                              disabled={saving}
+                              className="rounded-xl px-4 py-1.5 text-xs font-bold text-white"
+                              style={{ backgroundColor: '#1D4ED8' }}
+                            >
+                              🔓 Débloquer les quiz
                             </button>
                           </td>
                         </tr>
@@ -463,23 +519,30 @@ export default function AdminDashboardPage() {
                         </td>
                         <td className="px-4 py-3">
                           {u.role === 'medecin' ? (
-                            <span
-                              className="rounded-full px-2 py-0.5 text-xs font-bold"
-                              style={
-                                u.status === 'active'
-                                  ? { backgroundColor: '#ECFDF5', color: '#065F46' }
-                                  : { backgroundColor: '#FFFBEB', color: '#92400E' }
-                              }
-                            >
-                              {u.status === 'active' ? '✓ Actif' : '⏸ En attente'}
-                            </span>
+                            <div className="flex flex-col gap-1">
+                              <span
+                                className="rounded-full px-2 py-0.5 text-xs font-bold w-fit"
+                                style={
+                                  u.status === 'active'
+                                    ? { backgroundColor: '#ECFDF5', color: '#065F46' }
+                                    : { backgroundColor: '#FFFBEB', color: '#92400E' }
+                                }
+                              >
+                                {u.status === 'active' ? '✓ Actif' : '⏸ En attente'}
+                              </span>
+                              {u.banned_from_quiz && (
+                                <span className="rounded-full px-2 py-0.5 text-xs font-bold w-fit" style={{ backgroundColor: '#FEF2F2', color: '#DC2626' }}>
+                                  🚫 Quiz banni
+                                </span>
+                              )}
+                            </div>
                           ) : (
                             <span className="text-xs" style={{ color: theme.subtext }}>—</span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-sm">🔥 {u.streak_days ?? 0}</td>
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <button
                               onClick={() => { handleSelectProfile(u.id); setSelectedChildId(u.id) }}
                               className="rounded-lg border px-3 py-1 text-xs font-bold transition"
@@ -495,6 +558,16 @@ export default function AdminDashboardPage() {
                                 style={{ backgroundColor: u.status === 'active' ? '#92400E' : '#065F46' }}
                               >
                                 {u.status === 'active' ? 'Bloquer' : 'Activer'}
+                              </button>
+                            )}
+                            {u.role === 'medecin' && u.banned_from_quiz && (
+                              <button
+                                onClick={() => handleUnbanQuiz(u.id)}
+                                disabled={saving}
+                                className="rounded-lg px-3 py-1 text-xs font-bold text-white transition"
+                                style={{ backgroundColor: '#1D4ED8' }}
+                              >
+                                🔓 Débloquer
                               </button>
                             )}
                           </div>

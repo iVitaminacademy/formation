@@ -37,7 +37,7 @@ function PendingScreen() {
             className="rounded-xl px-6 py-2.5 text-sm font-bold text-white"
             style={{ backgroundColor: checking ? '#60A5FA' : '#1D4ED8' }}
           >
-            {checking ? 'Vérification…' : 'Vérifier l\'accès'}
+            {checking ? 'Vérification…' : "Vérifier l'accès"}
           </button>
           <button
             onClick={async () => { try { await signOut() } catch {} }}
