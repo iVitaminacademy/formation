@@ -9,10 +9,7 @@ import { curriculum } from '../data/curriculum'
 const BADGE_DEFS = [
   { id: 1, icon: '⭐', name: 'Apprenant rapide', desc: 'Compléter 5 leçons',             color: '#1E3A5F', bg: '#EFF6FF', border: '#93C5FD', check: s => s.doneCount >= 5 },
   { id: 3, icon: '🎯', name: 'Précision clinique',desc: 'Score 100 % à un quiz',          color: '#065F46', bg: '#ECFDF5', border: '#6EE7B7', check: s => s.perfectAny },
-  { id: 2, icon: '🎯', name: 'Précision clinique',desc: 'Score 100 % à un quiz',          color: '#065F46', bg: '#ECFDF5', border: '#6EE7B7', check: s => s.perfectAny },
   { id: 4, icon: '🚀', name: 'Module validé',    desc: 'Terminer un module en entier',     color: '#7C3AED', bg: '#F5F3FF', border: '#C4B5FD', check: s => s.fullTopicAny },
- { id: 5, icon: '🎯', name: 'Précision clinique',desc: 'Score 100 % à un quiz',          color: '#065F46', bg: '#ECFDF5', border: '#6EE7B7', check: s => s.perfectAny },
-  
   { id: 6, icon: '🏆', name: 'Certification',    desc: 'Compléter toute la formation',     color: '#065F46', bg: '#ECFDF5', border: '#34D399', check: s => s.gradeComplete },
 ]
 
