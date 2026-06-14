@@ -82,7 +82,7 @@ export async function getAdminDashboardData() {
   ] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, name, email, role, avatar, streak_days, status, banned_from_quiz, created_at, updated_at')
+      .select('id, name, email, role, avatar, streak_days, status, banned_from_quiz, booking_used, created_at, updated_at')
       .order('created_at', { ascending: false }),
     supabase
       .from('user_progress')
@@ -143,6 +143,96 @@ export async function unbanMedecinFromQuiz(medecinId) {
     .eq('id', medecinId)
   if (error) throw error
 }
+
+// ─── Booking Admin Functions ──────────────────────────────────────────────────
+
+export async function adminGetAllSlots() {
+  const { data, error } = await supabase
+    .from('time_slots')
+    .select('*')
+    .order('start_time', { ascending: true })
+  if (error) throw error
+  return data ?? []
+}
+
+export async function adminCreateSlot(startTime) {
+  const { data, error } = await supabase
+    .from('time_slots')
+    .insert({ start_time: startTime, is_active: true })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function adminDeactivateSlot(slotId) {
+  const { error } = await supabase
+    .from('time_slots')
+    .update({ is_active: false })
+    .eq('id', slotId)
+  if (error) throw error
+}
+
+export async function adminGetAllBookings() {
+  // bookings.user_id → auth.users (not public.profiles), so PostgREST can't
+  // resolve the inline join. Fetch profiles separately and merge.
+  const { data: bookings, error } = await supabase
+    .from('bookings')
+    .select('*, slot:slot_id(*)')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  if (!bookings?.length) return []
+
+  const userIds = [...new Set(bookings.map(b => b.user_id))]
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, name, email')
+    .in('id', userIds)
+
+  const byId = Object.fromEntries((profiles ?? []).map(p => [p.id, p]))
+  return bookings.map(b => ({ ...b, profile: byId[b.user_id] ?? null }))
+}
+
+export async function adminCreateBooking(userId, slotId) {
+  const { data, error } = await supabase
+    .from('bookings')
+    .insert({ user_id: userId, slot_id: slotId, status: 'confirmed' })
+    .select('*, slot:slot_id(*)')
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function adminCompleteBooking(bookingId, userId) {
+  const { error: bErr } = await supabase
+    .from('bookings')
+    .update({ status: 'completed', updated_at: new Date().toISOString() })
+    .eq('id', bookingId)
+  if (bErr) throw bErr
+  const { error: pErr } = await supabase
+    .from('profiles')
+    .update({ booking_used: true })
+    .eq('id', userId)
+  if (pErr) throw pErr
+}
+
+export async function adminCancelBooking(bookingId) {
+  const { error } = await supabase
+    .from('bookings')
+    .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+    .eq('id', bookingId)
+  if (error) throw error
+}
+
+export async function adminGrantBookingException(userId) {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ booking_used: false })
+    .eq('id', userId)
+  if (error) throw error
+}
+
+// ─── Progress Admin ───────────────────────────────────────────────────────────
 
 export async function upsertProgressByAdmin({ userId, lessonRef, score, completed, attempts, lastDate }) {
   const { data, error } = await supabase

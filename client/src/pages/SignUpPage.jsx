@@ -172,7 +172,7 @@ export default function SignUpPage() {
             <div className="flex items-center justify-center gap-3">
               <div className="h-11 w-11 rounded-xl flex items-center justify-center text-2xl" style={{ backgroundColor: '#1E3A5F' }}>💉</div>
               <div className="leading-tight text-left">
-                <div className="text-xl font-extrabold tracking-tight" style={{ color: '#1E3A5F' }}>Ivitaminacademy</div>
+                <div className="text-xl font-extrabold tracking-tight" style={{ color: '#1E3A5F' }}>iVitaminacademy</div>
                 <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#64748B' }}>Guide pratique médecin</div>
               </div>
             </div>

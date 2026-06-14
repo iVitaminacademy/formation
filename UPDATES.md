@@ -4,6 +4,238 @@ Développeur : Lahbabta Youssef
 
 ---
 
+## Session 4 — 14 Juin 2026 — Hotfix : profil manquant + calendrier
+
+### `client/src/services/auth.js` — `getProfile` plus défensif
+
+- Remplacé `.single()` par `.maybeSingle()` — retourne `null` au lieu de lever une erreur 406 si aucune ligne n'existe
+- Ajout d'un fallback : si le profil n'existe pas, création automatique à partir des métadonnées auth (`user_metadata.name`, `user_metadata.role`)
+- Élimine la boucle d'erreurs `[Auth] failed to load profile: Cannot coerce the result to a single JSON object`
+
+### `supabase/full_setup.sql` — Section 18 : backfill des profils orphelins
+
+- Insère un profil pour tout utilisateur `auth.users` sans ligne correspondante dans `public.profiles`
+- Idempotent (`ON CONFLICT DO NOTHING`)
+- Corrige les comptes créés pendant la période où le trigger était cassé
+
+---
+
+## Session 4 — 14 Juin 2026 — Hotfix : "Database error saving new user"
+
+### `supabase/full_setup.sql` — Correction du trigger `handle_new_user`
+
+**Cause racine :** `handle_new_user()` déclare `v_role user_role`, créant une dépendance PostgreSQL sur l'enum. Lors d'un nouveau passage de `full_setup.sql`, `DROP TYPE user_role` échouait silencieusement (la dépendance n'était pas retirée), puis `CREATE TYPE user_role` échouait aussi (type déjà existant). La fonction se retrouvait dans un état incohérent → 500 à chaque inscription.
+
+**Corrections :**
+
+| Correction | Détail |
+|---|---|
+| Section 0 : drop du trigger et de la fonction AVANT le drop du type | `DROP TRIGGER on_auth_user_created`, `DROP FUNCTION handle_new_user()`, `DROP FUNCTION is_admin()`, `DROP FUNCTION set_updated_at()` ajoutés avant `DROP TYPE user_role` |
+| Trigger plus défensif | Le cast `::user_role` est dans un bloc `BEGIN/EXCEPTION`, le corps entier a un `EXCEPTION WHEN OTHERS THEN RETURN NEW` — l'inscription auth ne peut plus retourner 500 |
+| Cast explicite | `'medecin'::user_role` et `'admin'::user_role` au lieu de litéraux texte non typés dans le trigger |
+
+---
+
+## Session 4 — 14 Juin 2026 — Système de réservation (Calendrier)
+
+### Nouveaux fichiers créés
+
+| Fichier | Description |
+|---|---|
+| `client/src/services/bookings.js` | Service utilisateur : `getActiveSlots`, `getBookedSlotIds`, `getMyBooking`, `createBooking`, `cancelBooking`, `rescheduleBooking` |
+| `client/src/pages/CalendarPage.jsx` | Page calendrier complète avec grille mensuelle, réservation, modification, annulation, écran "session utilisée" |
+
+### Fichiers modifiés
+
+| Fichier | Modification |
+|---|---|
+| `client/src/components/KidLayout.jsx` | Ajout de l'item `Calendrier (📅)` dans la navigation (entre Certificat et Profil) |
+| `client/src/App.jsx` | Ajout de l'import `CalendarPage` + route `/medecin/calendar` |
+| `client/src/services/admin.js` | Ajout de `booking_used` dans la requête `getAdminDashboardData` + 7 nouvelles fonctions admin : `adminGetAllSlots`, `adminCreateSlot`, `adminDeactivateSlot`, `adminGetAllBookings`, `adminCreateBooking`, `adminCompleteBooking`, `adminCancelBooking`, `adminGrantBookingException` |
+| `client/src/pages/AdminDashboardPage.jsx` | Section "Réservations & Créneaux" ajoutée : création de créneaux, liste des créneaux à venir, liste de toutes les réservations avec actions (Effectué / Annuler / Exception). Badge `📅 Session utilisée` dans la liste des utilisateurs. |
+| `supabase/full_setup.sql` | Section 17 ajoutée : tables `time_slots` + `bookings`, colonne `profiles.booking_used`, index partiel `bookings_slot_unique_active`, RPC `get_booked_slot_ids()`, policies RLS |
+
+### Règles métier implémentées
+
+| Règle | Implémentation |
+|---|---|
+| 1 seul créneau actif par utilisateur | `booking_used = true` après complétion ; écran "session utilisée" affiché |
+| Modification avant l'heure du créneau | `slot.start_time > now` → boutons Modifier / Annuler ; sinon verrou |
+| Pas de double-réservation d'un créneau | Index partiel `UNIQUE ON bookings(slot_id) WHERE status <> 'cancelled'` |
+| Verrou immédiat après réservation | `bookedIds` mis à jour localement + DB via unique index |
+| Après séance effectuée → contacter admin | Écran dédié avec lien email |
+| Admin peut créer des créneaux | `adminCreateSlot(startTime)` → table `time_slots` |
+| Admin peut marquer une séance "effectuée" | `adminCompleteBooking` → `status = 'completed'` + `booking_used = true` |
+| Admin peut accorder une exception | `adminGrantBookingException` → `booking_used = false` |
+
+---
+
+## Session 3 — 14 Juin 2026 (suite)
+
+### `client/src/data/curriculum.js` — Corrections et ajouts QCM (basés sur le PDF booklet)
+
+**Total questions : 79 → 84**
+
+#### Corrections (réponses incorrectes ou incomplètes par rapport au PDF)
+
+| Leçon | Question corrigée | Avant | Après |
+|---|---|---|---|
+| Zinc (204) | Indications | `Immunité, peau, cheveux` | `Immunité, peau, cheveux, cicatrisation` |
+| Sélénium (205) | Indications | `Antioxydant, immunité` | `Antioxydant, immunité, thyroïde` |
+| Biotine (208) | Indications | `Cheveux, ongles` | `Cheveux, ongles, peau` |
+| Bleu de Méthylène (212) | Solvant de dilution | `Dextrose 250 ml` | `Glucosé 250 à 500 ml` |
+
+#### Nouvelles questions ajoutées
+
+| Leçon | Sujet | Réponse correcte |
+|---|---|---|
+| Glutathion (206) — Q5 | Durée de perfusion | `20 à 30 minutes` |
+| Biotine (208) — Q4 | Injection IM douloureuse (consistance huileuse) | `Parfois douloureuse (consistance huileuse)` |
+| NAD+ (210) — Q6 | Contre-indications absolues | `Cancer actif, grossesse, allaitement, moins de 18 ans` |
+| ALA (211) — Q5 | Ne pas mélanger avec d'autres vitamines | `De préférence ne pas mélanger avec d'autres vitamines` |
+| Mélanges (301) — Q4 | Produits à perfuser seuls dans leur poche | `Glutathion, ALA, NAD+, Bleu de Méthylène` |
+
+#### Compteurs `questions` et `time` mis à jour
+
+| Leçon | questions avant → après | time avant → après |
+|---|---|---|
+| Glutathion (206) | 4 → 5 | 5 → 6 |
+| Biotine (208) | 3 → 4 | 4 → 5 |
+| NAD+ (210) | 5 → 6 | 7 → 8 |
+| ALA (211) | 4 → 5 | 5 → 6 |
+| Mélanges (301) | 3 → 4 | 4 → 5 |
+
+---
+
+## Session 3 — 14 Juin 2026
+
+### Système de scoring global + restrictions d'accès
+
+---
+
+### `supabase/full_setup.sql` — 3 corrections d'erreurs d'idempotence SQL
+
+**Erreur 1 — `ERROR: 42710: type "user_role_old" already exists`**
+- Cause : le script tentait de renommer `user_role` → `user_role_old` alors qu'il existait déjà.
+- Fix : `DROP TYPE IF EXISTS user_role_old CASCADE` ajouté avant le renommage.
+
+**Erreur 2 — `ERROR: 42703: column "role" does not exist`**
+- Cause : `DROP TYPE user_role_old CASCADE` supprimait en cascade la colonne `profiles.role`.
+- Fix : Suppression de l'approche rename ; conversion directe `role` en `text` avant `DROP TYPE`.
+
+**Erreur 3 — `ERROR: 2BP01: cannot drop type user_role_old because other objects depend on it`**
+- Cause : la valeur DEFAULT `'medecin'::user_role_old` de la colonne référençait encore l'ancien type.
+- Fix : `ALTER COLUMN role DROP DEFAULT` ajouté avant la conversion en texte.
+
+**Solution finale (section 0) :**
+```sql
+do $$ begin
+  alter table public.profiles alter column role drop default;
+  alter table public.profiles alter column role type text using role::text;
+exception when others then null; end $$;
+drop type if exists user_role_old;
+drop type if exists user_role;
+create type user_role as enum ('medecin', 'admin');
+```
+
+**Nouvelles colonnes ajoutées à `profiles` :**
+```sql
+banned_from_quiz  boolean  not null default false
+quiz_cycle        smallint not null default 1
+```
+Ajoutées à la fois dans `CREATE TABLE IF NOT EXISTS` et via `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` (idempotent).
+
+---
+
+### `client/src/pages/KidQuiz.jsx` — Refonte complète du système de scoring
+
+**Ancienne logique supprimée :**
+- `MAX_ATTEMPTS`, `canRetry`, `handleRetry`, `BlockedScreen`, `bestScore`, `blocked`
+
+**Nouveau système global :**
+- Un médecin doit terminer les **18 leçons** (tous les modules) avant qu'un score global soit calculé.
+- Score global = `∑ bonnes réponses / ∑ questions totales` sur l'ensemble du curriculum.
+- Si ≥ 80% → certificat disponible.
+- Si < 80% (cycle 1) → `quiz_cycle` passe à `2` ; le médecin peut retenter tous les quiz.
+- Si < 80% (cycle 2) → `banned_from_quiz = true` ; accès aux tests ET aux cours révoqué.
+
+**Helpers ajoutés :**
+```js
+isAllDoneForCycle(progressMap, cycle)   // toutes les leçons ≥ cycle.attempts
+calcGlobalScore(progressMap)            // { totalCorrect, totalQuestions, pct }
+countDoneForCycle(progressMap, cycle)   // nb de leçons terminées pour ce cycle
+```
+
+**`runGlobalCheck(allProg)`** — vérifie après chaque quiz si toutes les leçons du cycle courant sont faites, puis applique pass / fail_cycle1 / fail_cycle2.
+
+**Pattern `profileRef`** — `useRef(profile)` mis à jour via `useEffect` pour éviter les closures stale dans le callback du timer.
+
+**Nouveaux composants :**
+- `AlreadyDoneScreen` — affiché si la leçon est déjà complétée pour le cycle courant.
+- `GlobalResultPage` — 3 variantes : `pass` (certificat disponible), `fail_cycle1` (2ème tentative), `fail_cycle2` (banni).
+
+**Ordre de rendu :**
+```
+loadingProgress → banned_from_quiz → alreadyDone → globalResult → ScorePage → quiz actif
+```
+
+---
+
+### `client/src/pages/KidLessons.jsx` — Ecran de bannissement + cycle-aware
+
+**Ajout `BannedFromLessonsScreen`** — affiché à la place de la liste des leçons si `profile.banned_from_quiz = true`.
+
+**`doneThisRound(lesson)` mis à jour :**
+```js
+const r = progressMap[lesson.id]
+return r?.completed && (r.attempts ?? 0) >= currentCycle
+```
+*(remplace l'ancienne logique basée sur `roundStart`)*
+
+**Bannière cycle 2** — avertissement rouge affiché quand `currentCycle === 2`.
+
+---
+
+### `client/src/pages/KidLessonView.jsx` — Vérification d'accès banni
+
+Ajout d'une vérification au début du composant :
+```js
+const { profile } = useAuth()
+if (profile?.banned_from_quiz) {
+  return <KidLayout>🚫 Accès aux cours révoqué — Contacte l'administrateur.</KidLayout>
+}
+```
+
+---
+
+### `client/src/pages/CertificatePage.jsx` — Réécriture complète
+
+**Ancienne logique :** Débloqué si tous les modules sont à 100% (comptage de leçons complétées).
+
+**Nouvelle logique :** Trois écrans distincts selon l'état de l'utilisateur :
+
+| État | Écran affiché |
+|---|---|
+| Toutes les leçons non terminées pour le cycle courant | Tracker de progression (modules + barre) |
+| Toutes terminées mais score global < 80% | "Certificat non disponible" avec score affiché |
+| Toutes terminées ET score ≥ 80% | Certificat PDF avec badge de score |
+
+**Helpers ajoutés :**
+- `calcGlobalScore(progressMap)` — identique à KidQuiz
+- `isAllDoneForCycle(progressMap, cycle)` — cycle-aware
+- `computeModuleProgress(progressMap, cycle)` — pour le tracker de progression
+
+**Badge de score sur le certificat :**
+```
+Score global : 63/79 — 80%
+```
+
+**Messages contextuels sur l'écran "insuffisant" :**
+- Cycle 1 → "vous pouvez repasser une dernière fois"
+- Cycle 2 → "contactez l'administrateur"
+
+---
+
 ## Session 2 — Juin 2026 (suite)
 
 ### `supabase/full_setup.sql` — Réécriture complète (3 passes)

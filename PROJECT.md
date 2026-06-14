@@ -43,11 +43,10 @@ Toute modification doit être faite dans `ProteinProjectYchmael/` puis synchroni
 | Valeur DB (enum) | Nom affiché | Description |
 |---|---|---|
 | `medecin` | Médecin | Apprenant — suit les modules, passe les QCM, obtient le certificat |
-| `superviseur` | Superviseur | Suit la progression des médecins liés |
 | `admin` | Admin | Accès complet à la plateforme |
 
 > **Important :** Les chemins URL (`/kid/*`, `/parent/*`) sont conservés tels quels (routage uniquement).
-> L'enum DB et toutes les comparaisons frontend utilisent `medecin` / `superviseur`.
+> L'enum DB utilise `medecin` et `admin` uniquement.
 
 ---
 
@@ -74,6 +73,7 @@ Toute modification doit être faite dans `ProteinProjectYchmael/` puis synchroni
 | `/kid/progress` | medecin | KidProgress |
 | `/kid/profile` | medecin | KidProfile |
 | `/kid/certificate` | medecin | CertificatePage |
+| `/medecin/calendar` | medecin | CalendarPage |
 
 ---
 
@@ -97,13 +97,26 @@ Toute modification doit être faite dans `ProteinProjectYchmael/` puis synchroni
 Clé unique : `curriculum[1]` — pas de système de niveaux/grades.
 
 ```
-4 modules × ~5 leçons × ~4 questions QCM = 19 leçons / 75 questions
+4 modules × ~5 leçons × ~4-6 questions QCM = 18 leçons / 84 questions
 
-Module 1 — Fondamentaux & Indications   (color: #1E3A5F, bg: #EFF6FF, border: #93C5FD)
-Module 2 — Protocoles & Posologies      (color: #1D4ED8, bg: #DBEAFE, border: #93C5FD)
-Module 3 — Techniques & Matériel        (color: #065F46, bg: #ECFDF5, border: #6EE7B7)
-Module 4 — Sécurité & Complications     (color: #991B1B, bg: #FEF2F2, border: #FCA5A5)
+Module 1 — Fondamentaux        (color: #1E3A5F, bg: #EFF6FF, border: #BFDBFE)  — 2 leçons / 11 questions
+Module 2 — Protocoles          (color: #1D4ED8, bg: #EFF6FF, border: #93C5FD)  — 12 leçons / 58 questions
+Module 3 — Mélanges & Pratique (color: #065F46, bg: #ECFDF5, border: #6EE7B7)  — 2 leçons / 7 questions
+Module 4 — Sécurité & Urgences (color: #991B1B, bg: #FEF2F2, border: #FECACA) — 2 leçons / 11 questions
 ```
+
+**Corrections de contenu (14 Juin 2026) — basées sur le booklet PDF :**
+- Zinc : indications corrigées → `Immunité, peau, cheveux, cicatrisation`
+- Sélénium : indications corrigées → `Antioxydant, immunité, thyroïde`
+- Biotine : indications corrigées → `Cheveux, ongles, peau`
+- Bleu de Méthylène : solvant corrigé → `Glucosé 250 à 500 ml` (pas "Dextrose 250 ml")
+
+**Nouvelles questions ajoutées :**
+- Glutathion : durée de perfusion (20-30 min)
+- Biotine : injection IM douloureuse (consistance huileuse)
+- NAD+ : contre-indications absolues (cancer actif, grossesse, allaitement, <18 ans)
+- ALA : ne pas mélanger avec d'autres vitamines (propriétés chélatrices)
+- Mélanges : produits à perfuser seuls (Glutathion, ALA, NAD+, Bleu de Méthylène)
 
 Structure d'un objet topic :
 ```js
@@ -123,20 +136,16 @@ Structure d'un objet topic :
 
 | Table | Colonnes clés | Notes |
 |---|---|---|
-| `profiles` | `id, name, email, role, avatar, streak_days, link_code` | `grade` nullable/inutilisé |
-| `supervisor_medecin` | `superviseur_id, medecin_id` | Table de liaison superviseur ↔ médecin |
-| `topics` | `id, name, icon, sort_order` | `grade` nullable/inutilisé |
+| `profiles` | `id, name, email, role, avatar, streak_days, banned_from_quiz, quiz_cycle, booking_used` | `banned_from_quiz bool default false`, `quiz_cycle smallint default 1`, `booking_used bool default false` |
+| `topics` | `id, name, icon, sort_order` | |
 | `lessons` | `id, topic_id, title, sort_order` | |
 | `questions` | `id, lesson_id, question_text, options, correct_answer, hint, explanation` | |
 | `progress` | `user_id, lesson_id, ...` | Legacy — conservé pour compatibilité |
-| `user_progress` | `user_id, lesson_ref, score, completed, attempts, last_date` | Actif — `lesson_ref` = `"topicIndex:lessonIndex"` |
+| `user_progress` | `user_id, lesson_ref, score, completed, attempts, last_date` | Actif — `lesson_ref` = id numérique de la leçon (text) |
 | `badges` | `id, name, icon, condition_type, condition_value` | 6 badges seedés |
 | `user_badges` | `user_id, badge_id, earned_at` | |
-| `notifications` | `superviseur_id, medecin_id, type, payload, read` | Realtime activé |
-
-### RPCs
-- `link_medecin_by_code(p_code text)` — un superviseur lie un médecin par son code à 6 caractères
-- `notify_superviseur_for_progress(p_medecin_id, p_lesson_ref, p_score, p_completed, p_attempts, p_last_date)` — déclenché à chaque sauvegarde de leçon
+| `time_slots` | `id, start_time, is_active, created_at` | Créés par admin ; `is_active` permet de désactiver sans supprimer |
+| `bookings` | `id, user_id, slot_id, status, notes, created_at, updated_at` | `status`: `confirmed` / `cancelled` / `completed` |
 
 ---
 
@@ -147,7 +156,8 @@ Structure d'un objet topic :
 | `auth.js` | `signUp, signIn, signOut, getProfile, updateProfile, changePassword` | Wrapper Supabase Auth |
 | `progress.js` | `saveProgress, getProgressMap, getProgress` | localStorage + upsert Supabase ; appelle `notify_superviseur_for_progress` |
 | `family.js` | `getChildren, linkChildByCode, linkChild, unlinkChild` | Requête `supervisor_medecin` ; appelle `link_medecin_by_code` |
-| `admin.js` | `importContent, getAdminDashboardData, linkParentChild, unlinkParentChild, getParentChildLinksForAdmin` | Requête `supervisor_medecin` |
+| `admin.js` | `importContent, getAdminDashboardData, activateMedecin, setMedecinStatus, updateProfileByAdmin, unbanMedecinFromQuiz, upsertProgressByAdmin, adminGetAllSlots, adminCreateSlot, adminDeactivateSlot, adminGetAllBookings, adminCreateBooking, adminCompleteBooking, adminCancelBooking, adminGrantBookingException` | Inclut les fonctions de gestion des réservations |
+| `bookings.js` | `getActiveSlots, getBookedSlotIds, getMyBooking, createBooking, cancelBooking, rescheduleBooking` | Service côté médecin ; `getBookedSlotIds` appelle la RPC `get_booked_slot_ids()` |
 
 ---
 
@@ -164,12 +174,68 @@ Structure d'un objet topic :
 
 ---
 
-## Certificat (`/kid/certificate`)
+## Système de scoring global (`KidQuiz.jsx`)
 
-- Débloqué quand les 4 modules sont complétés à 100%
-- Affiche le nom du médecin, la date, la grille 2×2 des modules, deux lignes de signature, avertissement ambre
-- Impression PDF via `window.print()` — classe `.no-print` masque la navigation et les boutons
-- Date du certificat = `last_date` la plus récente de `user_progress`
+Le médecin doit compléter les **18 leçons** de tous les modules avant qu'un score global soit calculé.
+
+| Résultat | Condition | Action |
+|---|---|---|
+| Certificat disponible | toutes les leçons terminées + score ≥ 80% | `globalResult.type = 'pass'` |
+| 2ème tentative | cycle 1 + score < 80% | `quiz_cycle` → 2 ; tous les quiz se réinitialisent |
+| Accès banni | cycle 2 + score < 80% | `banned_from_quiz` → true |
+
+**Formule :** `score global = ∑ bonnes réponses / ∑ questions totales × 100`
+
+**Colonnes `profiles` utilisées :**
+- `quiz_cycle` (`1` ou `2`) — détermine combien d'`attempts` sont requis pour considérer une leçon "faite ce cycle"
+- `banned_from_quiz` — bloque l'accès aux quiz ET aux leçons/cours
+
+**Helpers (`KidQuiz.jsx`, `CertificatePage.jsx`) :**
+```js
+isAllDoneForCycle(progressMap, cycle)  // toutes les leçons avec attempts >= cycle
+calcGlobalScore(progressMap)           // { totalCorrect, totalQuestions, pct }
+```
+
+---
+
+## Système de réservation (`/medecin/calendar` → `CalendarPage.jsx`)
+
+**Règles métier :**
+
+| Condition | Comportement |
+|---|---|
+| `profile.booking_used = true` OU `myBooking.status = 'completed'` | Écran "Session utilisée" — contacter l'admin |
+| Réservation active et `slot.start_time > now` | Affiche la réservation + boutons Modifier / Annuler |
+| Réservation active et `slot.start_time <= now` | Verrou — impossible de modifier |
+| Aucune réservation active | Calendrier interactif avec créneaux disponibles |
+
+**Prévention des conflits :**
+- Index partiel `UNIQUE ON bookings(slot_id) WHERE status <> 'cancelled'` — pas de double-réservation
+- RPC `get_booked_slot_ids()` — retourne les `slot_id` pris sans exposer l'identité des utilisateurs
+- `booking_used = true` est positionné par l'admin via `adminCompleteBooking()` → protège contre les nouvelles réservations post-séance
+
+**Contrôles admin (section "Réservations" dans AdminDashboardPage) :**
+- Créer un créneau (datetime-local → UTC)
+- Désactiver un créneau futur
+- Marquer une réservation "Effectué" (→ `booking_used = true`)
+- Annuler une réservation
+- Accorder une exception (→ `booking_used = false`) pour permettre une nouvelle réservation
+
+---
+
+## Certificat (`/kid/certificate` → `CertificatePage.jsx`)
+
+**Condition de déverrouillage :** `isAllDoneForCycle(progressMap, cycle) && globalPct >= 80`
+
+| État | Écran |
+|---|---|
+| Toutes les leçons non terminées pour le cycle courant | Tracker de progression par module |
+| Toutes terminées, score < 80% | "Certificat non disponible" + score affiché + guidage cycle |
+| Toutes terminées, score ≥ 80% | Certificat PDF + badge score vert |
+
+- Affiche le nom du médecin, la date, la grille 2×2 des modules, le score global, deux lignes de signature.
+- Impression PDF via `window.print()` — classe `.no-print` masque la navigation et les boutons.
+- Date du certificat = `last_date` la plus récente de `user_progress`.
 
 ---
 
@@ -202,11 +268,13 @@ ProteinProjectYchmael/
 │   │   │   ├── FAQ.jsx                   ✅ Ivitaminacademy — français
 │   │   │   ├── PrivacyTerms.jsx          ✅ (à mettre à jour si nécessaire)
 │   │   │   ├── KidDashboard.jsx          ✅ curriculum[1], navy, français
-│   │   │   ├── KidLessons.jsx            ✅ curriculum[1], navy, français
-│   │   │   ├── KidQuiz.jsx              ✅ QCM IV, navy, français
+│   │   │   ├── KidLessons.jsx            ✅ ban screen + cycle-aware doneThisRound
+│   │   │   ├── KidLessonView.jsx         ✅ vérification banned_from_quiz
+│   │   │   ├── KidQuiz.jsx              ✅ scoring global 18 leçons, 2 cycles, ban
 │   │   │   ├── KidProgress.jsx           ✅ curriculum[1], navy, français
 │   │   │   ├── KidProfile.jsx            ✅ badges IV, avatars médicaux
-│   │   │   ├── CertificatePage.jsx       ✅ nouveau — certificat PDF
+│   │   │   ├── CertificatePage.jsx       ✅ garde score ≥ 80% + 3 écrans
+│   │   │   ├── CalendarPage.jsx          ✅ calendrier mensuel + réservation/modification/annulation
 │   │   │   ├── ParentDashboard.jsx       ✅ curriculum[1], navy, français
 │   │   │   ├── ParentLessons.jsx         ✅ curriculum[1], navy, français
 │   │   │   ├── ParentReports.jsx         ✅ curriculum[1], navy, français
@@ -225,13 +293,14 @@ ProteinProjectYchmael/
 │   │   │   ├── auth.js                   ✅ inchangé
 │   │   │   ├── progress.js               ✅ notify_superviseur_for_progress
 │   │   │   ├── family.js                 ✅ supervisor_medecin, link_medecin_by_code
-│   │   │   └── admin.js                  ✅ supervisor_medecin, superviseur_id/medecin_id
+│   │   │   ├── admin.js                  ✅ + fonctions admin booking (7 nouvelles)
+│   │   │   └── bookings.js               ✅ service réservation côté médecin
 │   │   └── data/
 │   │       └── curriculum.js             ✅ 4 modules IV / 19 leçons / 75 QCM
 │   ├── index.html                        ✅ lang="fr", titre "Ivitaminacademy"
 │   └── .env.local                        ✅ clés Supabase (ne pas committer)
 └── supabase/
-    └── full_setup.sql                    ✅ schéma complet Ivitaminacademy
+    └── full_setup.sql                    ✅ schéma complet Ivitaminacademy + tables time_slots/bookings (section 17)
 ```
 
 ---

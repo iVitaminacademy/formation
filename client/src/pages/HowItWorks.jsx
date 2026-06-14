@@ -9,7 +9,7 @@ export default function HowItWorks() {
             Comment ça marche
           </p>
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
-            💉 Ivitaminacademy — Guide de démarrage
+            💉 iVitaminacademy — Guide de démarrage
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600">
             Une plateforme de formation certifiante pour les médecins pratiquant les perfusions de vitamines IV. Suivez les 4 modules, validez vos connaissances par QCM, et obtenez votre certificat de formation.
@@ -22,7 +22,7 @@ export default function HowItWorks() {
           <div className="space-y-3 rounded-3xl border p-6 shadow-sm" style={{ borderColor: '#BFDBFE', backgroundColor: '#EFF6FF' }}>
             <h2 className="text-2xl font-bold text-slate-950">Choisir votre rôle</h2>
             <p className="text-base leading-7 text-slate-700">
-              Ivitaminacademy propose deux modes complémentaires. Le <strong>Mode Médecin</strong> permet un apprentissage autonome à travers les protocoles et QCM. Le <strong>Mode Superviseur</strong> permet de suivre la progression d'un ou plusieurs médecins en formation et de consulter leurs résultats en détail.
+              iVitaminacademy propose deux modes complémentaires. Le <strong>Mode Médecin</strong> permet un apprentissage autonome à travers les protocoles et QCM. Le <strong>Mode Superviseur</strong> permet de suivre la progression d'un ou plusieurs médecins en formation et de consulter leurs résultats en détail.
             </p>
           </div>
 

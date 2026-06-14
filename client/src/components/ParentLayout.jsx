@@ -27,7 +27,7 @@ export default function ParentLayout({ children }) {
         style={{ backgroundColor: '#0F2847', boxShadow: '0 2px 12px rgba(15,40,71,0.40)' }}
       >
         <span className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
-          Ivitaminacademy{' '}
+          iVitaminacademy{' '}
           <span className="hidden sm:inline-block text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full ml-1 align-middle">
             Superviseur
           </span>

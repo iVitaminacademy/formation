@@ -10,6 +10,13 @@ import {
   updateProfileByAdmin,
   upsertProgressByAdmin,
   unbanMedecinFromQuiz,
+  adminGetAllSlots,
+  adminCreateSlot,
+  adminDeactivateSlot,
+  adminGetAllBookings,
+  adminCompleteBooking,
+  adminCancelBooking,
+  adminGrantBookingException,
 } from '../services/admin'
 
 const THEME_KEY = 'admin_dashboard_theme'
@@ -151,6 +158,11 @@ export default function AdminDashboardPage() {
   const [pwSuccess, setPwSuccess] = useState('')
   const [pwLoading, setPwLoading] = useState(false)
 
+  const [slots, setSlots] = useState([])
+  const [bookings, setBookings] = useState([])
+  const [newSlotTime, setNewSlotTime] = useState('')
+  const [bookingActionLoading, setBookingActionLoading] = useState(false)
+
   const lessonIndex = useMemo(() => buildLessonIndex(), [])
 
   useEffect(() => { localStorage.setItem(THEME_KEY, themeName) }, [themeName])
@@ -160,13 +172,19 @@ export default function AdminDashboardPage() {
     setLoading(true)
     setError('')
     try {
-      const data = await getAdminDashboardData()
+      const [data, allSlots, allBookings] = await Promise.all([
+        getAdminDashboardData(),
+        adminGetAllSlots(),
+        adminGetAllBookings(),
+      ])
       setProfiles(data.profiles)
       setProgress(data.progress)
       setBadges(data.badges)
       setUserBadges(data.userBadges)
       setActiveProfileId(prev => prev || data.profiles[0]?.id || '')
       setSelectedChildId(prev => prev || data.profiles.find(p => p.role === 'medecin')?.id || '')
+      setSlots(allSlots)
+      setBookings(allBookings)
     } catch (err) { setError(err.message || 'Impossible de charger les données du tableau de bord.') }
     finally { setLoading(false) }
   }
@@ -306,6 +324,45 @@ export default function AdminDashboardPage() {
     finally { setSaving(false) }
   }
 
+  const handleCreateSlot = async () => {
+    if (!newSlotTime) return
+    setBookingActionLoading(true); setError('')
+    try {
+      await adminCreateSlot(new Date(newSlotTime).toISOString())
+      setNewSlotTime('')
+      setRefreshTick(t => t + 1)
+    } catch (err) { setError(err.message || 'Erreur lors de la création du créneau.') }
+    finally { setBookingActionLoading(false) }
+  }
+
+  const handleDeactivateSlot = async (slotId) => {
+    setBookingActionLoading(true); setError('')
+    try { await adminDeactivateSlot(slotId); setRefreshTick(t => t + 1) }
+    catch (err) { setError(err.message || 'Erreur.') }
+    finally { setBookingActionLoading(false) }
+  }
+
+  const handleCompleteBooking = async (bookingId, userId) => {
+    setBookingActionLoading(true); setError('')
+    try { await adminCompleteBooking(bookingId, userId); setRefreshTick(t => t + 1) }
+    catch (err) { setError(err.message || 'Erreur.') }
+    finally { setBookingActionLoading(false) }
+  }
+
+  const handleCancelBookingAdmin = async (bookingId) => {
+    setBookingActionLoading(true); setError('')
+    try { await adminCancelBooking(bookingId); setRefreshTick(t => t + 1) }
+    catch (err) { setError(err.message || 'Erreur.') }
+    finally { setBookingActionLoading(false) }
+  }
+
+  const handleGrantException = async (userId) => {
+    setBookingActionLoading(true); setError('')
+    try { await adminGrantBookingException(userId); setRefreshTick(t => t + 1) }
+    catch (err) { setError(err.message || 'Erreur.') }
+    finally { setBookingActionLoading(false) }
+  }
+
   const handleLogout = async () => { try { await signOut() } catch {} navigate('/login') }
 
   const handleChangePassword = async () => {
@@ -336,7 +393,7 @@ export default function AdminDashboardPage() {
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div className="min-w-0">
             <div className="text-xs font-extrabold uppercase tracking-[0.3em]" style={{ color: theme.subtext }}>Admin</div>
-            <h1 className="text-xl font-extrabold sm:text-2xl">Ivitaminacademy — Tableau de bord</h1>
+            <h1 className="text-xl font-extrabold sm:text-2xl">iVitaminacademy — Tableau de bord</h1>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <button
@@ -468,6 +525,158 @@ export default function AdminDashboardPage() {
               </SectionCard>
             )}
 
+            {/* Réservations & Créneaux */}
+            <SectionCard title={`📅 Réservations (${bookings.filter(b => b.status === 'confirmed').length} actives)`} theme={theme}>
+
+              {/* Create slot */}
+              <div className="mb-4 flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[200px]">
+                  <label className="block text-xs font-extrabold uppercase tracking-widest mb-1" style={{ color: theme.subtext }}>Nouveau créneau (date & heure locale)</label>
+                  <input
+                    type="datetime-local"
+                    value={newSlotTime}
+                    onChange={e => setNewSlotTime(e.target.value)}
+                    className="w-full rounded-xl border px-3 py-2 text-sm"
+                    style={{ borderColor: theme.border, backgroundColor: theme.surface, color: theme.text }}
+                  />
+                </div>
+                <button
+                  onClick={handleCreateSlot}
+                  disabled={bookingActionLoading || !newSlotTime}
+                  className="px-5 py-2 rounded-xl text-sm font-bold text-white shrink-0"
+                  style={{ backgroundColor: bookingActionLoading || !newSlotTime ? '#94A3B8' : '#065F46' }}
+                >
+                  + Créer
+                </button>
+              </div>
+
+              {/* Upcoming slots */}
+              <div className="mb-5">
+                <div className="text-xs font-extrabold uppercase tracking-widest mb-2" style={{ color: theme.subtext }}>Créneaux à venir</div>
+                <div className="overflow-x-auto rounded-2xl border" style={{ borderColor: theme.border }}>
+                  <table className="min-w-[400px] w-full text-left text-sm">
+                    <thead style={{ backgroundColor: theme.surfaceSoft }}>
+                      <tr>
+                        <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Date & Heure</th>
+                        <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Statut</th>
+                        <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {slots.filter(s => new Date(s.start_time) > new Date()).length === 0 ? (
+                        <tr><td className="px-4 py-3 text-sm" colSpan={3} style={{ color: theme.subtext }}>Aucun créneau futur.</td></tr>
+                      ) : slots.filter(s => new Date(s.start_time) > new Date()).slice(0, 10).map(s => (
+                        <tr key={s.id} className="border-t" style={{ borderColor: theme.border }}>
+                          <td className="px-4 py-3 font-bold">
+                            {new Date(s.start_time).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}{' '}
+                            {new Date(s.start_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="rounded-full px-2 py-0.5 text-xs font-bold" style={s.is_active ? { backgroundColor: '#ECFDF5', color: '#065F46' } : { backgroundColor: '#FEF2F2', color: '#DC2626' }}>
+                              {s.is_active ? 'Actif' : 'Désactivé'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            {s.is_active && (
+                              <button
+                                onClick={() => handleDeactivateSlot(s.id)}
+                                disabled={bookingActionLoading}
+                                className="rounded-lg px-3 py-1 text-xs font-bold text-white"
+                                style={{ backgroundColor: '#DC2626' }}
+                              >
+                                Désactiver
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* All bookings */}
+              <div>
+                <div className="text-xs font-extrabold uppercase tracking-widest mb-2" style={{ color: theme.subtext }}>Toutes les réservations</div>
+                <div className="overflow-x-auto rounded-2xl border" style={{ borderColor: theme.border }}>
+                  <table className="min-w-[560px] w-full text-left text-sm">
+                    <thead style={{ backgroundColor: theme.surfaceSoft }}>
+                      <tr>
+                        <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Médecin</th>
+                        <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Créneau</th>
+                        <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Statut</th>
+                        <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bookings.length === 0 ? (
+                        <tr><td className="px-4 py-3 text-sm" colSpan={4} style={{ color: theme.subtext }}>Aucune réservation.</td></tr>
+                      ) : bookings.map(b => (
+                        <tr key={b.id} className="border-t" style={{ borderColor: theme.border }}>
+                          <td className="px-4 py-3">
+                            <div className="font-bold truncate max-w-[140px]">{b.profile?.name || '—'}</div>
+                            <div className="text-xs truncate max-w-[140px]" style={{ color: theme.subtext }}>{b.profile?.email || '—'}</div>
+                          </td>
+                          <td className="px-4 py-3 text-xs" style={{ color: theme.subtext }}>
+                            {b.slot?.start_time
+                              ? new Date(b.slot.start_time).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' +
+                                new Date(b.slot.start_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+                              : '—'}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span
+                              className="rounded-full px-2 py-0.5 text-xs font-bold"
+                              style={
+                                b.status === 'confirmed' ? { backgroundColor: '#DBEAFE', color: '#1E3A5F' }
+                                : b.status === 'completed' ? { backgroundColor: '#ECFDF5', color: '#065F46' }
+                                : { backgroundColor: '#F3F4F6', color: '#6B7280' }
+                              }
+                            >
+                              {b.status === 'confirmed' ? 'Confirmé' : b.status === 'completed' ? 'Effectué' : 'Annulé'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-wrap gap-1.5">
+                              {b.status === 'confirmed' && (
+                                <>
+                                  <button
+                                    onClick={() => handleCompleteBooking(b.id, b.user_id)}
+                                    disabled={bookingActionLoading}
+                                    className="rounded-lg px-2 py-1 text-xs font-bold text-white"
+                                    style={{ backgroundColor: '#065F46' }}
+                                  >
+                                    ✓ Effectué
+                                  </button>
+                                  <button
+                                    onClick={() => handleCancelBookingAdmin(b.id)}
+                                    disabled={bookingActionLoading}
+                                    className="rounded-lg px-2 py-1 text-xs font-bold text-white"
+                                    style={{ backgroundColor: '#DC2626' }}
+                                  >
+                                    ✕ Annuler
+                                  </button>
+                                </>
+                              )}
+                              {(b.status === 'completed') && (
+                                <button
+                                  onClick={() => handleGrantException(b.user_id)}
+                                  disabled={bookingActionLoading}
+                                  className="rounded-lg px-2 py-1 text-xs font-bold text-white"
+                                  style={{ backgroundColor: '#7C3AED' }}
+                                >
+                                  🔓 Exception
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </SectionCard>
+
             {/* Liste des utilisateurs */}
             <SectionCard
               title={`Utilisateurs (${filteredUsers.length})`}
@@ -533,6 +742,11 @@ export default function AdminDashboardPage() {
                               {u.banned_from_quiz && (
                                 <span className="rounded-full px-2 py-0.5 text-xs font-bold w-fit" style={{ backgroundColor: '#FEF2F2', color: '#DC2626' }}>
                                   🚫 Quiz banni
+                                </span>
+                              )}
+                              {u.booking_used && (
+                                <span className="rounded-full px-2 py-0.5 text-xs font-bold w-fit" style={{ backgroundColor: '#F5F3FF', color: '#7C3AED' }}>
+                                  📅 Session utilisée
                                 </span>
                               )}
                             </div>

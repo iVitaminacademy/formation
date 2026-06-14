@@ -7,19 +7,16 @@ import { getProgressMap } from '../services/progress'
 import { curriculum } from '../data/curriculum'
 
 const BADGE_DEFS = [
-  { id: 1, icon: '⭐', name: 'Apprenant rapide', desc: 'Compléter 5 leçons',             color: '#1E3A5F', bg: '#EFF6FF', border: '#93C5FD', check: s => s.doneCount >= 5 },
-  { id: 2, icon: '🔥', name: 'En feu',           desc: '5 jours consécutifs',             color: '#B45309', bg: '#FFFBEB', border: '#FCD34D', check: s => s.streak >= 5 },
+  { id: 1, icon: '⭐', name: 'Apprenant rapide', desc: 'Compléter 5 leçons',             color: '#1E3A5F', bg: '#EFF6FF', border: '#93C5FD', check: s => s.doneCount >= 5 }, 
   { id: 3, icon: '🎯', name: 'Précision clinique',desc: 'Score 100 % à un quiz',          color: '#065F46', bg: '#ECFDF5', border: '#6EE7B7', check: s => s.perfectAny },
   { id: 4, icon: '🚀', name: 'Module validé',    desc: 'Terminer un module en entier',     color: '#7C3AED', bg: '#F5F3FF', border: '#C4B5FD', check: s => s.fullTopicAny },
-  { id: 5, icon: '💎', name: 'Expert confirmé',  desc: '10 jours consécutifs',             color: '#1D4ED8', bg: '#EFF6FF', border: '#BFDBFE', check: s => s.streak >= 10 },
-  { id: 6, icon: '🏆', name: 'Certification IV', desc: 'Compléter toute la formation',     color: '#065F46', bg: '#ECFDF5', border: '#34D399', check: s => s.gradeComplete },
+   { id: 6, icon: '🏆', name: 'Certification IV', desc: 'Compléter toute la formation',     color: '#065F46', bg: '#ECFDF5', border: '#34D399', check: s => s.gradeComplete },
 ]
 
 const AVATAR_OPTIONS = [
   '👨‍⚕️', '👩‍⚕️', '🩺', '💉', '🧬',
   '😀', '😎', '🤓', '😊', '🥳',
-  '🦊', '🐱', '🐶', '🐼', '🐨',
-  '🦁', '🐯', '🦄', '🐧', '🐢',
+  '🦊', '🐱', '🐶',
 ]
 
 function computeStats(progressMap) {
@@ -37,7 +34,7 @@ function computeStats(progressMap) {
 
 const settingsItems = [
   { icon: '✏️', label: 'Modifier le profil',     desc: 'Changer votre nom ou avatar' },
-  { icon: '🔒', label: 'Confidentialité',         desc: 'Données et confidentialité', to: '/privacy' },
+  { icon: '🔒', label: 'Condition',         desc: 'Données et Condition', to: '/privacy' },
   { icon: '❓', label: 'Aide & FAQ',              desc: 'Obtenir de l\'aide', to: '/faq' },
 ]
 

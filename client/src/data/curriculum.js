@@ -286,10 +286,10 @@ export const curriculum = {
             },
             {
               text: 'Quelles sont les indications du Zinc IV ?',
-              options: ['Immunité, peau, cheveux', 'Fatigue intense, longévité, récupération', 'Neuropathies, carences B12', 'Stress, crampes, troubles du sommeil'],
-              correct: 'Immunité, peau, cheveux',
-              hint: 'Le Zinc est impliqué dans la synthèse de la kératine.',
-              explanation: 'Le Zinc IV est indiqué pour soutenir l\'immunité et améliorer l\'état de la peau et des cheveux, en lien avec son rôle dans la synthèse protéique et la kératine.',
+              options: ['Immunité, peau, cheveux, cicatrisation', 'Fatigue intense, longévité, récupération', 'Neuropathies, carences B12', 'Stress, crampes, troubles du sommeil'],
+              correct: 'Immunité, peau, cheveux, cicatrisation',
+              hint: 'Le Zinc est impliqué dans la synthèse de la kératine et la réparation tissulaire.',
+              explanation: 'Le Zinc IV est indiqué pour l\'immunité, la peau, les cheveux et la cicatrisation. Il joue un rôle essentiel dans la synthèse protéique, la kératine et la réparation des tissus.',
             },
             {
               text: 'Quel effet peut survenir si le Zinc est administré à trop forte concentration ?',
@@ -323,10 +323,10 @@ export const curriculum = {
             },
             {
               text: 'Quelles sont les indications principales du Sélénium IV ?',
-              options: ['Antioxydant, immunité', 'Crampes, stress, fatigue musculaire', 'Neuropathies, éclat de peau', 'Longévité, cognition, énergie'],
-              correct: 'Antioxydant, immunité',
-              hint: 'Le Sélénium est cofacteur d\'enzymes antioxydantes majeures.',
-              explanation: 'Le Sélénium IV est indiqué comme antioxydant et pour soutenir l\'immunité. Il est cofacteur de la glutathion peroxydase, enzyme antioxydante clé.',
+              options: ['Antioxydant, immunité, thyroïde', 'Crampes, stress, fatigue musculaire', 'Neuropathies, éclat de peau', 'Longévité, cognition, énergie'],
+              correct: 'Antioxydant, immunité, thyroïde',
+              hint: 'Le Sélénium est cofacteur d\'enzymes antioxydantes et joue un rôle dans la fonction thyroïdienne.',
+              explanation: 'Le Sélénium IV est indiqué comme antioxydant, pour le soutien immunitaire et la fonction thyroïdienne. Il est cofacteur de la glutathion peroxydase et intervient dans la conversion des hormones thyroïdiennes.',
             },
             {
               text: 'Comment le Sélénium IV est-il généralement toléré ?',
@@ -340,8 +340,8 @@ export const curriculum = {
         {
           id: 206,
           title: 'Glutathion IV',
-          questions: 4,
-          time: 5,
+          questions: 5,
+          time: 6,
           status: 'locked',
           quiz: [
             {
@@ -371,6 +371,13 @@ export const curriculum = {
               correct: 'Sensation subjective de "vide" ou faiblesse',
               hint: 'C\'est une sensation subjective atypique, rapidement résolutive.',
               explanation: 'Une sensation de "vide" ou de faiblesse peut survenir si le Glutathion est administré trop rapidement. Ralentir le débit résout généralement ce symptôme.',
+            },
+            {
+              text: 'Quelle est la durée recommandée pour une perfusion de Glutathion IV ?',
+              options: ['20 à 30 minutes', '60 à 90 minutes', '5 à 10 minutes', '45 à 60 minutes'],
+              correct: '20 à 30 minutes',
+              hint: 'Le Glutathion s\'administre plus rapidement que la majorité des autres produits.',
+              explanation: 'Le Glutathion IV se perfuse en 20 à 30 minutes dans NaCl 100 à 250 ml. C\'est l\'une des durées les plus courtes du protocole. Adapter le débit selon la tolérance reste la règle.',
             },
           ],
         },
@@ -414,8 +421,8 @@ export const curriculum = {
         {
           id: 208,
           title: 'Biotine (B7) & Bépanthène (B5)',
-          questions: 3,
-          time: 4,
+          questions: 4,
+          time: 5,
           status: 'locked',
           quiz: [
             {
@@ -434,10 +441,17 @@ export const curriculum = {
             },
             {
               text: 'Quelles sont les indications de la Biotine (B7) injectable ?',
-              options: ['Cheveux, ongles', 'Neuropathies, carences B12', 'Fatigue intense, longévité', 'Stress, crampes, immunité'],
-              correct: 'Cheveux, ongles',
+              options: ['Cheveux, ongles, peau', 'Neuropathies, carences B12', 'Fatigue intense, longévité', 'Stress, crampes, immunité'],
+              correct: 'Cheveux, ongles, peau',
               hint: 'La Biotine est connue sous le nom de "vitamine de la beauté".',
-              explanation: 'La Biotine (B7) est indiquée pour améliorer l\'état des cheveux et des ongles. Elle joue un rôle essentiel dans la synthèse de la kératine.',
+              explanation: 'La Biotine (B7) est indiquée pour améliorer l\'état des cheveux, des ongles et de la peau. Elle joue un rôle essentiel dans la synthèse de la kératine.',
+            },
+            {
+              text: 'Quelle particularité de l\'injection intramusculaire de Biotine doit être anticipée ?',
+              options: ['Parfois douloureuse (consistance huileuse)', 'Toujours indolore', 'Flushing systématique', 'Coloration au site d\'injection'],
+              correct: 'Parfois douloureuse (consistance huileuse)',
+              hint: 'Un conseil pratique simple aide à réduire cet inconfort.',
+              explanation: 'L\'injection de Biotine peut être douloureuse en raison de sa consistance huileuse. Conseils pratiques : demander au patient de relâcher complètement le muscle ; marcher après l\'injection réduit l\'inconfort.',
             },
           ],
         },
@@ -474,8 +488,8 @@ export const curriculum = {
         {
           id: 210,
           title: 'NAD+ (500 mg)',
-          questions: 5,
-          time: 7,
+          questions: 6,
+          time: 8,
           status: 'locked',
           quiz: [
             {
@@ -513,13 +527,20 @@ export const curriculum = {
               hint: 'Un grand volume assure une dilution suffisante pour ce produit délicat.',
               explanation: 'Le NAD+ est dilué dans NaCl 500 ml. Ce grand volume contribue à une dilution suffisante et favorise l\'administration lente indispensable.',
             },
+            {
+              text: 'Quelles sont les contre-indications absolues du NAD+ IV ?',
+              options: ['Cancer actif, grossesse, allaitement, moins de 18 ans', 'Hypertension et diabète', 'Allergie aux vitamines B uniquement', 'Insuffisance rénale légère'],
+              correct: 'Cancer actif, grossesse, allaitement, moins de 18 ans',
+              hint: 'Ces populations sont exclues des protocoles NAD+ pour des raisons de sécurité.',
+              explanation: 'Le NAD+ IV est contre-indiqué en cas de cancer actif, de grossesse, d\'allaitement et chez les patients de moins de 18 ans. Ces contre-indications doivent être vérifiées systématiquement avant toute administration.',
+            },
           ],
         },
         {
           id: 211,
           title: 'Acide Alpha-Lipoïque (ALA)',
-          questions: 4,
-          time: 5,
+          questions: 5,
+          time: 6,
           status: 'locked',
           quiz: [
             {
@@ -550,6 +571,13 @@ export const curriculum = {
               hint: 'C\'est une durée dans la fourchette standard.',
               explanation: 'L\'ALA s\'administre en 30 à 60 minutes dans NaCl 250 ml. La surveillance de la glycémie est recommandée pendant et après la perfusion.',
             },
+            {
+              text: 'Quelle recommandation spécifique concerne les mélanges avec l\'Acide Alpha-Lipoïque ?',
+              options: ['De préférence ne pas mélanger avec d\'autres vitamines', 'Toujours associer avec la Vitamine C', 'Compatible avec tous les minéraux IV', 'Mélanger systématiquement avec le Glutathion'],
+              correct: 'De préférence ne pas mélanger avec d\'autres vitamines',
+              hint: 'L\'ALA fait partie des produits à administrer de préférence seuls.',
+              explanation: 'L\'ALA doit de préférence être administré seul dans sa poche. Prudence particulière avec les minéraux (magnésium, zinc, sélénium) en raison des propriétés chélatrices de l\'ALA, qui peut réduire leur biodisponibilité.',
+            },
           ],
         },
         {
@@ -561,10 +589,10 @@ export const curriculum = {
           quiz: [
             {
               text: 'Dans quel solvant doit être dilué le Bleu de Méthylène ?',
-              options: ['Dextrose 250 ml', 'NaCl 0,9% uniquement', 'Ringer lactate', 'NaCl 500 ml'],
-              correct: 'Dextrose 250 ml',
-              hint: 'C\'est le seul produit de la liste qui utilise ce solvant glucosé.',
-              explanation: 'Le Bleu de Méthylène se dilue dans du Dextrose 250 ml. Contrairement aux autres produits qui utilisent le NaCl standard, ce produit nécessite un solvant glucosé.',
+              options: ['Glucosé 250 à 500 ml', 'NaCl 0,9% uniquement', 'Ringer lactate', 'NaCl 500 ml'],
+              correct: 'Glucosé 250 à 500 ml',
+              hint: 'C\'est le seul produit de la liste qui exige ce solvant glucosé.',
+              explanation: 'Le Bleu de Méthylène se dilue dans du Glucosé (Dextrose) 250 à 500 ml uniquement. Il ne faut jamais le diluer dans du sérum physiologique (NaCl). C\'est le seul produit du protocole à exiger exclusivement un solvant glucosé.',
             },
             {
               text: 'Quelle interaction médicamenteuse importante est signalée pour le Bleu de Méthylène ?',
@@ -606,8 +634,8 @@ export const curriculum = {
         {
           id: 301,
           title: 'Mélanges — Règles de Compatibilité',
-          questions: 3,
-          time: 4,
+          questions: 4,
+          time: 5,
           status: 'locked',
           quiz: [
             {
@@ -630,6 +658,13 @@ export const curriculum = {
               correct: 'B + Mg',
               hint: 'Ce mélange combine deux produits bien connus pour la fatigue.',
               explanation: 'B + Mg est une association compatible selon le guide, en plus de Vit C + B + Mg et Vit C + Zinc.',
+            },
+            {
+              text: 'Quels produits doivent être administrés de préférence seuls dans leur poche de sérum ?',
+              options: ['Glutathion, ALA, NAD+, Bleu de Méthylène', 'Vitamine C, Zinc, Sélénium', 'Complexe Vitamines B, Magnésium', 'Vitamine B12 uniquement'],
+              correct: 'Glutathion, ALA, NAD+, Bleu de Méthylène',
+              hint: 'Ces produits ont des propriétés physicochimiques particulières qui contre-indiquent les mélanges.',
+              explanation: 'Par mesure de prudence et de stabilité physicochimique, le Glutathion, l\'ALA, le NAD+ et le Bleu de Méthylène doivent être perfusés séparément. Ils peuvent être administrés avant ou après une autre perfusion vitaminique, mais pas dans la même poche.',
             },
           ],
         },

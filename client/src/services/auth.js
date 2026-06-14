@@ -45,14 +45,36 @@ export async function getSession() {
 }
 
 // Fetch the public.profiles row for a given user id.
+// Uses maybeSingle() so a missing profile returns null rather than throwing.
+// If the profile row doesn't exist (trigger may have failed on signup),
+// we auto-create a default one so the user is never stuck with a 406 loop.
 export async function getProfile(userId) {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', userId)
-    .single()
+    .maybeSingle()
   if (error) throw error
-  return data
+  if (data) return data
+
+  // No profile row — create one from auth metadata as a fallback.
+  const { data: authData } = await supabase.auth.getUser()
+  const meta  = authData?.user?.user_metadata ?? {}
+  const role  = meta.role === 'admin' ? 'admin' : 'medecin'
+
+  const { data: created, error: createErr } = await supabase
+    .from('profiles')
+    .upsert({
+      id:     userId,
+      name:   meta.name  ?? '',
+      email:  authData?.user?.email ?? '',
+      role,
+      status: role === 'admin' ? 'active' : 'pending',
+    })
+    .select()
+    .single()
+  if (createErr) throw createErr
+  return created
 }
 
 // ── Password reset via magic link ────────────────────────────────────────

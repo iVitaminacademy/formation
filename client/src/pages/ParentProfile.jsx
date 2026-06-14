@@ -37,7 +37,7 @@ function computeStats(progressMap) {
 const settingsItems = [
   { icon: '✏️', label: 'Modifier le profil',   desc: 'Changer votre nom ou avatar' },
   { icon: '🔔', label: 'Notifications',         desc: 'Alertes d\'activité'         },
-  { icon: '🔒', label: 'Confidentialité',       desc: 'Données et confidentialité', to: '/privacy' },
+  { icon: '🔒', label: 'Condition',       desc: 'Données et Condition', to: '/privacy' },
   { icon: '❓', label: 'Aide & FAQ',            desc: 'Obtenir de l\'aide', to: '/faq' },
 ]
 

@@ -18,6 +18,7 @@ import KidQuiz from './pages/KidQuiz'
 import KidProgress from './pages/KidProgress'
 import KidProfile from './pages/KidProfile'
 import CertificatePage from './pages/CertificatePage'
+import CalendarPage from './pages/CalendarPage'
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/medecin/progress" element={<ProtectedRoute role="medecin"><KidProgress /></ProtectedRoute>} />
         <Route path="/medecin/profile" element={<ProtectedRoute role="medecin"><KidProfile /></ProtectedRoute>} />
         <Route path="/medecin/certificate" element={<ProtectedRoute role="medecin"><CertificatePage /></ProtectedRoute>} />
+        <Route path="/medecin/calendar"   element={<ProtectedRoute role="medecin"><CalendarPage /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   )

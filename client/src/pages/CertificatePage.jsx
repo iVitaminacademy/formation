@@ -286,7 +286,7 @@ export default function CertificatePage() {
         <div className="px-8 py-8 text-center">
           <div className="text-5xl mb-4">🏆</div>
           <p className="text-xs font-extrabold uppercase tracking-[0.25em] text-gray-400 mb-3">
-            Certificat de mise en route
+            CERTIFICAT DE RÉUSSITE
           </p>
           <p className="text-lg font-semibold text-gray-500 mb-2">Ce certificat est décerné à</p>
           <h2
@@ -299,19 +299,19 @@ export default function CertificatePage() {
             pour avoir complété avec succès la formation
             <br />
             <span className="font-extrabold" style={{ color: '#1E3A5F' }}>
-              Perfusions de vitamines IV — Guide pratique médecin
+              injections de vitamines  — Guide pratique pour les professionnels de santé
             </span>
           </p>
 
           {/* Score badge */}
           <div className="mt-4 inline-flex items-center gap-2 px-5 py-2 rounded-full font-extrabold text-white text-sm"
             style={{ background: 'linear-gradient(90deg, #065F46, #059669)' }}>
-            Score global : {totalCorrect}/{totalQuestions} — {globalPct}%
+            Score obtenu  : {totalCorrect}/{totalQuestions} — {globalPct}%
           </div>
 
           {certDate && (
             <p className="mt-4 text-sm text-gray-400 font-semibold">
-              Le {formatDate(certDate)}
+              Date de délivrance :  {formatDate(certDate)}
             </p>
           )}
 
@@ -337,11 +337,7 @@ export default function CertificatePage() {
           <div className="mt-8 flex justify-center gap-16">
             <div className="text-center">
               <div className="w-32 border-b-2 border-gray-300 mb-1" />
-              <div className="text-xs text-gray-400 font-semibold">Médecin formé</div>
-            </div>
-            <div className="text-center">
-              <div className="w-32 border-b-2 border-gray-300 mb-1" />
-              <div className="text-xs text-gray-400 font-semibold">Superviseur</div>
+              <div className="text-xs text-gray-400 font-semibold">Cette attestation certifie que le participant a complété avec succès l'ensemble des modules pédagogiques et obtenu la note minimale requise pour la validation de la formation.</div>
             </div>
           </div>
         </div>
@@ -349,7 +345,7 @@ export default function CertificatePage() {
         {/* Footer band */}
         <div className="px-8 py-4 border-t text-center" style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }}>
           <p className="text-xs font-semibold" style={{ color: '#1E3A5F' }}>
-            Ivitaminacademy · Perfusions de vitamines IV · Guide pratique médecin · 2026
+            iVitaminacademy · Injections de vitamines  · Guide pratique pour les professionnels de santé · 2026
           </p>
         </div>
       </div>

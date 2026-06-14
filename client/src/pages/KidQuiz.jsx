@@ -200,7 +200,7 @@ function QuizShell({ children, onQuit, quizDone, timeLeft }) {
         style={{ backgroundColor: ACCENT, boxShadow: '0 2px 12px rgba(30,58,95,0.35)' }}
       >
         <span className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
-          Ivitaminacademy
+          iVitaminacademy
           <span className="hidden sm:inline-block text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full ml-2 align-middle">
             Quiz
           </span>
@@ -304,7 +304,7 @@ function GlobalResultPage({ result, onGoToLessons, onGoToCertificate }) {
         </div>
         <p className="text-2xl font-extrabold mb-4" style={{ color: ACCENT_CORRECT }}>{pct}%</p>
         <p className="text-sm text-gray-500 mb-8 max-w-sm">
-          Vous avez atteint la note de passage et obtenez votre certification Ivitaminacademy.
+          Vous avez atteint la note minimale requise et obtenu votre certification iVitamin Academy.
         </p>
         <div className="flex gap-4 flex-wrap justify-center">
           <button

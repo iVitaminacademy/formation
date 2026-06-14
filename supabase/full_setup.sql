@@ -15,6 +15,17 @@ drop function if exists public.validate_medecin(uuid)        cascade;
 drop function if exists public.renew_medecin_access(uuid)    cascade;
 drop function if exists public.record_first_login(uuid)      cascade;
 drop function if exists public.link_medecin_by_code(text)    cascade;
+drop function if exists public.set_link_code()               cascade;
+
+-- Drop the auth trigger + function BEFORE dropping the enum type.
+-- handle_new_user() declares "v_role user_role", creating a tracked
+-- PostgreSQL dependency. Without this, DROP TYPE user_role fails because
+-- the function still depends on it, leaving the enum in an inconsistent state
+-- and causing "Database error saving new user" on every signup.
+drop trigger  if exists on_auth_user_created on auth.users;
+drop function if exists public.handle_new_user() cascade;
+drop function if exists public.is_admin()        cascade;
+drop function if exists public.set_updated_at()  cascade;
 
 -- Drop columns that no longer exist in the schema
 alter table if exists public.profiles drop column if exists first_login_at;
@@ -25,11 +36,9 @@ drop table if exists public.supervisor_medecin cascade;
 drop table if exists public.notifications       cascade;
 
 -- Safely migrate the user_role enum.
--- Convert role column to text first so there are no type dependencies,
--- then drop both old type names and recreate clean — no CASCADE needed.
+-- Column dependency was already removed by dropping the function above.
+-- Now convert the column to text so the table itself has no type dependency.
 do $$ begin
-  -- Drop the column default first — it may reference the old enum type
-  -- (e.g. 'medecin'::user_role_old), which would block the DROP TYPE below.
   alter table public.profiles alter column role drop default;
   alter table public.profiles alter column role type text using role::text;
 exception when others then null; end $$;
@@ -248,10 +257,15 @@ returns trigger language plpgsql security definer set search_path = public as $$
 declare
   v_role user_role;
 begin
-  v_role := coalesce(
-    (new.raw_user_meta_data->>'role')::user_role,
-    'medecin'
-  );
+  -- Safely cast the role from metadata; default to 'medecin' on any failure.
+  begin
+    v_role := (new.raw_user_meta_data->>'role')::user_role;
+  exception when others then
+    v_role := null;
+  end;
+  if v_role is null then
+    v_role := 'medecin'::user_role;
+  end if;
 
   insert into public.profiles (id, email, name, role, status)
   values (
@@ -259,10 +273,13 @@ begin
     new.email,
     coalesce(new.raw_user_meta_data->>'name', ''),
     v_role,
-    case when v_role = 'admin' then 'active' else 'pending' end
+    case when v_role = 'admin'::user_role then 'active' else 'pending' end
   )
   on conflict (id) do nothing;
 
+  return new;
+exception when others then
+  -- Never block auth user creation even if profile insert fails.
   return new;
 end $$;
 
@@ -388,9 +405,94 @@ where not exists (select 1 from public.topics limit 1);
 
 
 -- =============================================================
+-- 17. Booking / Calendar system
+-- =============================================================
+
+-- Time slots (admin creates these)
+create table if not exists public.time_slots (
+  id         uuid        primary key default gen_random_uuid(),
+  start_time timestamptz not null,
+  is_active  boolean     not null default true,
+  created_at timestamptz not null default now()
+);
+create index if not exists idx_time_slots_start on public.time_slots(start_time);
+
+-- Bookings (one per user; status: confirmed | cancelled | completed)
+create table if not exists public.bookings (
+  id         uuid        primary key default gen_random_uuid(),
+  user_id    uuid        not null references auth.users(id) on delete cascade,
+  slot_id    uuid        not null references public.time_slots(id) on delete cascade,
+  status     text        not null default 'confirmed'
+             check (status in ('confirmed', 'cancelled', 'completed')),
+  notes      text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists idx_bookings_user on public.bookings(user_id);
+create index if not exists idx_bookings_slot on public.bookings(slot_id);
+
+-- Prevent two active bookings for the same slot
+create unique index if not exists bookings_slot_unique_active
+  on public.bookings(slot_id) where status <> 'cancelled';
+
+-- Track whether a user has consumed their one allowed booking session
+alter table public.profiles add column if not exists booking_used boolean not null default false;
+
+-- Security-definer RPC: any authenticated user can check which slots are taken
+-- without learning who made the booking.
+create or replace function public.get_booked_slot_ids()
+returns table(slot_id uuid)
+language sql stable security definer set search_path = public as $$
+  select slot_id from public.bookings where status in ('confirmed', 'completed');
+$$;
+
+-- RLS
+alter table public.time_slots enable row level security;
+alter table public.bookings   enable row level security;
+
+-- time_slots: authenticated read; admin full write
+drop policy if exists "time_slots_read"  on public.time_slots;
+drop policy if exists "time_slots_admin" on public.time_slots;
+create policy "time_slots_read"  on public.time_slots for select using (auth.role() = 'authenticated');
+create policy "time_slots_admin" on public.time_slots for all    using (public.is_admin()) with check (public.is_admin());
+
+-- bookings: own rows + admin
+drop policy if exists "bookings_own_or_admin" on public.bookings;
+create policy "bookings_own_or_admin" on public.bookings
+  for all
+  using      (user_id = auth.uid() or public.is_admin())
+  with check (user_id = auth.uid() or public.is_admin());
+
+
+-- =============================================================
+-- 18. Backfill — create profile rows for any auth users who don't have one.
+--     Idempotent: ON CONFLICT DO NOTHING.
+--     Fixes users created when the handle_new_user trigger was broken.
+-- =============================================================
+insert into public.profiles (id, email, name, role, status)
+select
+  u.id,
+  u.email,
+  coalesce(u.raw_user_meta_data->>'name', ''),
+  case
+    when (u.raw_user_meta_data->>'role') = 'admin' then 'admin'::user_role
+    else 'medecin'::user_role
+  end,
+  case
+    when (u.raw_user_meta_data->>'role') = 'admin' then 'active'
+    else 'pending'
+  end
+from auth.users u
+left join public.profiles p on p.id = u.id
+where p.id is null
+on conflict (id) do nothing;
+
+
+-- =============================================================
 -- Done.
 -- Tables  : profiles · topics · lessons · questions ·
---           progress · user_progress · badges · user_badges
+--           progress · user_progress · badges · user_badges ·
+--           time_slots · bookings
 -- Roles   : medecin (pending by default) · admin (active by default)
 -- Expiry  : NONE — only admin can activate / deactivate accounts
 -- =============================================================

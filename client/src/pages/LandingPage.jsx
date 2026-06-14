@@ -29,10 +29,10 @@ export default function LandingPage() {
             </div>
             <div className="leading-tight">
               <div className="text-xl font-extrabold tracking-tight" style={{ color: '#1E3A5F' }}>
-                Ivitaminacademy
+                iVitaminacademy
               </div>
               <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#64748B' }}>
-                Guide pratique médecin
+                Guide pratique POUR professionnels de santé
               </div>
             </div>
           </div>
@@ -66,8 +66,8 @@ export default function LandingPage() {
               <span style={{ color: '#1D4ED8' }}>Guide pratique médecin</span>
             </h1>
             <p className="mx-auto mt-5 max-w-lg text-base font-medium leading-7 text-slate-500">
-              Accédez aux protocoles de mise en route, formez-vous sur les 13 produits,
-              et obtenez votre certificat de qualification.
+             Accédez aux protocoles de pratique, formez-vous aux produits les plus demandés et les plus utilisés,
+              validez vos connaissances et obtenez un certificat de qualification.
             </p>
           </section>
 
@@ -160,16 +160,16 @@ export default function LandingPage() {
               
               <div className="space-y-4 text-sm leading-relaxed text-slate-600 font-medium">
                 <p>
-                  <strong>Ivitaminacademy</strong> est une plateforme de formation en ligne destinée aux médecins souhaitant maîtriser les protocoles de perfusions de vitamines par voie intraveineuse (IV).
+                  <strong>iVitaminacademy</strong> est une plateforme de formation en ligne destinée aux professionnels de santé souhaitant maîtriser les protocoles d'injections de vitamines.
                 </p>
                 <p>
-                  La formation couvre <strong>l'ensemble des 13 produits</strong> utilisés en cabinet IV, organisés en <strong>4 modules</strong> : des fondamentaux de la perfusion jusqu'à la gestion des urgences et complications.
+                  La formation couvre les produits les plus utilisés et les plus demandés en pratique clinique, organisés en 4 modules : des fondamentaux de l'injection jusqu'à la gestion des urgences et des complications.
                 </p>
                 <p>
-                  Chaque leçon comprend un <strong>contenu pédagogique détaillé</strong> suivi d'un <strong>QCM de validation</strong>. Le médecin doit d'abord lire la leçon, puis passer le quiz pour valider ses connaissances.
+                 Chaque module comprend un contenu pédagogique associé à une mise en pratique des notions abordées. À l'issue de chaque leçon, un quiz sous forme de QCM permet de valider immédiatement les connaissances acquises.
                 </p>
                 <p>
-                  En fin de parcours, un <strong>certificat de mise en route</strong> est délivré, attestant de la maîtrise des protocoles de perfusion de vitamines IV.
+                 À la fin du parcours, une attestation de formation en perfusion d’injections de vitamines  sera délivrée au participant. Cette attestation certifie que l'ensemble des modules et évaluations du programme a été suivi et validé
                 </p>
               </div>
 
@@ -234,8 +234,8 @@ export default function LandingPage() {
               <span className="text-sm font-extrabold" style={{ color: '#1E3A5F' }}>Ivitaminacademy</span>
             </div>
             <p className="text-xs font-semibold text-slate-400 max-w-md mx-auto leading-relaxed">
-              Guide pratique de perfusions de vitamines IV — Formation destinée aux médecins.
-              Ce document est un guide basé sur l'usage courant. Les posologies doivent toujours être adaptées au patient et au contexte clinique.
+              Guide pratique d’injections de vitamines — Formation destinée aux professionnels de santé. Ce document est un guide basé sur l'usage courant. 
+              Les posologies doivent toujours être adaptées au patient et au contexte clinique.
             </p>
             <p className="text-[10px] text-slate-300">
               © 2026 Ivitaminacademy. Tous droits réservés.

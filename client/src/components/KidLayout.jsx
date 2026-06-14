@@ -3,10 +3,10 @@ import { useAuth } from '../context/AuthContext'
 
 const navLinks = [
   { label: 'Tableau de bord', icon: '🏠', path: '/medecin/dashboard',    activePath: '/medecin/dashboard'    },
-  { label: 'Protocoles',      icon: '💉', path: '/medecin/lessons',      activePath: '/medecin/lessons'      },
   { label: 'Leçons',          icon: '📖', path: '/medecin/lessons',      activePath: '/medecin/lesson'       },
   { label: 'Progression',     icon: '📊', path: '/medecin/progress',     activePath: '/medecin/progress'     },
   { label: 'Certificat',      icon: '🎓', path: '/medecin/certificate',  activePath: '/medecin/certificate'  },
+  { label: 'Calendrier',      icon: '📅', path: '/medecin/calendar',     activePath: '/medecin/calendar'     },
   { label: 'Profil',          icon: '👤', path: '/medecin/profile',      activePath: '/medecin/profile'      },
 ]
 
@@ -31,7 +31,7 @@ export default function KidLayout({ children }) {
         style={{ backgroundColor: '#1E3A5F', boxShadow: '0 2px 12px rgba(30,58,95,0.35)' }}
       >
         <span className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
-          Ivitaminacademy
+          iVitaminacademy
           <span className="hidden sm:inline-block text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full ml-2 align-middle">
             Médecin
           </span>
