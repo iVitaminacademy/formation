@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 
 const trustItems = [
-  { icon: '💉', label: '13 protocoles de perfusion IV',  color: '#1E3A5F' },
+  { icon: '💉', label: ' Plusieurs protocoles de perfusion IV',  color: '#1E3A5F' },
   { icon: '📋', label: '4 modules de formation',         color: '#1D4ED8' },
   { icon: '🛡️', label: 'Sécurité & gestion des urgences', color: '#065F46' },
   { icon: '🎓', label: 'Certificat de  qualification',     color: '#991B1B' },
