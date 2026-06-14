@@ -361,23 +361,44 @@ export default function CertificatePage() {
 
           {/* QR code verification */}
           {profile?.certificate_code && (
-            <div className="mt-7 pt-5 border-t flex flex-col items-center gap-2" style={{ borderColor: '#BFDBFE' }}>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-gray-400 mb-1">
+            <div className="mt-7 pt-6 border-t flex flex-col items-center gap-3" style={{ borderColor: '#BFDBFE' }}>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-gray-400">
                 Vérification d'authenticité
               </p>
-              {/*  <div className="p-3 bg-white rounded-xl border-2" style={{ borderColor: '#BFDBFE' }}>
-                <QRCode
-                  value={`${window.location.origin}/certificate/verify/${profile.certificate_code}`}
-                  size={100}
-                  level="M"
-                  style={{ display: 'block' }}
-                />
+
+              {/* QR card */}
+              <div
+                className="flex flex-col items-center gap-3 px-6 py-5 rounded-2xl"
+                style={{ backgroundColor: '#F8FAFF', border: '2px solid #BFDBFE' }}
+              >
+                {/* White background behind QR so it scans correctly when printed */}
+                <div className="p-3 bg-white rounded-xl shadow-sm">
+                  <QRCode
+                    value={`${window.location.origin}/certificate/verify/${profile.certificate_code}`}
+                    size={140}
+                    level="M"
+                    style={{ display: 'block' }}
+                  />
+                </div>
+
+                <p className="text-[11px] font-semibold text-center" style={{ color: '#64748B' }}>
+                  Scannez avec votre téléphone pour vérifier<br />l'authenticité de ce certificat
+                </p>
+
+                {/* Short ID */}
+                <div
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+                  style={{ backgroundColor: '#EFF6FF' }}
+                >
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest" style={{ color: '#1E3A5F' }}>ID</span>
+                  <code className="text-[11px] font-mono" style={{ color: '#1D4ED8' }}>
+                   {profile.certificate_code}
+                    {/* {profile.certificate_code.slice(0, 8).toUpperCase()}
+                    <span style={{ color: '#93C5FD' }}>…</span>
+                    {profile.certificate_code.slice(-8).toUpperCase()}*/}
+                  </code>
+                </div>
               </div>
-              <p className="text-[10px] text-gray-400 font-semibold">Scannez pour vérifier l'authenticité du certificat</p>*/}
-              <p className="text-[9px] font-mono" style={{ color: '#94A3B8' }}>
-               {/*  ID : {profile.certificate_code.slice(0, 8).toUpperCase()}…{profile.certificate_code.slice(-4).toUpperCase()}*/}
-                ID : {profile.certificate_code}
-              </p>
             </div>
           )}
 
