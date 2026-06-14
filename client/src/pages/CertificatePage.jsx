@@ -363,17 +363,18 @@ export default function CertificatePage() {
               <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-gray-400 mb-1">
                 Vérification d'authenticité
               </p>
-              <div className="p-3 bg-white rounded-xl border-2" style={{ borderColor: '#BFDBFE' }}>
-             {/*     <QRCode
+              {/*  <div className="p-3 bg-white rounded-xl border-2" style={{ borderColor: '#BFDBFE' }}>
+                <QRCode
                   value={`https://protein-project-ychmael.vercel.app/certificate/verify/${profile.certificate_code}`}
                   size={100}
                   level="M"
                   style={{ display: 'block' }}
-                />*/}
+                />
               </div>
-              <p className="text-[10px] text-gray-400 font-semibold">Scannez pour vérifier l'authenticité du certificat</p>
+              <p className="text-[10px] text-gray-400 font-semibold">Scannez pour vérifier l'authenticité du certificat</p>*/}
               <p className="text-[9px] font-mono" style={{ color: '#94A3B8' }}>
-                ID : {profile.certificate_code.slice(0, 8).toUpperCase()}…{profile.certificate_code.slice(-4).toUpperCase()}
+               {/*  ID : {profile.certificate_code.slice(0, 8).toUpperCase()}…{profile.certificate_code.slice(-4).toUpperCase()}*/}
+                ID : {profile.certificate_code}
               </p>
             </div>
           )}
