@@ -297,7 +297,7 @@ export default function SignInPage() {
             <div className="h-11 w-11 rounded-xl flex items-center justify-center text-2xl" style={{ backgroundColor: '#1E3A5F' }}>💉</div>
             <div className="leading-tight text-left">
               <div className="text-xl font-extrabold tracking-tight" style={{ color: '#1E3A5F' }}>iVitaminacademy</div>
-              <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#64748B' }}>Guide pratique pour rofessionnels de santé</div>
+              <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#64748B' }}>Guide pratique pour professionnels de santé</div>
             </div>
           </div>
           <h1 className="mt-5 text-2xl font-extrabold" style={{ color: '#1A1A2E' }}>Bienvenue 👋</h1>
@@ -345,7 +345,7 @@ export default function SignInPage() {
         </p>
         <div className="mt-5 flex items-center justify-center gap-4 rounded-2xl px-4 py-3" style={{ backgroundColor: '#EFF6FF' }}>
           <span className="text-xs font-medium" style={{ color: '#6B7280' }}>Connexion :</span>
-          <span className="flex items-center gap-1.5 text-xs font-bold" style={{ color: '#1E3A5F' }}><span>👨‍⚕️</span> Médecin</span>
+          <span className="flex items-center gap-1.5 text-xs font-bold" style={{ color: '#1E3A5F' }}><span>👨‍⚕️</span> Professionnels de santé </span>
         </div>
       </div>
 
