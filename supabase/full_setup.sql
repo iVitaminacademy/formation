@@ -9,7 +9,12 @@
 -- 0. CLEANUP — remove every legacy object from previous versions.
 --    Prevents old expiry triggers from ever running again.
 -- =============================================================
-drop trigger  if exists trg_prevent_status_escalation on public.profiles;
+-- DROP TRIGGER on a table that may not exist yet (fresh database) would fail
+-- even with IF EXISTS, so wrap it in an exception handler.
+do $$ begin
+  drop trigger if exists trg_prevent_status_escalation on public.profiles;
+exception when undefined_table then null; end $$;
+
 drop function if exists public.prevent_status_escalation()   cascade;
 drop function if exists public.validate_medecin(uuid)        cascade;
 drop function if exists public.renew_medecin_access(uuid)    cascade;

@@ -2,6 +2,16 @@
 
 ---
 
+## Session 5 — 14 Juin 2026 — Hotfix : full_setup.sql incompatible avec une nouvelle base
+
+### `supabase/full_setup.sql` — Section 0
+
+**Cause :** `DROP TRIGGER IF EXISTS trg_prevent_status_escalation ON public.profiles` échoue avec `42P01: relation "public.profiles" does not exist` sur une base vierge. `IF EXISTS` sur `DROP TRIGGER` supprime seulement l'erreur "trigger introuvable", pas l'erreur "table introuvable".
+
+**Fix :** Le drop du trigger est maintenant encapsulé dans un bloc `DO $$ BEGIN ... EXCEPTION WHEN undefined_table THEN NULL END $$` — transparent sur une base existante, silencieux sur une base vierge.
+
+---
+
 ## Session 5 — 14 Juin 2026 — QR Code de vérification des certificats
 
 ### Fonctionnalité
