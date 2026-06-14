@@ -18,6 +18,7 @@ import KidQuiz from './pages/KidQuiz'
 import KidProgress from './pages/KidProgress'
 import KidProfile from './pages/KidProfile'
 import CertificatePage from './pages/CertificatePage'
+import CertificateVerifyPage from './pages/CertificateVerifyPage'
 import CalendarPage from './pages/CalendarPage'
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/how" element={<HowItWorks />} />
         <Route path="/privacy" element={<PrivacyTerms />} />
+        <Route path="/certificate/verify/:code" element={<CertificateVerifyPage />} />
 
         {/* Admin */}
         <Route path="/admin/dashboard" element={<ProtectedRoute role="admin"><AdminDashboardPage /></ProtectedRoute>} />

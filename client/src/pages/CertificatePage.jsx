@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import QRCode from 'react-qr-code'
 import KidLayout from '../components/KidLayout'
 import { useAuth } from '../context/AuthContext'
 import { getProgressMap } from '../services/progress'
 import { curriculum, getAllLessons } from '../data/curriculum'
+import { saveCertificate } from '../services/certificates'
 
 const PASS_SCORE  = 80
 const ALL_LESSONS = getAllLessons(1)
@@ -59,6 +61,7 @@ export default function CertificatePage() {
   const [progressMap, setProgressMap] = useState({})
   const [loading,     setLoading]     = useState(true)
   const [certDate,    setCertDate]    = useState(null)
+  const [certSaved,   setCertSaved]   = useState(false)
 
   useEffect(() => {
     if (!user?.id) { setLoading(false); return }
@@ -90,6 +93,15 @@ export default function CertificatePage() {
   const modules       = computeModuleProgress(progressMap, currentCycle)
   const doneCount     = modules.filter(m => m.complete).length
   const name          = profile?.name || 'Médecin'
+
+  // Save certificate once the first time the user qualifies.
+  // The saveCertificate() call is idempotent (filters on certificate_issued_at IS NULL).
+  useEffect(() => {
+    if (!user?.id || !hasPassed || certSaved || profile?.certificate_issued_at) return
+    saveCertificate(user.id, globalPct)
+      .then(() => setCertSaved(true))
+      .catch(err => console.error('[Certificate] save error', err))
+  }, [user?.id, hasPassed, certSaved, profile?.certificate_issued_at, globalPct])
 
   // ── Loading ──────────────────────────────────────────────────────────────────
   if (loading) {
@@ -247,28 +259,41 @@ export default function CertificatePage() {
   // ── Passed ≥ 80% — show the certificate ──────────────────────────────────────
   return (
     <KidLayout>
-      <div className="no-print flex items-center justify-between mb-6">
+      <div className="no-print flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900">🎓 Votre certificat</h1>
           <p className="text-sm text-gray-500 font-medium mt-1">
             Score global : {totalCorrect}/{totalQuestions} ({globalPct}%) — Félicitations !
           </p>
         </div>
-        <button
-          onClick={() => window.print()}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-bold text-sm transition-all"
-          style={{ backgroundColor: '#1E3A5F' }}
-          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#162C48')}
-          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1E3A5F')}
-        >
-          🖨 Imprimer / Télécharger
-        </button>
+        <div className="flex flex-wrap gap-2">
+          {profile?.certificate_code && (
+            <a
+              href={`/certificate/verify/${profile.certificate_code}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm border-2 transition-all"
+              style={{ borderColor: '#1E3A5F', color: '#1E3A5F', backgroundColor: 'transparent' }}
+            >
+              🔗 Voir la page de vérification
+            </a>
+          )}
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-bold text-sm transition-all"
+            style={{ backgroundColor: '#1E3A5F' }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#162C48')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1E3A5F')}
+          >
+            🖨 Imprimer / Télécharger
+          </button>
+        </div>
       </div>
 
       {/* Certificate card */}
       <div
         ref={printRef}
-        className="bg-white rounded-3xl mx-auto max-w-2xl overflow-hidden"
+        className="print-area bg-white rounded-3xl mx-auto max-w-2xl overflow-hidden"
         style={{ boxShadow: '0 8px 40px rgba(30,58,95,0.18)', border: '2px solid #BFDBFE' }}
       >
         {/* Header band */}
@@ -276,8 +301,8 @@ export default function CertificatePage() {
           <div className="flex items-center gap-3 mb-1">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-2xl bg-white/20">💉</div>
             <div>
-              <div className="text-xl font-extrabold tracking-tight">Ivitaminacademy</div>
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-blue-200">Guide pratique médecin</div>
+              <div className="text-xl font-extrabold tracking-tight"> iVitaminacademy</div>
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-blue-200">Guide pratique pour professionnels de santé</div>
             </div>
           </div>
         </div>
@@ -286,10 +311,9 @@ export default function CertificatePage() {
         <div className="px-8 py-8 text-center">
           <div className="text-5xl mb-4">🏆</div>
           <p className="text-xs font-extrabold uppercase tracking-[0.25em] text-gray-400 mb-3">
-            CERTIFICAT DE RÉUSSITE
+            CERTIFICAT DE RÉUSSITE décerné à
           </p>
-          <p className="text-lg font-semibold text-gray-500 mb-2">Ce certificat est décerné à</p>
-          <h2
+           <h2
             className="text-4xl font-extrabold mb-2 py-2 border-b-2 border-dashed inline-block px-6"
             style={{ color: '#1E3A5F', borderColor: '#BFDBFE' }}
           >
@@ -333,8 +357,29 @@ export default function CertificatePage() {
             ))}
           </div>
 
+          {/* QR code verification */}
+          {profile?.certificate_code && (
+            <div className="mt-7 pt-5 border-t flex flex-col items-center gap-2" style={{ borderColor: '#BFDBFE' }}>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-gray-400 mb-1">
+                Vérification d'authenticité
+              </p>
+              <div className="p-3 bg-white rounded-xl border-2" style={{ borderColor: '#BFDBFE' }}>
+                <QRCode
+                  value={`https://protein-project-ychmael.vercel.app/certificate/verify/${profile.certificate_code}`}
+                  size={100}
+                  level="M"
+                  style={{ display: 'block' }}
+                />
+              </div>
+              <p className="text-[10px] text-gray-400 font-semibold">Scannez pour vérifier l'authenticité du certificat</p>
+              <p className="text-[9px] font-mono" style={{ color: '#94A3B8' }}>
+                ID : {profile.certificate_code.slice(0, 8).toUpperCase()}…{profile.certificate_code.slice(-4).toUpperCase()}
+              </p>
+            </div>
+          )}
+
           {/* Signature lines */}
-          <div className="mt-8 flex justify-center gap-16">
+          <div className="mt-6 flex justify-center gap-16">
             <div className="text-center">
               <div className="w-32 border-b-2 border-gray-300 mb-1" />
               <div className="text-xs text-gray-400 font-semibold">Cette attestation certifie que le participant a complété avec succès l'ensemble des modules pédagogiques et obtenu la note minimale requise pour la validation de la formation.</div>
@@ -345,14 +390,35 @@ export default function CertificatePage() {
         {/* Footer band */}
         <div className="px-8 py-4 border-t text-center" style={{ backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }}>
           <p className="text-xs font-semibold" style={{ color: '#1E3A5F' }}>
-            iVitaminacademy · Injections de vitamines  · Guide pratique pour les professionnels de santé · 2026
+             iVitaminacademy · Injections de vitamines  · Guide pratique pour les professionnels de santé · 2026
           </p>
         </div>
       </div>
 
       <style>{`
         @media print {
-          .no-print { display: none !important; }
+          /* Hide absolutely everything on the page */
+          body * { visibility: hidden !important; }
+
+          /* Then reveal only the certificate card and everything inside it */
+          .print-area,
+          .print-area * { visibility: visible !important; }
+
+          /* Pin the card to the top-left so it fills the printed page cleanly */
+          .print-area {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+          }
+
+          /* Ensure page background is white */
+          @page { margin: 0; }
           body { background: white !important; }
         }
       `}</style>

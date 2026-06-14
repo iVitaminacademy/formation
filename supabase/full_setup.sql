@@ -489,6 +489,40 @@ on conflict (id) do nothing;
 
 
 -- =============================================================
+-- 19. Certificate codes — unique QR-verifiable certificates
+--     certificate_code  : permanent UUID per user, auto-generated at profile
+--                         creation. Encoded in the QR code on the certificate.
+--     certificate_issued_at / certificate_score_pct : set once when the user
+--                         first earns the certificate (≥80 %).
+-- =============================================================
+alter table public.profiles
+  add column if not exists certificate_code        uuid not null unique default gen_random_uuid(),
+  add column if not exists certificate_issued_at   timestamptz,
+  add column if not exists certificate_score_pct   int;
+
+-- Public RPC: anyone (anon) can verify a certificate code.
+-- Returns the certificate JSON if valid, NULL if the code is unknown or
+-- the certificate has not been earned yet.
+create or replace function public.verify_certificate(p_code uuid)
+returns json language sql stable security definer set search_path = public as $$
+  select json_build_object(
+    'valid',     true,
+    'name',      p.name,
+    'score_pct', p.certificate_score_pct,
+    'issued_at', p.certificate_issued_at,
+    'formation', 'Injections de vitamines — Guide pratique pour les professionnels de santé'
+  )
+  from public.profiles p
+  where p.certificate_code = p_code
+    and p.certificate_issued_at is not null
+  limit 1;
+$$;
+
+-- Grant to anon so QR-code scanners (no login) can verify
+grant execute on function public.verify_certificate(uuid) to anon, authenticated;
+
+
+-- =============================================================
 -- Done.
 -- Tables  : profiles · topics · lessons · questions ·
 --           progress · user_progress · badges · user_badges ·

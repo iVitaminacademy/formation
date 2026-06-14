@@ -1,4 +1,37 @@
 # Ivitaminacademy — Journal des transformations
+
+---
+
+## Session 5 — 14 Juin 2026 — QR Code de vérification des certificats
+
+### Fonctionnalité
+Chaque médecin ayant obtenu son certificat (score ≥ 80 %) dispose désormais d'un QR code unique affiché sur le certificat. Quand quelqu'un scanne le QR, il accède à une page publique de vérification (sans connexion requise) affichant le nom, la formation, le score et la date d'émission.
+
+### SQL — `supabase/full_setup.sql` — Section 19
+
+| Changement | Détail |
+|---|---|
+| `profiles.certificate_code uuid NOT NULL UNIQUE DEFAULT gen_random_uuid()` | UUID permanent, auto-généré à la création du profil, encodé dans le QR |
+| `profiles.certificate_issued_at timestamptz` | Défini une seule fois lors de la première obtention du certificat |
+| `profiles.certificate_score_pct int` | Score global (%) au moment de la délivrance |
+| RPC `verify_certificate(p_code uuid)` | Retourne `{ valid, name, score_pct, issued_at, formation }` — `security definer`, accessible par `anon` sans authentification |
+
+### Nouveaux fichiers
+
+| Fichier | Description |
+|---|---|
+| `client/src/services/certificates.js` | `saveCertificate(userId, scorePct)` — idempotent (filtre `IS NULL`) ; `verifyCertificate(code)` — appelle le RPC anon |
+| `client/src/pages/CertificateVerifyPage.jsx` | Page publique `/certificate/verify/:code` — affiche ✅ Certificat authentique ou ❌ Invalide, sans connexion requise |
+
+### Fichiers modifiés
+
+| Fichier | Changement |
+|---|---|
+| `client/src/pages/CertificatePage.jsx` | Import `react-qr-code` + `saveCertificate` ; `useEffect` qui persiste le certificat en DB (une seule fois) ; QR code affiché dans la carte certificat avec section "Vérification d'authenticité" |
+| `client/src/App.jsx` | Import `CertificateVerifyPage` ; route publique `<Route path="/certificate/verify/:code" />` |
+| `client/package.json` | Dépendance `react-qr-code` installée |
+
+
 **Transformation de Frazzl.kid (math) → Ivitaminacademy (formation médicale)**
 Développeur : Lahbabta Youssef
 

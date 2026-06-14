@@ -74,6 +74,7 @@ Toute modification doit être faite dans `ProteinProjectYchmael/` puis synchroni
 | `/kid/profile` | medecin | KidProfile |
 | `/kid/certificate` | medecin | CertificatePage |
 | `/medecin/calendar` | medecin | CalendarPage |
+| `/certificate/verify/:code` | public (anon) | CertificateVerifyPage |
 
 ---
 
@@ -136,7 +137,7 @@ Structure d'un objet topic :
 
 | Table | Colonnes clés | Notes |
 |---|---|---|
-| `profiles` | `id, name, email, role, avatar, streak_days, banned_from_quiz, quiz_cycle, booking_used` | `banned_from_quiz bool default false`, `quiz_cycle smallint default 1`, `booking_used bool default false` |
+| `profiles` | `id, name, email, role, avatar, streak_days, banned_from_quiz, quiz_cycle, booking_used, certificate_code, certificate_issued_at, certificate_score_pct` | `banned_from_quiz bool default false`, `quiz_cycle smallint default 1`, `booking_used bool default false`, `certificate_code uuid unique default gen_random_uuid()` |
 | `topics` | `id, name, icon, sort_order` | |
 | `lessons` | `id, topic_id, title, sort_order` | |
 | `questions` | `id, lesson_id, question_text, options, correct_answer, hint, explanation` | |
@@ -158,6 +159,7 @@ Structure d'un objet topic :
 | `family.js` | `getChildren, linkChildByCode, linkChild, unlinkChild` | Requête `supervisor_medecin` ; appelle `link_medecin_by_code` |
 | `admin.js` | `importContent, getAdminDashboardData, activateMedecin, setMedecinStatus, updateProfileByAdmin, unbanMedecinFromQuiz, upsertProgressByAdmin, adminGetAllSlots, adminCreateSlot, adminDeactivateSlot, adminGetAllBookings, adminCreateBooking, adminCompleteBooking, adminCancelBooking, adminGrantBookingException` | Inclut les fonctions de gestion des réservations |
 | `bookings.js` | `getActiveSlots, getBookedSlotIds, getMyBooking, createBooking, cancelBooking, rescheduleBooking` | Service côté médecin ; `getBookedSlotIds` appelle la RPC `get_booked_slot_ids()` |
+| `certificates.js` | `saveCertificate(userId, scorePct)`, `verifyCertificate(code)` | `saveCertificate` est idempotent (filtre `IS NULL`) ; `verifyCertificate` appelle la RPC `verify_certificate` accessible en `anon` |
 
 ---
 

@@ -162,6 +162,7 @@ export default function AdminDashboardPage() {
   const [bookings, setBookings] = useState([])
   const [newSlotTime, setNewSlotTime] = useState('')
   const [bookingActionLoading, setBookingActionLoading] = useState(false)
+  const [certSearch, setCertSearch] = useState('')
 
   const lessonIndex = useMemo(() => buildLessonIndex(), [])
 
@@ -677,6 +678,134 @@ export default function AdminDashboardPage() {
               </div>
             </SectionCard>
 
+            {/* Certificats émis */}
+            {(() => {
+              const certified = profiles.filter(p => p.role === 'medecin' && p.certificate_issued_at)
+              const q = certSearch.trim().toLowerCase()
+              const filtered = q
+                ? certified.filter(u =>
+                    u.name?.toLowerCase().includes(q) ||
+                    u.email?.toLowerCase().includes(q) ||
+                    u.certificate_code?.toLowerCase().includes(q)
+                  )
+                : certified
+              // If the input is exactly a UUID, allow direct verify even if not in list
+              const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+              const isFullUuid = uuidRegex.test(certSearch.trim())
+              const directVerifyUrl = isFullUuid
+                ? `https://protein-project-ychmael.vercel.app/certificate/verify/${certSearch.trim()}`
+                : null
+
+              return (
+                <SectionCard title={`🎓 Certificats émis (${certified.length})`} theme={theme}>
+
+                  {/* Search bar */}
+                  <div className="mb-4 flex flex-wrap items-center gap-3">
+                    <div className="flex-1 min-w-[240px] relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: theme.subtext }}>🔍</span>
+                      <input
+                        value={certSearch}
+                        onChange={e => setCertSearch(e.target.value)}
+                        placeholder="Rechercher par nom, email ou code UUID…"
+                        className="w-full rounded-xl border pl-9 pr-4 py-2.5 text-sm outline-none"
+                        style={{ borderColor: theme.border, backgroundColor: theme.surface, color: theme.text }}
+                      />
+                    </div>
+                    {directVerifyUrl && (
+                      <a
+                        href={directVerifyUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white shrink-0"
+                        style={{ backgroundColor: '#065F46' }}
+                      >
+                        ✓ Vérifier ce code
+                      </a>
+                    )}
+                    {certSearch && !isFullUuid && (
+                      <span className="text-xs font-semibold" style={{ color: theme.subtext }}>
+                        {filtered.length} résultat{filtered.length !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+
+                  {certified.length === 0 ? (
+                    <p className="text-sm py-2" style={{ color: theme.subtext }}>
+                      Aucun médecin n'a encore obtenu de certificat.
+                    </p>
+                  ) : filtered.length === 0 ? (
+                    <p className="text-sm py-2" style={{ color: theme.subtext }}>
+                      Aucun certificat ne correspond à cette recherche.
+                    </p>
+                  ) : (
+                    <div className="overflow-x-auto rounded-2xl border" style={{ borderColor: theme.border }}>
+                      <table className="min-w-[640px] w-full text-left text-sm">
+                        <thead style={{ backgroundColor: theme.surfaceSoft }}>
+                          <tr>
+                            <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Médecin</th>
+                            <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Score</th>
+                            <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Délivré le</th>
+                            <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Code unique</th>
+                            <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Vérifier</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filtered.map(u => {
+                            const verifyUrl = `https://protein-project-ychmael.vercel.app/certificate/verify/${u.certificate_code}`
+                            const shortCode = u.certificate_code
+                              ? `${u.certificate_code.slice(0, 8).toUpperCase()}…${u.certificate_code.slice(-4).toUpperCase()}`
+                              : '—'
+                            return (
+                              <tr key={u.id} className="border-t" style={{ borderColor: theme.border }}>
+                                <td className="px-4 py-3">
+                                  <div className="font-bold truncate max-w-[160px]">{u.name || '—'}</div>
+                                  <div className="text-xs truncate max-w-[160px]" style={{ color: theme.subtext }}>{u.email || '—'}</div>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span className="rounded-full px-2 py-0.5 text-xs font-extrabold" style={{ backgroundColor: '#ECFDF5', color: '#065F46' }}>
+                                    🏆 {u.certificate_score_pct ?? '—'}%
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-xs" style={{ color: theme.subtext }}>
+                                  {formatDate(u.certificate_issued_at)}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="flex items-center gap-2">
+                                    <code className="text-[11px] font-mono px-2 py-0.5 rounded" style={{ backgroundColor: theme.surfaceSoft, color: theme.subtext }}>
+                                      {shortCode}
+                                    </code>
+                                    <button
+                                      onClick={() => { navigator.clipboard.writeText(u.certificate_code); setCertSearch(u.certificate_code) }}
+                                      className="text-xs px-2 py-0.5 rounded border font-bold"
+                                      style={{ borderColor: theme.border, color: theme.subtext, backgroundColor: theme.surface }}
+                                      title="Copier & coller dans la recherche"
+                                    >
+                                      📋
+                                    </button>
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <a
+                                    href={verifyUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-white"
+                                    style={{ backgroundColor: '#1E3A5F' }}
+                                  >
+                                    🔗 Ouvrir
+                                  </a>
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </SectionCard>
+              )
+            })()}
+
             {/* Liste des utilisateurs */}
             <SectionCard
               title={`Utilisateurs (${filteredUsers.length})`}
@@ -747,6 +876,11 @@ export default function AdminDashboardPage() {
                               {u.booking_used && (
                                 <span className="rounded-full px-2 py-0.5 text-xs font-bold w-fit" style={{ backgroundColor: '#F5F3FF', color: '#7C3AED' }}>
                                   📅 Session utilisée
+                                </span>
+                              )}
+                              {u.certificate_issued_at && (
+                                <span className="rounded-full px-2 py-0.5 text-xs font-bold w-fit" style={{ backgroundColor: '#FEF9C3', color: '#854D0E' }}>
+                                  🏆 Certifié {u.certificate_score_pct}%
                                 </span>
                               )}
                             </div>

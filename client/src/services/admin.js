@@ -82,7 +82,7 @@ export async function getAdminDashboardData() {
   ] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, name, email, role, avatar, streak_days, status, banned_from_quiz, booking_used, created_at, updated_at')
+      .select('id, name, email, role, avatar, streak_days, status, banned_from_quiz, booking_used, certificate_code, certificate_issued_at, certificate_score_pct, created_at, updated_at')
       .order('created_at', { ascending: false }),
     supabase
       .from('user_progress')
