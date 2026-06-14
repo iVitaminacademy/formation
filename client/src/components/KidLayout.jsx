@@ -33,7 +33,7 @@ export default function KidLayout({ children }) {
         <span className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
           iVitaminacademy
           <span className="hidden sm:inline-block text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full ml-2 align-middle">
-            Médecin
+            Professionnels de santé
           </span>
         </span>
 

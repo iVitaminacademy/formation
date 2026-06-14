@@ -80,7 +80,7 @@ export default function FAQ() {
       extra: "Cet entretien personnalisé constitue une opportunité d'échanger de vive voix avec un professionnel expérimenté afin de consolider vos acquis."
     },
     {
-      q: "Quand puis-je bénéficier de cet entretien avec le médecin ?",
+      q: "Quand puis-je bénéficier de cet entretien avec le professionnels de santé ?",
       a: "L'entretien peut être organisé pendant votre période d'accès à la plateforme ou après avoir terminé la formation, selon vos besoins et les disponibilités du médecin collaborateur."
     },
     {
@@ -139,13 +139,13 @@ export default function FAQ() {
       q: "Pourquoi suivre cette formation ?",
       a: "Cette formation vous permet :",
       list: [
-        "✅ D'acquérir des bases solides en vitaminothérapie IV.",
-        "✅ De découvrir les protocoles les plus utilisés.",
-        "✅ D'apprendre les bonnes pratiques de préparation et d'administration.",
-        "✅ De renforcer la sécurité de vos prises en charge.",
-        "✅ De valider vos connaissances grâce aux quiz.",
-        "✅ D'échanger directement avec un médecin collaborateur pendant une heure.",
-        "✅ D'obtenir une attestation de complétude de formation théorique en perfusion de vitamines IV."
+        " D'acquérir des bases solides en vitaminothérapie IV.",
+        " De découvrir les protocoles les plus utilisés.",
+        " D'apprendre les bonnes pratiques de préparation et d'administration.",
+        " De renforcer la sécurité de vos prises en charge.",
+        " De valider vos connaissances grâce aux quiz.",
+        " D'échanger directement avec un médecin collaborateur pendant une heure.",
+        " D'obtenir une attestation de complétude de formation théorique en perfusion de vitamines IV."
       ]
     }
   ];

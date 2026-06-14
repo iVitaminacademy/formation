@@ -4,7 +4,7 @@ const trustItems = [
   { icon: '💉', label: '13 protocoles de perfusion IV',  color: '#1E3A5F' },
   { icon: '📋', label: '4 modules de formation',         color: '#1D4ED8' },
   { icon: '🛡️', label: 'Sécurité & gestion des urgences', color: '#065F46' },
-  { icon: '🎓', label: 'Certificat de mise en route',     color: '#991B1B' },
+  { icon: '🎓', label: 'Certificat de  qualification',     color: '#991B1B' },
 ]
 
 export default function LandingPage() {
@@ -60,10 +60,10 @@ export default function LandingPage() {
          
 
             <h1 className="text-4xl font-extrabold leading-tight text-gray-900 sm:text-5xl">
-              Perfusions de{' '}
-              <span style={{ color: '#1E3A5F' }}>vitamines IV</span>
+              Injection de{' '}
+              <span style={{ color: '#1E3A5F' }}>vitamines </span>
               <br />
-              <span style={{ color: '#1D4ED8' }}>Guide pratique médecin</span>
+              <span style={{ color: '#1D4ED8' }}>Guide pratique pour professionnels de santé</span>
             </h1>
             <p className="mx-auto mt-5 max-w-lg text-base font-medium leading-7 text-slate-500">
              Accédez aux protocoles de pratique, formez-vous aux produits les plus demandés et les plus utilisés,
@@ -98,11 +98,11 @@ export default function LandingPage() {
                   className="mb-3 inline-flex self-start rounded-lg px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide"
                   style={{ backgroundColor: '#DBEAFE', color: '#1E3A5F' }}
                 >
-                  Espace Médecin
+                  Espace  professionnels de santé
                 </div>
-                <h2 className="text-[22px] font-extrabold leading-tight text-gray-900">Je me forme aux protocoles IV</h2>
+                <h2 className="text-[22px] font-extrabold leading-tight text-gray-900">Je me forme aux protocoles </h2>
                 <p className="mt-2 text-sm leading-6 text-slate-500">
-                  Apprenez les protocoles de perfusion de vitamines IV et validez vos connaissances module par module.
+                  Apprenez les protocoles d'injection  de vitamines  et validez vos connaissances module par module.
                 </p>
 
                 <ul className="mt-4 space-y-2 border-t border-slate-100 pt-4">
@@ -116,7 +116,7 @@ export default function LandingPage() {
                   </li>
                   <li className="flex items-start gap-2 text-xs font-semibold text-slate-500">
                     <span className="mt-0.5 shrink-0 text-sm" style={{ color: '#1E3A5F' }}>✓</span>
-                    <span>Certificat de mise en route obtenu à la fin</span>
+                    <span>Certificat de qualification obtenu à la fin</span>
                   </li>
                 </ul>
 
@@ -155,7 +155,7 @@ export default function LandingPage() {
             <div className="rounded-3xl border-2 p-6 sm:p-8 shadow-sm" style={{ backgroundColor: '#fff', borderColor: '#BFDBFE' }}>
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ backgroundColor: '#EFF6FF' }}>💡</div>
-                <h2 className="text-xl font-extrabold text-gray-900">Qu'est-ce qu'Ivitaminacademy ?</h2>
+                <h2 className="text-xl font-extrabold text-gray-900">Qu'est-ce qu'iVitaminacademy ?</h2>
               </div>
               
               <div className="space-y-4 text-sm leading-relaxed text-slate-600 font-medium">
@@ -169,7 +169,7 @@ export default function LandingPage() {
                  Chaque module comprend un contenu pédagogique associé à une mise en pratique des notions abordées. À l'issue de chaque leçon, un quiz sous forme de QCM permet de valider immédiatement les connaissances acquises.
                 </p>
                 <p>
-                 À la fin du parcours, une attestation de formation en perfusion d’injections de vitamines  sera délivrée au participant. Cette attestation certifie que l'ensemble des modules et évaluations du programme a été suivi et validé
+                 À la fin du parcours, une attestation de formation en injections de vitamines  sera délivrée au participant. Cette attestation certifie que l'ensemble des modules et évaluations du programme a été suivi et validé
                 </p>
               </div>
 
@@ -198,7 +198,7 @@ export default function LandingPage() {
                 <div>
                   <h3 className="text-base font-extrabold text-gray-800 mb-2">Avertissement médical</h3>
                   <p className="text-sm font-medium text-slate-600 leading-relaxed mb-4">
-                    Ce document est un guide pratique basé sur l'usage courant.
+                   Ce  guide  pratique est  basé sur l'usage courant.
                   </p>
                   <p className="text-sm font-semibold text-slate-700 mb-2">Les posologies doivent toujours être adaptées :</p>
                   <ul className="space-y-1.5 text-sm text-slate-600">
@@ -231,14 +231,13 @@ export default function LandingPage() {
           <div className="flex flex-col items-center gap-3">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg flex items-center justify-center text-base" style={{ backgroundColor: '#1E3A5F' }}>💉</div>
-              <span className="text-sm font-extrabold" style={{ color: '#1E3A5F' }}>Ivitaminacademy</span>
+              <span className="text-sm font-extrabold" style={{ color: '#1E3A5F' }}>iVitaminacademy</span>
             </div>
             <p className="text-xs font-semibold text-slate-400 max-w-md mx-auto leading-relaxed">
-              Guide pratique d’injections de vitamines — Formation destinée aux professionnels de santé. Ce document est un guide basé sur l'usage courant. 
-              Les posologies doivent toujours être adaptées au patient et au contexte clinique.
+              Guide pratique d’injections de vitamines — Formation destinée aux professionnels de santé. 
             </p>
             <p className="text-[10px] text-slate-300">
-              © 2026 Ivitaminacademy. Tous droits réservés.
+              © 2026 iVitaminacademy. Tous droits réservés.
             </p>
           </div>
         </footer>
