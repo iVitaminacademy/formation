@@ -7,10 +7,10 @@ import { getProgressMap } from '../services/progress'
 import { curriculum } from '../data/curriculum'
 
 const BADGE_DEFS = [
-  { id: 1, icon: '⭐', name: 'Apprenant rapide', desc: 'Compléter 5 leçons',             color: '#1E3A5F', bg: '#EFF6FF', border: '#93C5FD', check: s => s.doneCount >= 5 }, 
+  { id: 1, icon: '⭐', name: 'Apprenant rapide', desc: 'Compléter 5 leçons',             color: '#1E3A5F', bg: '#EFF6FF', border: '#93C5FD', check: s => s.doneCount >= 5 },
   { id: 3, icon: '🎯', name: 'Précision clinique',desc: 'Score 100 % à un quiz',          color: '#065F46', bg: '#ECFDF5', border: '#6EE7B7', check: s => s.perfectAny },
   { id: 4, icon: '🚀', name: 'Module validé',    desc: 'Terminer un module en entier',     color: '#7C3AED', bg: '#F5F3FF', border: '#C4B5FD', check: s => s.fullTopicAny },
-   { id: 6, icon: '🏆', name: 'Certification   ', desc: 'Compléter toute la formation',     color: '#065F46', bg: '#ECFDF5', border: '#34D399', check: s => s.gradeComplete },
+  { id: 6, icon: '🏆', name: 'Certification',    desc: 'Compléter toute la formation',     color: '#065F46', bg: '#ECFDF5', border: '#34D399', check: s => s.gradeComplete },
 ]
 
 const AVATAR_OPTIONS = [
@@ -33,21 +33,21 @@ function computeStats(progressMap) {
 }
 
 const settingsItems = [
-  { icon: '✏️', label: 'Modifier le profil',     desc: 'Changer votre nom ou avatar' },
-  { icon: '🔒', label: 'Condition',         desc: 'Données et Condition', to: '/pr  acy' },
-  { icon: '❓', label: 'Aide & FAQ',              desc: 'Obtenir de l\'aide', to: '/faq' },
+  { icon: '✏️', label: 'Modifier le profil', desc: 'Changer votre nom ou avatar' },
+  { icon: '🔒', label: 'Conditions',         desc: 'Données et Confidentialité', to: '/privacy' },
+  { icon: '❓', label: 'Aide & FAQ',         desc: 'Obtenir de l\'aide', to: '/faq' },
 ]
 
 function BadgeRow({ badge }) {
   return (
-    <d  
+    <div
       className="flex items-center gap-4 rounded-xl px-4 py-3.5 border transition-all"
       style={{
         borderColor: badge.earned ? badge.border : '#E5E7EB',
         backgroundColor: badge.earned ? badge.bg : '#F9FAFB',
       }}
     >
-      <d  
+      <div
         className="w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-xl border-2"
         style={{
           borderColor: badge.earned ? badge.border : '#E5E7EB',
@@ -57,20 +57,20 @@ function BadgeRow({ badge }) {
         }}
       >
         {badge.icon}
-      </d  >
-      <d   className="flex-1 min-w-0">
-        <d   className="text-sm font-extrabold truncate" style={{ color: badge.earned ? badge.color : '#9CA3AF' }}>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-extrabold truncate" style={{ color: badge.earned ? badge.color : '#9CA3AF' }}>
           {badge.name}
-        </d  >
-        <d   className="text-xs font-medium text-gray-400 mt-0.5 truncate">{badge.desc}</d  >
-      </d  >
-      <d   className="shrink-0">
+        </div>
+        <div className="text-xs font-medium text-gray-400 mt-0.5 truncate">{badge.desc}</div>
+      </div>
+      <div className="shrink-0">
         {badge.earned
           ? <span className="px-3 py-1 rounded-full text-xs font-extrabold text-white whitespace-nowrap" style={{ backgroundColor: badge.color }}>✓ Obtenu</span>
           : <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-400 whitespace-nowrap">Non obtenu</span>
         }
-      </d  >
-    </d  >
+      </div>
+    </div>
   )
 }
 
@@ -153,55 +153,55 @@ export default function KidProfile() {
     <KidLayout>
       <h1 className="text-2xl font-extrabold text-gray-900 mb-6">Profil</h1>
 
-      <d   className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-6">
 
         {/* ── Left column ── */}
-        <d   className="w-full lg:w-72 shrink-0 flex flex-col gap-4">
+        <div className="w-full lg:w-72 shrink-0 flex flex-col gap-4">
 
           {/* Identity card */}
-          <d   className="bg-white rounded-2xl border-2 p-6 flex flex-col items-center text-center shadow-sm" style={{ borderColor: '#93C5FD' }}>
-            <d  
+          <div className="bg-white rounded-2xl border-2 p-6 flex flex-col items-center text-center shadow-sm" style={{ borderColor: '#93C5FD' }}>
+            <div
               className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-3 border-4"
               style={{ backgroundColor: '#EFF6FF', borderColor: '#1E3A5F' }}
             >
               {userWithProfile.avatar}
-            </d  >
-            <d   className="font-extrabold text-gray-900 text-lg">{userWithProfile.name}</d  >
-            <d   className="mt-1 px-3 py-1 rounded-full text-xs font-extrabold" style={{ backgroundColor: '#EFF6FF', color: '#1E3A5F' }}>
+            </div>
+            <div className="font-extrabold text-gray-900 text-lg">{userWithProfile.name}</div>
+            <div className="mt-1 px-3 py-1 rounded-full text-xs font-extrabold" style={{ backgroundColor: '#EFF6FF', color: '#1E3A5F' }}>
               Formation · professionnel de santé
-            </d  >
-            <d   className="mt-4 w-full grid grid-cols-2 gap-3 pt-4 border-t" style={{ borderColor: '#EFF6FF' }}>
-              <d   className="flex flex-col items-center">
+            </div>
+            <div className="mt-4 w-full grid grid-cols-2 gap-3 pt-4 border-t" style={{ borderColor: '#EFF6FF' }}>
+              <div className="flex flex-col items-center">
                 <span className="text-xl font-extrabold" style={{ color: '#1E3A5F' }}>{userWithProfile.streak}</span>
                 <span className="text-xs text-gray-400 font-medium mt-0.5">Jours consécutifs</span>
-              </d  >
-              <d   className="flex flex-col items-center">
+              </div>
+              <div className="flex flex-col items-center">
                 <span className="text-xl font-extrabold" style={{ color: '#1E3A5F' }}>{doneCount}</span>
                 <span className="text-xs text-gray-400 font-medium mt-0.5">Leçons terminées</span>
-              </d  >
-            </d  >
-          </d  >
+              </div>
+            </div>
+          </div>
 
           {/* Progression globale */}
-          <d   className="bg-white rounded-2xl border-2 p-4 shadow-sm" style={{ borderColor: '#93C5FD' }}>
-            <d   className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">Progression globale</d  >
-            <d   className="flex justify-between text-xs font-semibold text-gray-500 mb-1.5">
+          <div className="bg-white rounded-2xl border-2 p-4 shadow-sm" style={{ borderColor: '#93C5FD' }}>
+            <div className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-3">Progression globale</div>
+            <div className="flex justify-between text-xs font-semibold text-gray-500 mb-1.5">
               <span>{doneCount} / {allLessons.length} leçons</span>
               <span>{lessonPct}%</span>
-            </d  >
-            <d   className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: '#EFF6FF' }}>
-              <d  
+            </div>
+            <div className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: '#EFF6FF' }}>
+              <div
                 className="h-full rounded-full transition-all duration-700"
                 style={{ width: `${lessonPct}%`, backgroundColor: '#1E3A5F' }}
               />
-            </d  >
-          </d  >
+            </div>
+          </div>
 
           {/* Settings */}
-          <d   className="bg-white rounded-2xl border-2 overflow-hidden shadow-sm" style={{ borderColor: '#93C5FD' }}>
-            <d   className="px-4 py-3 border-b" style={{ borderColor: '#EFF6FF' }}>
+          <div className="bg-white rounded-2xl border-2 overflow-hidden shadow-sm" style={{ borderColor: '#93C5FD' }}>
+            <div className="px-4 py-3 border-b" style={{ borderColor: '#EFF6FF' }}>
               <span className="text-xs font-extrabold uppercase tracking-widest text-gray-400">Compte</span>
-            </d  >
+            </div>
             {settingsItems.map(item => (
               <button
                 key={item.label}
@@ -215,18 +215,18 @@ export default function KidProfile() {
                 onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
               >
                 <span className="text-lg w-6 text-center">{item.icon}</span>
-                <d   className="flex-1">
-                  <d   className="text-sm font-bold text-gray-800">{item.label}</d  >
-                  <d   className="text-xs text-gray-400 font-medium">{item.desc}</d  >
-                </d  >
+                <div className="flex-1">
+                  <div className="text-sm font-bold text-gray-800">{item.label}</div>
+                  <div className="text-xs text-gray-400 font-medium">{item.desc}</div>
+                </div>
                 <span className="text-gray-300">›</span>
               </button>
             ))}
-          </d  >
+          </div>
 
           {/* Log out */}
           <button
-            onClick={async () => { try { await signOut() } catch {} navigate('/') }}
+            onClick={async () => { try { await signOut() } catch {} finally { navigate('/') } }}
             className="w-full py-3 rounded-2xl text-sm font-extrabold border-2 transition-colors"
             style={{ borderColor: '#FCA5A5', color: '#EF4444', backgroundColor: '#FFF5F5' }}
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#FEE2E2')}
@@ -234,79 +234,79 @@ export default function KidProfile() {
           >
             ← Déconnexion
           </button>
-        </d  >
+        </div>
 
         {/* ── Right column — Certifications ── */}
-        <d   className="flex-1 min-w-0">
-          <d   className="bg-white rounded-2xl border-2 p-6 shadow-sm" style={{ borderColor: '#93C5FD' }}>
+        <div className="flex-1 min-w-0">
+          <div className="bg-white rounded-2xl border-2 p-6 shadow-sm" style={{ borderColor: '#93C5FD' }}>
 
             {/* Header */}
-            <d   className="flex items-start justify-between gap-4 mb-5">
-              <d  >
+            <div className="flex items-start justify-between gap-4 mb-5">
+              <div>
                 <h2 className="text-base font-extrabold text-gray-900">Badges</h2>
-                <p className="text-xs text-gray-400 font-medium mt-0.5">Récompenses obtenues au fil de votre formation   </p>
-              </d  >
+                <p className="text-xs text-gray-400 font-medium mt-0.5">Récompenses obtenues au fil de votre formation</p>
+              </div>
               <span
                 className="shrink-0 px-3 py-1 rounded-full text-xs font-extrabold"
                 style={{ backgroundColor: '#EFF6FF', color: '#1E3A5F' }}
               >
                 {earnedCount} / {badges.length}
               </span>
-            </d  >
+            </div>
 
             {/* Progress bar */}
-            <d   className="mb-6">
-              <d   className="flex justify-between text-xs font-semibold text-gray-400 mb-1.5">
+            <div className="mb-6">
+              <div className="flex justify-between text-xs font-semibold text-gray-400 mb-1.5">
                 <span>Progression des certifications</span>
                 <span>{earnedPct}%</span>
-              </d  >
-              <d   className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: '#EFF6FF' }}>
-                <d  
+              </div>
+              <div className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: '#EFF6FF' }}>
+                <div
                   className="h-full rounded-full transition-all duration-700"
                   style={{
                     width: `${earnedPct}%`,
                     backgroundColor: earnedPct === 100 ? '#065F46' : '#1E3A5F',
                   }}
                 />
-              </d  >
-            </d  >
+              </div>
+            </div>
 
             {/* Badge rows */}
             {loading ? (
-              <d   className="space-y-3">
-                {[1,2,3,4,5,6].map(i => (
-                  <d   key={i} className="h-16 rounded-xl bg-gray-100 animate-pulse" />
+              <div className="space-y-3">
+                {[1,2,3,4].map(i => (
+                  <div key={i} className="h-16 rounded-xl bg-gray-100 animate-pulse" />
                 ))}
-              </d  >
+              </div>
             ) : (
-              <d   className="space-y-2">
+              <div className="space-y-2">
                 {earnedCount > 0 && (
-                  <d   className="text-xs font-extrabold uppercase tracking-widest text-gray-400 pb-1">
+                  <div className="text-xs font-extrabold uppercase tracking-widest text-gray-400 pb-1">
                     Obtenues — {earnedCount}
-                  </d  >
+                  </div>
                 )}
                 {badges.filter(b => b.earned).map(badge => (
                   <BadgeRow key={badge.id} badge={badge} />
                 ))}
 
                 {badges.filter(b => !b.earned).length > 0 && (
-                  <d   className="text-xs font-extrabold uppercase tracking-widest text-gray-400 pb-1 pt-4">
+                  <div className="text-xs font-extrabold uppercase tracking-widest text-gray-400 pb-1 pt-4">
                     À obtenir — {badges.filter(b => !b.earned).length}
-                  </d  >
+                  </div>
                 )}
                 {badges.filter(b => !b.earned).map(badge => (
                   <BadgeRow key={badge.id} badge={badge} />
                 ))}
-              </d  >
+              </div>
             )}
 
-          </d  >
-        </d  >
-      </d  >
+          </div>
+        </div>
+      </div>
 
       {/* ── Edit Profile modal ── */}
       {editing && (
-        <d  
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
           onClick={() => !saving && setEditing(false)}
@@ -320,17 +320,17 @@ export default function KidProfile() {
             <h3 className="text-lg font-extrabold text-gray-900 mb-1">Modifier le profil</h3>
             <p className="text-xs text-gray-400 font-medium mb-5">Changez votre nom ou votre avatar</p>
 
-            <d   className="flex justify-center mb-4">
-              <d  
+            <div className="flex justify-center mb-4">
+              <div
                 className="w-20 h-20 rounded-full flex items-center justify-center text-4xl border-4"
                 style={{ backgroundColor: '#EFF6FF', borderColor: '#1E3A5F' }}
               >
                 {editAvatar}
-              </d  >
-            </d  >
+              </div>
+            </div>
 
             <label className="text-xs font-extrabold uppercase tracking-widest text-gray-400">Choisir un avatar</label>
-            <d   className="grid grid-cols-5 gap-2 mt-2 mb-4">
+            <div className="grid grid-cols-5 gap-2 mt-2 mb-4">
               {AVATAR_OPTIONS.map(a => (
                 <button
                   type="button"
@@ -346,7 +346,7 @@ export default function KidProfile() {
                   {a}
                 </button>
               ))}
-            </d  >
+            </div>
 
             <label className="text-xs font-extrabold uppercase tracking-widest text-gray-400">Nom</label>
             <input
@@ -362,7 +362,7 @@ export default function KidProfile() {
               <p className="text-xs font-semibold mt-3" style={{ color: '#EF4444' }}>{saveError}</p>
             )}
 
-            <d   className="flex gap-3 mt-6">
+            <div className="flex gap-3 mt-6">
               <button
                 type="button"
                 onClick={() => setEditing(false)}
@@ -380,9 +380,9 @@ export default function KidProfile() {
               >
                 {saving ? 'Enregistrement…' : 'Sauvegarder'}
               </button>
-            </d  >
+            </div>
           </form>
-        </d  >
+        </div>
       )}
     </KidLayout>
   )
