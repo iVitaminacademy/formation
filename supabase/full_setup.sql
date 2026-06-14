@@ -528,6 +528,31 @@ grant execute on function public.verify_certificate(uuid) to anon, authenticated
 
 
 -- =============================================================
+-- 20. Admin delete-user RPC
+--     Allows an authenticated admin to permanently delete any user
+--     (profile + auth account) in one call.
+--     Cascades: profiles → user_progress, user_badges, bookings (ON DELETE CASCADE)
+-- =============================================================
+create or replace function public.admin_delete_user(target_user_id uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  -- Only admins may call this
+  if (select role from public.profiles where id = auth.uid()) <> 'admin' then
+    raise exception 'Accès refusé : rôle admin requis';
+  end if;
+  -- Prevent an admin from deleting their own account
+  if target_user_id = auth.uid() then
+    raise exception 'Impossible de supprimer votre propre compte';
+  end if;
+  -- Delete from auth.users — cascades to public.profiles via FK
+  delete from auth.users where id = target_user_id;
+end;
+$$;
+
+grant execute on function public.admin_delete_user(uuid) to authenticated;
+
+
+-- =============================================================
 -- Done.
 -- Tables  : profiles · topics · lessons · questions ·
 --           progress · user_progress · badges · user_badges ·

@@ -17,6 +17,7 @@ import {
   adminCompleteBooking,
   adminCancelBooking,
   adminGrantBookingException,
+  deleteUserByAdmin,
 } from '../services/admin'
 
 const THEME_KEY = 'admin_dashboard_theme'
@@ -163,6 +164,8 @@ export default function AdminDashboardPage() {
   const [newSlotTime, setNewSlotTime] = useState('')
   const [bookingActionLoading, setBookingActionLoading] = useState(false)
   const [certSearch, setCertSearch] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState(null)   // { id, name }
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   const lessonIndex = useMemo(() => buildLessonIndex(), [])
 
@@ -362,6 +365,17 @@ export default function AdminDashboardPage() {
     try { await adminGrantBookingException(userId); setRefreshTick(t => t + 1) }
     catch (err) { setError(err.message || 'Erreur.') }
     finally { setBookingActionLoading(false) }
+  }
+
+  const handleDeleteUser = async () => {
+    if (!deleteTarget) return
+    setDeleteLoading(true); setError('')
+    try {
+      await deleteUserByAdmin(deleteTarget.id)
+      setDeleteTarget(null)
+      setRefreshTick(t => t + 1)
+    } catch (err) { setError(err.message || 'Erreur lors de la suppression.') }
+    finally { setDeleteLoading(false) }
   }
 
   const handleLogout = async () => { try { await signOut() } catch {} navigate('/login') }
@@ -829,7 +843,7 @@ export default function AdminDashboardPage() {
                       <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Rôle</th>
                       <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Statut</th>
                       <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Série</th>
-                      <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Action</th>
+                      <th className="px-4 py-3 font-extrabold text-xs uppercase tracking-wide" style={{ color: theme.subtext }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -916,6 +930,18 @@ export default function AdminDashboardPage() {
                                 style={{ backgroundColor: '#1D4ED8' }}
                               >
                                 🔓 Débloquer
+                              </button>
+                            )}
+                            {/* Delete — disabled for the current admin */}
+                            {u.id !== profile?.id && (
+                              <button
+                                onClick={() => setDeleteTarget({ id: u.id, name: u.name || u.email || u.id })}
+                                disabled={saving}
+                                className="rounded-lg px-3 py-1 text-xs font-bold text-white transition"
+                                style={{ backgroundColor: '#7F1D1D' }}
+                                title="Supprimer définitivement cet utilisateur"
+                              >
+                                🗑 Supprimer
                               </button>
                             )}
                           </div>
@@ -1213,6 +1239,48 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </main>
+
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-8 shadow-2xl text-center">
+            <div className="text-5xl mb-4">🗑️</div>
+            <h2 className="text-xl font-extrabold text-gray-900 mb-2">Supprimer cet utilisateur ?</h2>
+            <p className="text-sm text-gray-500 mb-2">
+              Vous êtes sur le point de supprimer définitivement :
+            </p>
+            <div className="my-4 px-4 py-3 rounded-2xl font-extrabold text-sm" style={{ backgroundColor: '#FEF2F2', color: '#7F1D1D' }}>
+              {deleteTarget.name}
+            </div>
+            <p className="text-xs text-red-500 font-semibold mb-6">
+              ⚠️ Cette action est irréversible. Toutes les données de cet utilisateur (progression, réservations, badges, certificat) seront définitivement supprimées.
+            </p>
+            {error && (
+              <div className="mb-4 rounded-xl border px-3 py-2 text-sm font-semibold text-red-700 bg-red-50 border-red-200">
+                {error}
+              </div>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setDeleteTarget(null); setError('') }}
+                disabled={deleteLoading}
+                className="flex-1 rounded-2xl border-2 py-3 text-sm font-bold text-gray-600"
+                style={{ borderColor: '#E5E7EB' }}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleDeleteUser}
+                disabled={deleteLoading}
+                className="flex-1 rounded-2xl py-3 text-sm font-extrabold text-white"
+                style={{ backgroundColor: deleteLoading ? '#9CA3AF' : '#DC2626' }}
+              >
+                {deleteLoading ? 'Suppression…' : 'Supprimer définitivement'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

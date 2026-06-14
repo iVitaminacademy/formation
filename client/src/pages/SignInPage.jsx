@@ -178,7 +178,7 @@ function ForgotPasswordModal({ formEmail, onClose }) {
 
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-extrabold" style={{ color: '#1A1A2E' }}>
-            {step === 'done' ? '✅ All set!' : 'Reset password'}
+            {step === 'done' ? '✅ All set!' : 'Réinitialiser le mot de passe'}
           </h3>
           <button onClick={loading ? undefined : onClose}
             style={{ color: '#94A3B8', background: 'none', border: 'none', cursor: loading ? 'default' : 'pointer', fontSize: 20 }}>×</button>
@@ -190,11 +190,11 @@ function ForgotPasswordModal({ formEmail, onClose }) {
         {/* Email */}
         {step === 'email' && (
           <form onSubmit={handleSendCode}>
-            <p className="mb-5 text-sm" style={{ color: '#94A3B8' }}>Enter your email to receive a verification code.</p>
-            <label style={lbl}>Email</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" autoFocus style={inp} />
+            <p className="mb-5 text-sm" style={{ color: '#94A3B8' }}>Réinitialiser le mot de passe ,veuilllez contacter  l'administrateur.</p>
+           {/*  <label style={lbl}>Email</label>
+           <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" autoFocus style={inp} />
             <div style={{ marginTop: 20 }}><button type="submit" disabled={loading} style={btnStyle(loading)}>{loading ? 'Sending…' : 'Send code'}</button></div>
-          </form>
+        */}  </form>
         )}
 
         {/* Code */}
@@ -318,7 +318,7 @@ export default function SignInPage() {
           <div>
             <div className="mb-1.5 flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wide" style={{ color: '#64748B' }}>Password</label>
-              <button type="button" onClick={() => setShowReset(true)} className="text-xs font-semibold hover:underline" style={{ color: ACCENT, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Forgot password?</button>
+              <button type="button" onClick={() => setShowReset(true)} className="text-xs font-semibold hover:underline" style={{ color: ACCENT, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Mot de passe oublié ?</button>
             </div>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }}><LockIcon /></span>

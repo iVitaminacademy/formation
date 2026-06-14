@@ -13,6 +13,10 @@ import {
 
 // ─── Calendar helpers ─────────────────────────────────────────────────────────
 
+// All slot times are stored in UTC and displayed in this fixed timezone.
+// Africa/Casablanca = permanent GMT+1 (no daylight saving).
+const SLOT_TZ = 'Africa/Casablanca'
+
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 
 function startOfDay(date) {
@@ -31,22 +35,28 @@ function buildCalendarDays(year, month) {
   return days
 }
 
-// Group slots by local date string "YYYY-MM-DD"
+// Group slots by date in SLOT_TZ (not local browser timezone)
 function groupByDate(slots) {
   const map = {}
   for (const s of slots) {
-    const key = new Date(s.start_time).toLocaleDateString('fr-CA')  // YYYY-MM-DD
+    const key = new Date(s.start_time).toLocaleDateString('fr-CA', { timeZone: SLOT_TZ })
     ;(map[key] || (map[key] = [])).push(s)
   }
   return map
 }
 
+// All public time formatters use SLOT_TZ so every user sees the same hour
 function fmtTime(iso) {
-  return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: SLOT_TZ })
 }
 
 function fmtDateLong(iso) {
-  return new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  return new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: SLOT_TZ })
+}
+
+// User's own local time — used only as a reference hint in modals
+function fmtLocalTime(iso) {
+  return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 }
 
 function fmtMonth(date) {
@@ -86,7 +96,14 @@ function ConfirmModal({ slot, onConfirm, onClose, loading }) {
         <div className="my-4 px-4 py-3 rounded-2xl font-extrabold text-sm" style={{ backgroundColor: '#EFF6FF', color: '#1E3A5F' }}>
           {fmtDateLong(slot.start_time)}<br />
           <span className="text-base">{fmtTime(slot.start_time)} — {fmtTime(new Date(new Date(slot.start_time).getTime() + 3600000))}</span>
+          <span className="text-[10px] font-bold ml-2 opacity-60">GMT+1</span>
         </div>
+        {/* Local time hint — only shown if user is not already in GMT+1 */}
+        {fmtLocalTime(slot.start_time) !== fmtTime(slot.start_time) && (
+          <p className="text-xs text-amber-600 font-semibold -mt-2 mb-3 px-1">
+            🕐 Votre heure locale : {fmtLocalTime(slot.start_time)} — {fmtLocalTime(new Date(new Date(slot.start_time).getTime() + 3600000))}
+          </p>
+        )}
         <p className="text-xs text-gray-400 mb-6">Durée : 1 heure · Un seul créneau autorisé par utilisateur.</p>
         <div className="flex gap-3">
           <button onClick={onClose} disabled={loading} className="flex-1 py-3 rounded-2xl border-2 font-bold text-sm text-gray-600" style={{ borderColor: '#E5E7EB' }}>
@@ -281,6 +298,18 @@ export default function CalendarPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-extrabold text-gray-900">📅 Calendrier de réservation</h1>
           <p className="text-xs text-gray-400 font-semibold mt-1">Réservez un créneau de consultation d'1 heure avec votre accompagnateur.</p>
+
+          {/* Timezone notice */}
+          <div
+            className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-semibold"
+            style={{ backgroundColor: '#EFF6FF', color: '#1D4ED8', border: '1px solid #BFDBFE' }}
+          >
+            <span>🌍</span>
+            <span>
+              Tous les horaires sont affichés en <strong>GMT+1</strong> (heure Maroc · France hiver).
+              {' '}Si votre pays a un décalage différent, l'heure locale sera indiquée lors de la réservation.
+            </span>
+          </div>
         </div>
 
         {err && (

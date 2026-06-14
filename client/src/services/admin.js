@@ -234,6 +234,11 @@ export async function adminGrantBookingException(userId) {
 
 // ─── Progress Admin ───────────────────────────────────────────────────────────
 
+export async function deleteUserByAdmin(userId) {
+  const { error } = await supabase.rpc('admin_delete_user', { target_user_id: userId })
+  if (error) throw error
+}
+
 export async function upsertProgressByAdmin({ userId, lessonRef, score, completed, attempts, lastDate }) {
   const { data, error } = await supabase
     .from('user_progress')
