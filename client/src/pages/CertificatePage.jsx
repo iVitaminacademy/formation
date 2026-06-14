@@ -95,13 +95,15 @@ export default function CertificatePage() {
   const name          = profile?.name || 'Médecin'
 
   // Save certificate once the first time the user qualifies.
-  // The saveCertificate() call is idempotent (filters on certificate_issued_at IS NULL).
+  // Runs whenever hasPassed becomes true. saveCertificate() is idempotent
+  // (UPDATE ... WHERE certificate_issued_at IS NULL) so calling it multiple
+  // times is safe — it only writes on the first call.
   useEffect(() => {
-    if (!user?.id || !hasPassed || certSaved || profile?.certificate_issued_at) return
+    if (!user?.id || !hasPassed || certSaved) return
     saveCertificate(user.id, globalPct)
       .then(() => setCertSaved(true))
       .catch(err => console.error('[Certificate] save error', err))
-  }, [user?.id, hasPassed, certSaved, profile?.certificate_issued_at, globalPct])
+  }, [user?.id, hasPassed, certSaved, globalPct])
 
   // ── Loading ──────────────────────────────────────────────────────────────────
   if (loading) {
@@ -269,7 +271,7 @@ export default function CertificatePage() {
         <div className="flex flex-wrap gap-2">
           {profile?.certificate_code && (
             <a
-              href={`/certificate/verify/${profile.certificate_code}`}
+              href={`${window.location.origin}/certificate/verify/${profile.certificate_code}`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm border-2 transition-all"
@@ -365,7 +367,7 @@ export default function CertificatePage() {
               </p>
               <div className="p-3 bg-white rounded-xl border-2" style={{ borderColor: '#BFDBFE' }}>
                 <QRCode
-                  value={`https://protein-project-ychmael.vercel.app/certificate/verify/${profile.certificate_code}`}
+                  value={`${window.location.origin}/certificate/verify/${profile.certificate_code}`}
                   size={100}
                   level="M"
                   style={{ display: 'block' }}

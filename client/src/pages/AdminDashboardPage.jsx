@@ -693,7 +693,7 @@ export default function AdminDashboardPage() {
               const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
               const isFullUuid = uuidRegex.test(certSearch.trim())
               const directVerifyUrl = isFullUuid
-                ? `https://protein-project-ychmael.vercel.app/certificate/verify/${certSearch.trim()}`
+                ? `${window.location.origin}/certificate/verify/${certSearch.trim()}`
                 : null
 
               return (
@@ -751,7 +751,7 @@ export default function AdminDashboardPage() {
                         </thead>
                         <tbody>
                           {filtered.map(u => {
-                            const verifyUrl = `https://protein-project-ychmael.vercel.app/certificate/verify/${u.certificate_code}`
+                            const verifyUrl = `${window.location.origin}/certificate/verify/${u.certificate_code}`
                             const shortCode = u.certificate_code
                               ? `${u.certificate_code.slice(0, 8).toUpperCase()}…${u.certificate_code.slice(-4).toUpperCase()}`
                               : '—'

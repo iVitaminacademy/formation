@@ -143,7 +143,7 @@ export default function CertificateVerifyPage() {
       </div>
 
       <p className="mt-6 text-[11px] font-semibold text-center" style={{ color: '#94A3B8' }}>
-        Vérification sécurisée par iVitaminacademy
+        Vérification sécurisée · <a href={window.location.origin} className="underline">{window.location.host}</a>
       </p>
     </div>
   )
