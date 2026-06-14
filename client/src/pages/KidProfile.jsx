@@ -19,6 +19,7 @@ const AVATAR_OPTIONS = [
   '🦊', '🐱', '🐶',
 ]
 
+
 function computeStats(progressMap) {
   const topics     = curriculum[1] || []
   const allLessons = topics.flatMap(t => t.lessons)
