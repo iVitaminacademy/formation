@@ -364,12 +364,12 @@ export default function CertificatePage() {
                 Vérification d'authenticité
               </p>
               <div className="p-3 bg-white rounded-xl border-2" style={{ borderColor: '#BFDBFE' }}>
-                <QRCode
+             {/*     <QRCode
                   value={`https://protein-project-ychmael.vercel.app/certificate/verify/${profile.certificate_code}`}
                   size={100}
                   level="M"
                   style={{ display: 'block' }}
-                />
+                />*/}
               </div>
               <p className="text-[10px] text-gray-400 font-semibold">Scannez pour vérifier l'authenticité du certificat</p>
               <p className="text-[9px] font-mono" style={{ color: '#94A3B8' }}>
