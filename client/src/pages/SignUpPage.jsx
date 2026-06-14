@@ -50,7 +50,7 @@ const ROLES = [
   {
     id: 'medecin',
     emoji: '👨‍⚕️',
-    label: 'Médecin',
+    label: 'Professionnels de santé ',
     sub: 'Formation aux protocoles IV',
     accent: '#1E3A5F',
     accentHover: '#162C48',
@@ -173,7 +173,7 @@ export default function SignUpPage() {
               <div className="h-11 w-11 rounded-xl flex items-center justify-center text-2xl" style={{ backgroundColor: '#1E3A5F' }}>💉</div>
               <div className="leading-tight text-left">
                 <div className="text-xl font-extrabold tracking-tight" style={{ color: '#1E3A5F' }}>iVitaminacademy</div>
-                <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#64748B' }}>Guide pratique médecin</div>
+                <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#64748B' }}>Guide pratique pour professionnels de santé </div>
               </div>
             </div>
             <h1 className="mt-4 text-2xl font-extrabold" style={{ color: '#1A1A2E' }}>
