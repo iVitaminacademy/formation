@@ -15,6 +15,9 @@ import {
 
 // All slot times are stored in UTC and displayed in this fixed timezone.
 // Africa/Casablanca = permanent GMT+1 (no daylight saving).
+const whatsappNumber = "212622909768"
+const whatsappLink = `https://wa.me/${whatsappNumber}`
+
 const SLOT_TZ = 'Africa/Casablanca'
 
 const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
@@ -463,6 +466,58 @@ export default function CalendarPage() {
         )}
 
       </div>
+
+ <div className="max-w-3xl mx-auto mt-6">
+  <div className="mb-6 text-center">
+
+    {/* Separator clean */}
+    <div className="flex items-center gap-3 mb-4">
+      <div className="h-px flex-1 bg-gray-200" />
+      <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+        Alternative
+      </span>
+      <div className="h-px flex-1 bg-gray-200" />
+    </div>
+
+    {/* Message */}
+    <p className="text-sm text-gray-600 font-semibold mb-4">
+      Ou bien, vous pouvez contacter directement l’administrateur via WhatsApp.
+    </p>
+
+    {/* WhatsApp CTA */}
+    <a
+      href={whatsappLink}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl font-extrabold text-white shadow-md transition-all hover:scale-105"
+      style={{ backgroundColor: '#25D366' }}
+    >
+      {/* Icon */}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 32 32"
+        fill="white"
+        width="20"
+        height="20"
+      >
+        <path d="M19.11 17.53c-.27-.14-1.6-.79-1.85-.88-.25-.09-.43-.14-.61.14-.18.27-.7.88-.86 1.06-.16.18-.32.2-.59.07-.27-.14-1.12-.41-2.13-1.31-.78-.7-1.31-1.57-1.46-1.84-.15-.27-.02-.42.12-.56.12-.12.27-.32.41-.48.14-.16.18-.27.27-.45.09-.18.04-.34-.02-.48-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.61-.47h-.52c-.18 0-.48.07-.73.34-.25.27-.95.93-.95 2.26 0 1.33.98 2.61 1.12 2.79.14.18 1.92 2.94 4.66 4.12.65.28 1.16.45 1.56.58.65.21 1.24.18 1.71.11.52-.08 1.6-.65 1.83-1.28.23-.63.23-1.17.16-1.28-.07-.11-.25-.18-.52-.32z"/>
+        <path d="M16 3C9.37 3 4 8.37 4 15c0 2.11.55 4.1 1.52 5.84L4 29l8.35-1.47C14.04 28.48 15 28.5 16 28.5c6.63 0 12-5.37 12-12S22.63 3 16 3zm0 22.5c-1 0-1.98-.16-2.9-.47l-.21-.07-4.96.87.88-4.83-.14-.22A9.47 9.47 0 0 1 6.5 15C6.5 9.75 10.75 5.5 16 5.5S25.5 9.75 25.5 15 21.25 25.5 16 25.5z"/>
+      </svg>
+
+      Contacter sur WhatsApp
+    </a>
+
+    {/* Small hint */}
+    <p className="text-[11px] text-gray-400 mt-3">
+      Réponse rapide via WhatsApp
+    </p>
+
+  </div>
+</div>
+
+ 
+
+
 
     </KidLayout>
 
