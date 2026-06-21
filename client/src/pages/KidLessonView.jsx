@@ -31,9 +31,9 @@ const lessonContent = {
   },
   202: {
     sections: [
-      { title: '💊 Présentation', content: 'Le **Complexe Vitamines B (Becozyme)** apporte un ensemble de vitamines B essentielles au métabolisme énergétique et nerveux.' },
+      { title: '💊 Présentation', content: 'Le **Complexe Vitamines B** apporte un ensemble de vitamines B essentielles au métabolisme énergétique et nerveux.' },
       { title: '📊 Dosage', content: '• **Min** : 1 ampoule\n• **Max** : 2 ampoules\n• Dilution : NaCl 250–500 ml\n• Durée : 30 à 45 minutes' },
-      { title: '👃 Particularité — Odeur Forte', content: 'Le Becozyme a une **odeur très forte et caractéristique** qui peut être extrêmement mal tolérée. Des nausées peuvent apparaître dès l\'ouverture de l\'ampoule.\n\n**Conduite** : ouvrir l\'ampoule loin du patient, préparer discrètement, perfuser lentement.' },
+      { title: '👃 Particularité — Odeur Forte', content: 'Le complexe de vitamines B a une *odeur très forte et caractéristique* qui peut être extrêmement mal tolérée. Des nausées peuvent apparaître dès l\'ouverture de l\'ampoule.\n\n*Conduite* : ouvrir l\'ampoule loin du patient, préparer discrètement, perfuser lentement.' },
       { title: '⚠️ Effets Secondaires', content: '• **Coloration des urines** (effet bénin lié à la riboflavine B2) — prévenir le patient\n• Nausées possibles chez les sujets sensibles' },
       { title: '🎯 Indications', content: '✅ Fatigue\n✅ Stress\n✅ Neuropathies' },
     ],

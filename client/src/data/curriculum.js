@@ -177,7 +177,7 @@ export const curriculum = {
         },
         {
           id: 202,
-          title: 'Complexe Vitamines B (Becozyme)',
+          title: 'Complexe Vitamines B',
           questions: 5,
           time: 6,
           status: 'locked',
@@ -187,8 +187,7 @@ export const curriculum = {
               options: ['Son odeur très forte et caractéristique', 'Sa couleur rouge vive', 'Son goût sucré intense', 'Sa viscosité élevée'],
               correct: 'Son odeur très forte et caractéristique',
               hint: 'Ce symptôme peut même apparaître avant l\'administration.',
-              explanation: 'L\'odeur très forte du Becozyme peut être extrêmement mal tolérée. Des symptômes (nausées, haut-le-cœur) peuvent même apparaître à l\'ouverture de l\'ampoule.',
-            },
+              explanation: 'L\'odeur très forte de certains complexe de vitamines B peut être extrêmement mal tolérée. Des symptômes (nausées, haut-le-cœur) peuvent même apparaître à l\'ouverture de l\'ampoule.',   },
             {
               text: 'Quelles sont les indications principales du Complexe Vitamines B IV ?',
               options: ['Fatigue, stress, neuropathies', 'Éclat de peau, antioxydant, longévité', 'Crampes, hypotension, anxiété', 'Infections, fièvre, douleurs'],
@@ -211,7 +210,7 @@ export const curriculum = {
               explanation: 'La coloration des urines est un effet fréquent et bénin du Complexe Vitamines B, lié à la riboflavine (B2). Il faut en informer le patient au préalable.',
             },
             {
-              text: 'Quelle est la dose maximale recommandée de Complexe Vitamines B (Becozyme) ?',
+              text: 'Quelle est la dose maximale recommandée de Complexe Vitamines B?',
               options: ['2 ampoules', '5 ampoules', '1/2 ampoule', '10 ampoules'],
               correct: '2 ampoules',
               hint: 'La dose standard est 1 ampoule.',
