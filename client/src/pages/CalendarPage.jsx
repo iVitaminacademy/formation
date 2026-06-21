@@ -299,8 +299,8 @@ export default function CalendarPage() {
 
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-extrabold text-gray-900">📅 Calendrier de réservation</h1>
-          <p className="text-xs text-gray-400 font-semibold mt-1">Réservez un créneau de consultation d'1 heure avec votre accompagnateur.</p>
+          <h1 className="text-2xl font-extrabold text-gray-900">📅 Calendrier de réservation de votre appel </h1>
+          <p className="text-xs text-gray-400 font-semibold mt-1">Choisissez le créneau qui vous convient pour bénéficier d’un échange personnalisé d’une heure avec l’un de nos médecins collaborateurs.</p>
 
           {/* Timezone notice */}
           <div
@@ -481,7 +481,7 @@ export default function CalendarPage() {
 
     {/* Message */}
     <p className="text-sm text-gray-600 font-semibold mb-4">
-      Ou bien, vous pouvez contacter directement l’administrateur via WhatsApp.
+      Si aucun créneau n'est disponible, merci de demander votre appel via WhatsApp..
     </p>
 
     {/* WhatsApp CTA */}
