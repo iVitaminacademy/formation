@@ -1,12 +1,15 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
+const FORMATION_URL = 'https://drive.google.com/file/d/1e1JZNEgvyj0W-rLmn7kBxktUmlCZGVyo/view'
+
 const navLinks = [
   { label: 'Tableau de bord', icon: '🏠', path: '/medecin/dashboard',    activePath: '/medecin/dashboard'    },
   { label: 'Leçons',          icon: '📖', path: '/medecin/lessons',      activePath: '/medecin/lesson'       },
   { label: 'Progression',     icon: '📊', path: '/medecin/progress',     activePath: '/medecin/progress'     },
   { label: 'Certificat',      icon: '🎓', path: '/medecin/certificate',  activePath: '/medecin/certificate'  },
   { label: 'Calendrier',      icon: '📅', path: '/medecin/calendar',     activePath: '/medecin/calendar'     },
+  { label: 'Formation',       icon: '📋', path: null,                    activePath: null,                   external: FORMATION_URL },
   { label: 'Profil',          icon: '👤', path: '/medecin/profile',      activePath: '/medecin/profile'      },
 ]
 
@@ -77,11 +80,14 @@ export default function KidLayout({ children }) {
             Navigation
           </p>
           {navLinks.map(link => {
-            const active = pathname.startsWith(link.activePath)
+            const active = link.activePath ? pathname.startsWith(link.activePath) : false
+            const handleClick = link.external
+              ? () => window.open(link.external, '_blank', 'noopener,noreferrer')
+              : () => navigate(link.path)
             return (
               <button
                 key={link.label}
-                onClick={() => navigate(link.path)}
+                onClick={handleClick}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-sm font-bold text-left transition-all duration-150"
                 style={
                   active
@@ -93,6 +99,7 @@ export default function KidLayout({ children }) {
               >
                 <span>{link.icon}</span>
                 <span>{link.label}</span>
+                {link.external && <span className="text-[10px] ml-auto opacity-60">↗</span>}
               </button>
             )
           })}
@@ -113,11 +120,14 @@ export default function KidLayout({ children }) {
         style={{ backgroundColor: '#E8EEF5', borderColor: '#CBD5E1' }}
       >
         {navLinks.map(link => {
-          const active = pathname.startsWith(link.activePath)
+          const active = link.activePath ? pathname.startsWith(link.activePath) : false
+          const handleClick = link.external
+            ? () => window.open(link.external, '_blank', 'noopener,noreferrer')
+            : () => navigate(link.path)
           return (
             <button
               key={link.label}
-              onClick={() => navigate(link.path)}
+              onClick={handleClick}
               className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-bold transition-colors"
               style={active ? { color: '#1E3A5F' } : { color: '#64748B' }}
             >
