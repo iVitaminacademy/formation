@@ -5,11 +5,11 @@ const FORMATION_URL = 'https://drive.google.com/file/d/1e1JZNEgvyj0W-rLmn7kBxktU
 
 const navLinks = [
   { label: 'Tableau de bord', icon: '🏠', path: '/medecin/dashboard',    activePath: '/medecin/dashboard'    },
-  { label: 'Leçons',          icon: '📖', path: '/medecin/lessons',      activePath: '/medecin/lesson'       },
+  { label: 'Quiz',            icon: '📖', path: '/medecin/lessons',      activePath: '/medecin/lesson'       },
   { label: 'Progression',     icon: '📊', path: '/medecin/progress',     activePath: '/medecin/progress'     },
   { label: 'Certificat',      icon: '🎓', path: '/medecin/certificate',  activePath: '/medecin/certificate'  },
   { label: 'Calendrier',      icon: '📅', path: '/medecin/calendar',     activePath: '/medecin/calendar'     },
-  { label: 'Formation',       icon: '📋', path: null,                    activePath: null,                   external: FORMATION_URL },
+  { label: 'Support de cours',icon: '📋', path: null,                    activePath: null,                   external: FORMATION_URL },
   { label: 'Profil',          icon: '👤', path: '/medecin/profile',      activePath: '/medecin/profile'      },
 ]
 

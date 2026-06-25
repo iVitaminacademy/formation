@@ -5,9 +5,9 @@ const FORMATION_URL = 'https://drive.google.com/file/d/1e1JZNEgvyj0W-rLmn7kBxktU
 
 const navLinks = [
   { label: 'Tableau de bord', icon: '🏠', path: '/parent/dashboard' },
-  { label: 'Protocoles',      icon: '💉', path: '/parent/lessons'   },
+  { label: 'Quiz',            icon: '💉', path: '/parent/lessons'   },
   { label: 'Rapports',        icon: '📊', path: '/parent/reports'   },
-  { label: 'Formation',       icon: '📋', path: null,                external: FORMATION_URL },
+  { label: 'Support de cours',icon: '📋', path: null,                external: FORMATION_URL },
   { label: 'Profil',          icon: '👤', path: '/parent/profile'   },
 ]
 
